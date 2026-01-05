@@ -18,10 +18,14 @@ export class ReplaceString {
   }
 
   replace(start: number, end: number, text: string) {
+    if (start < 0 || end < 0) {
+      return;
+    }
+
     const index = this.chunks.findIndex((chunk) => chunk.start <= start && chunk.end >= end);
 
     if (index === -1) {
-      throw new Error('Invalid range');
+      throw new Error(`Invalid range (${start}-${end}): ${text}`);
     }
 
     const current = this.chunks[index];
