@@ -8,7 +8,7 @@ function parseArithmeticAST(xp: Expansion) {
   try {
     AST = parse(xp.expression!);
   } catch (err) {
-    throw new SyntaxError(`Cannot parse arithmetic expression "${xp.expression}": ${err.message}`);
+    throw new SyntaxError(`Cannot parse arithmetic expression "${xp.expression}": ${(err as Error).message}`);
   }
 
   // @ts-ignore - expression is defined, maybe there is something wrong with the babel types

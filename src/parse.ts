@@ -36,7 +36,7 @@ export const parse: Parse = async (sourceCode, options?) => {
     if (err instanceof SyntaxError) {
       throw err;
     }
-    throw new Error(err.stack || err.message);
+    throw new Error((err as Error).stack || (err as Error).message);
   }
 };
 

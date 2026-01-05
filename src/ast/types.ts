@@ -79,7 +79,7 @@ export type AstNodeLogicalExpression = AstNode & {
  */
 export type AstNodeCommand = AstNode & {
   type: 'Command';
-  name?: AstNodeName;
+  name?: AstNodeWord;
   prefix?: Array<AstNodeAssignmentWord | AstNodeRedirect>;
   suffix?: Array<AstNodeWord | AstNodeRedirect>;
   async?: boolean;
@@ -92,19 +92,9 @@ export type AstNodeCommand = AstNode & {
  */
 export type AstNodeFunction = AstNode & {
   type: 'Function';
-  name: AstNodeName;
+  name: AstNodeWord;
   redirections?: AstNodeRedirect[];
   body: AstNodeCompoundList;
-};
-
-/**
- * `Name` represents the Name of a Function or a `for` variable.
- *
- * Valid Name values should be formed by one or more alphanumeric characters or underscores, and the could not start with a digit.
- */
-export type AstNodeName = AstNode & {
-  type: 'Word';
-  text: string;
 };
 
 /**
@@ -141,7 +131,7 @@ export type AstNodeSubshell = AstNode & {
  */
 export type AstNodeFor = AstNode & {
   type: 'For';
-  name: AstNodeName;
+  name: AstNodeWord;
   wordlist?: AstNodeWord[];
   do: AstNodeCompoundList;
 };

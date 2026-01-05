@@ -10,7 +10,6 @@ import type {
   AstNodeFunction,
   AstNodeIf,
   AstNodeLogicalExpression,
-  AstNodeName,
   AstNodePipeline,
   AstNodeRedirect,
   AstNodeScript,
@@ -125,20 +124,20 @@ export type AstBuilder = {
   ) => AstNodeLogicalExpression;
 
   forClause: (
-    name: AstNodeName,
+    name: AstNodeWord,
     wordlist: AstNodeWord[],
     doGroup: AstNodeCompoundList,
     locStart: AstSourceLocation,
   ) => AstNodeFor;
 
   forClauseDefault: (
-    name: AstNodeName,
+    name: AstNodeWord,
     doGroup: AstNodeCompoundList,
     locStart: AstSourceLocation,
   ) => AstNodeFor;
 
   functionDefinition: (
-    name: AstNodeName,
+    name: AstNodeWord,
     body: [AstNodeCompoundList, AstNodeRedirect[] | undefined],
   ) => AstNodeFunction;
 
@@ -168,8 +167,8 @@ export type AstBuilder = {
   ) => AstNodeUntil;
 
   commandName: (
-    name: AstNodeName,
-  ) => AstNodeName;
+    name: AstNodeWord,
+  ) => AstNodeWord;
 
   commandAssignment: (
     prefix: NonNullable<AstNodeCommand['prefix']>,
@@ -177,7 +176,7 @@ export type AstBuilder = {
 
   command: (
     prefix: NonNullable<AstNodeCommand['prefix']>,
-    command?: AstNodeName,
+    command?: AstNodeWord,
     suffix?: NonNullable<AstNodeCommand['suffix']>,
   ) => AstNodeCommand;
 
