@@ -26,7 +26,7 @@ export type Resolvers = {
    * @param text - The text to resolve.
    * @returns The expanded path.
    */
-  resolvePath?: (text: string) => Promise<string>;
+  resolvePath?: (text: string) => Promise<string[]>;
 
   /**
    * A callback to resolve users' home directories. If specified, the parser calls it whenever it needs to resolve a tilde expansion. If the option is not specified, the parser won't try to resolve any tilde expansion. When the callback is called with a null value for `username`, the callback should return the current user's home directory.

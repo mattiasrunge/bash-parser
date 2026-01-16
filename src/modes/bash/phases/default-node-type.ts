@@ -1,6 +1,6 @@
 import { assert } from '@std/assert';
 import type { LexerPhase } from '~/lexer/types.ts';
-import type { TokenIf } from '~/tokenizer/mod.ts';
+import type { Expansion, TokenIf } from '~/tokenizer/mod.ts';
 import map from '~/utils/iterable/map.ts';
 import toPascal from '~/utils/to-pascal-case.ts';
 
@@ -18,11 +18,13 @@ const defaultNodeType: LexerPhase = () =>
     // } else {
     //   tk.type = token.type.toLowerCase();
     // }
+    if (tk.expansion) {
+      tk.expansion = tk.expansion.filter((xp: Expansion) => !!xp.type);
 
-    for (const xp of tk.expansion || []) {
-      xp.type = toPascal(xp.type!);
+      for (const xp of tk.expansion || []) {
+        xp.type = toPascal(xp.type!);
+      }
     }
-
     Object.freeze(tk);
 
     return tk;

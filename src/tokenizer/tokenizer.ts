@@ -168,6 +168,7 @@ export const tokenize = (r: Reducers, operators: Record<string, string>) => (asy
   let state = new State(r, operators);
 
   let reduction: Reducer | null = r.start;
+
   const source = Array.from(src);
 
   while (reduction !== null) {
