@@ -187,6 +187,14 @@ esac`,
               {
                 text: '*',
                 type: 'Word',
+                expansion: [
+                  {
+                    type: 'PathExpansion',
+                    pattern: '*',
+                    resolved: false,
+                    loc: { start: 0, end: 1 },
+                  },
+                ],
               },
             ],
             body: {

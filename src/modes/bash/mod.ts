@@ -36,6 +36,7 @@ const mode: ModePlugin = {
         phaseCatalog.commandExpansionResolve,
         phaseCatalog.arithmeticExpansionResolve,
         phaseCatalog.fieldSplitting,
+        phaseCatalog.pathExpansionDetect,
         phaseCatalog.pathExpansion,
         phaseCatalog.quoteRemoval,
         phaseCatalog.syntaxerrorOnContinue,

@@ -11,6 +11,14 @@ Deno.test('pathname-expansion', async (t) => {
     utils.checkResults((result as any).commands[0].suffix[0], {
       type: 'Word',
       text: 'expanded',
+      expansion: [
+        {
+          type: 'PathExpansion',
+          pattern: '*.txt',
+          resolved: false,
+          loc: { start: 0, end: 5 },
+        },
+      ],
     });
   });
 
@@ -23,6 +31,14 @@ Deno.test('pathname-expansion', async (t) => {
     utils.checkResults((result as any).commands[0].prefix[0], {
       type: 'AssignmentWord',
       text: 'a=app.conf',
+      expansion: [
+        {
+          type: 'PathExpansion',
+          pattern: '*.conf',
+          resolved: false,
+          loc: { start: 2, end: 8 },
+        },
+      ],
     });
   });
 
@@ -71,6 +87,14 @@ Deno.test('pathname-expansion', async (t) => {
     utils.checkResults((result as any).commands[0].suffix[0], {
       type: 'Word',
       text: 'expanded',
+      expansion: [
+        {
+          type: 'PathExpansion',
+          pattern: 'file?.log',
+          resolved: false,
+          loc: { start: 0, end: 9 },
+        },
+      ],
     });
   });
 
@@ -83,6 +107,14 @@ Deno.test('pathname-expansion', async (t) => {
     utils.checkResults((result as any).commands[0].suffix[0], {
       type: 'Word',
       text: 'expanded',
+      expansion: [
+        {
+          type: 'PathExpansion',
+          pattern: 'file[0-9].txt',
+          resolved: false,
+          loc: { start: 0, end: 13 },
+        },
+      ],
     });
   });
 
@@ -105,9 +137,17 @@ Deno.test('pathname-expansion', async (t) => {
       },
     });
     const suffix = (result as any).commands[0].suffix;
-    utils.checkResults(suffix[0], { type: 'Word', text: 'file1.txt' });
-    utils.checkResults(suffix[1], { type: 'Word', text: 'file2.txt' });
-    utils.checkResults(suffix[2], { type: 'Word', text: 'file3.txt' });
+    const expectedExpansion = [
+      {
+        type: 'PathExpansion',
+        pattern: '*.txt',
+        resolved: false,
+        loc: { start: 0, end: 5 },
+      },
+    ];
+    utils.checkResults(suffix[0], { type: 'Word', text: 'file1.txt', expansion: expectedExpansion });
+    utils.checkResults(suffix[1], { type: 'Word', text: 'file2.txt', expansion: expectedExpansion });
+    utils.checkResults(suffix[2], { type: 'Word', text: 'file3.txt', expansion: expectedExpansion });
   });
 
   await t.step('keeps original pattern when array is empty', async () => {
@@ -119,6 +159,14 @@ Deno.test('pathname-expansion', async (t) => {
     utils.checkResults((result as any).commands[0].suffix[0], {
       type: 'Word',
       text: '*.txt',
+      expansion: [
+        {
+          type: 'PathExpansion',
+          pattern: '*.txt',
+          resolved: false,
+          loc: { start: 0, end: 5 },
+        },
+      ],
     });
   });
 
@@ -131,6 +179,30 @@ Deno.test('pathname-expansion', async (t) => {
     utils.checkResults((result as any).commands[0].prefix[0], {
       type: 'AssignmentWord',
       text: 'a=first.conf',
+      expansion: [
+        {
+          type: 'PathExpansion',
+          pattern: '*.conf',
+          resolved: false,
+          loc: { start: 2, end: 8 },
+        },
+      ],
+    });
+  });
+
+  await t.step('tracks glob pattern as PathExpansion without resolver', async () => {
+    const result = await bashParser('echo *.txt');
+    utils.checkResults((result as any).commands[0].suffix[0], {
+      type: 'Word',
+      text: '*.txt',
+      expansion: [
+        {
+          type: 'PathExpansion',
+          pattern: '*.txt',
+          resolved: false,
+          loc: { start: 0, end: 5 },
+        },
+      ],
     });
   });
 });

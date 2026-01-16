@@ -18,6 +18,12 @@ Deno.test('case', async (t) => {
           pattern: [{
             type: 'Word',
             text: '*',
+            expansion: [{
+              type: 'PathExpansion',
+              pattern: '*',
+              resolved: false,
+              loc: { start: 0, end: 1 },
+            }],
           }],
           body: {
             type: 'CompoundList',

@@ -25,6 +25,17 @@ esac
               type: 'Word',
               text: '*',
               loc: mkloc(2, 2, 2, 2, 13, 13),
+              expansion: [
+                {
+                  loc: {
+                    end: 1,
+                    start: 0,
+                  },
+                  pattern: '*',
+                  resolved: false,
+                  type: 'PathExpansion',
+                },
+              ],
             },
           ],
           body: {

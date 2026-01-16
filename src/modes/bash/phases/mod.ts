@@ -18,6 +18,7 @@ import operatorTokens from './operator-tokens.ts';
 import parameterExpansionResolve from './parameter-expansion-resolve.ts';
 import parameterExpansion from './parameter-expansion.ts';
 import pathExpansion from './path-expansion.ts';
+import pathExpansionDetect from './path-expansion-detect.ts';
 import quoteRemoval from './quote-removal.ts';
 import reservedWords from './reserved-words.ts';
 import separator from './separator.ts';
@@ -44,6 +45,7 @@ const rules: LexerPhases = {
   parameterExpansion,
   parameterExpansionResolve,
   pathExpansion,
+  pathExpansionDetect,
   quoteRemoval,
   reservedWords,
   separator,

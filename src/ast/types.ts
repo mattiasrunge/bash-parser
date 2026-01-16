@@ -201,6 +201,7 @@ export type AstNodeWord = AstNode & {
     | AstArithmeticExpansion
     | AstCommandExpansion
     | AstParameterExpansion
+    | AstPathExpansion
   >;
 };
 
@@ -214,6 +215,7 @@ export type AstNodeAssignmentWord = AstNode & {
     | AstArithmeticExpansion
     | AstCommandExpansion
     | AstParameterExpansion
+    | AstPathExpansion
   >;
 };
 
@@ -264,6 +266,21 @@ export type AstParameterExpansion = {
   kind?: string;
   word?: string;
   op?: string;
+};
+
+/**
+ * A `PathExpansion` represents a glob pattern (pathname expansion) to be resolved at execution time.
+ *
+ * The `pattern` property contains the glob pattern (e.g., `[0-9][0-9]_*.sh`).
+ *
+ * The `loc.start` property contains the index of the character in the Word text where the pattern starts. The `loc.end` property contains the index where it ends.
+ */
+export type AstPathExpansion = {
+  type: 'PathExpansion';
+  resolved: boolean;
+  loc: ExpansionLocation;
+
+  pattern: string;
 };
 
 /**

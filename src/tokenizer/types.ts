@@ -108,7 +108,8 @@ export type Expansion = {
   arithmeticAST?: any;
 
   value?: string;
-  type?: 'parameter_expansion' | 'command_expansion' | 'arithmetic_expansion';
+  pattern?: string;
+  type?: 'parameter_expansion' | 'command_expansion' | 'arithmetic_expansion' | 'path_expansion';
   resolved?: boolean;
   loc?: ExpansionLocation;
 };
