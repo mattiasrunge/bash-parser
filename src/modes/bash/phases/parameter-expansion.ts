@@ -48,10 +48,7 @@ const expandParameter = async (xp: Expansion, enums: Enums): Promise<Expansion> 
       const opProps = await handleParameter(pair[1], match);
       const mergedObject = Object.assign({}, xp, opProps);
 
-      return JSON.parse(JSON.stringify(mergedObject));
-      // return Object.fromEntries(
-      // Object.entries(mergedObject).filter(([_k, v]) => v !== undefined),
-      // );
+      return structuredClone(mergedObject);
     }
   }
 
@@ -76,7 +73,7 @@ const parameterExpansion: LexerPhase = (ctx) =>
       return token.setExpansion(
         await Promise.all(
           token.expansion!.map(async (xp: Expansion) => {
-            if (xp.type === 'parameter_expansion') {
+            if (xp.type === 'ParameterExpansion') {
               return await expandParameter(xp, ctx.enums);
             }
 

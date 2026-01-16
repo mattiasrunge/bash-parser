@@ -18,7 +18,7 @@ function parseArithmeticAST(xp: Expansion) {
     throw new SyntaxError(`Cannot parse arithmetic expression "${xp.expression}": Not an expression`);
   }
 
-  return JSON.parse(JSON.stringify(expression));
+  return structuredClone(expression);
 }
 
 const arithmeticExpansion: LexerPhase = () =>
@@ -30,7 +30,7 @@ const arithmeticExpansion: LexerPhase = () =>
 
       return token.setExpansion(
         token.expansion.map((xp: Expansion) => {
-          if (xp.type === 'arithmetic_expansion') {
+          if (xp.type === 'ArithmeticExpansion') {
             return Object.assign({}, xp, { arithmeticAST: parseArithmeticAST(xp) });
           }
           return xp;

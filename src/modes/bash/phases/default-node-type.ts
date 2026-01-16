@@ -6,7 +6,7 @@ import toPascal from '~/utils/to-pascal-case.ts';
 
 const defaultNodeType: LexerPhase = () =>
   map(async (token: TokenIf) => {
-    const tk = JSON.parse(JSON.stringify(token));
+    const tk = structuredClone(token);
 
     assert(tk.type, 'Token type is required');
 
@@ -22,7 +22,7 @@ const defaultNodeType: LexerPhase = () =>
       tk.expansion = tk.expansion.filter((xp: Expansion) => !!xp.type);
 
       for (const xp of tk.expansion || []) {
-        xp.type = toPascal(xp.type!);
+        xp.type = toPascal(xp.type!) as Expansion['type'];
       }
     }
     Object.freeze(tk);

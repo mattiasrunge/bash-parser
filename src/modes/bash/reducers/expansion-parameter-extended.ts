@@ -10,7 +10,7 @@ const expansionParameterExtended: Reducer = (state, source, reducers) => {
     return {
       nextReduction: state.previousReducer,
       nextState: state.appendChar(char).replaceLastExpansion({
-        type: 'parameter_expansion',
+        type: 'ParameterExpansion',
         loc: Object.assign({}, xp!.loc, { end: state.loc.current?.char }),
       }),
     };

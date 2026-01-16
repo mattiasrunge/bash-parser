@@ -14,7 +14,7 @@ const parameterExpansionResolve: LexerPhase = (ctx) =>
       const rValue = new ReplaceString(token.value!);
 
       for (const xp of token.expansion) {
-        if (xp.type === 'parameter_expansion') {
+        if (xp.type === 'ParameterExpansion') {
           const result = await ctx.resolvers.resolveParameter(xp.parameter!);
           const replacement = await fieldSplittingMark(result, token.value!, ctx.resolvers.resolveEnv);
 

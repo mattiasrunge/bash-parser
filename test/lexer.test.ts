@@ -9,7 +9,7 @@ const tokenize = async (text: string, rawTokens?: boolean) => {
   let token = await lexer.lex();
   while (token !== 'EOF') {
     if (rawTokens) {
-      const value = JSON.parse(JSON.stringify(lexer.yytext));
+      const value = structuredClone(lexer.yytext);
       delete value.type;
 
       results.push({ token, value });

@@ -11,7 +11,7 @@ const expansionArithmetic: Reducer = (state, source) => {
       nextState: state
         .appendChar(char)
         .replaceLastExpansion({
-          type: 'arithmetic_expansion',
+          type: 'ArithmeticExpansion',
           expression: xp!.value!.slice(0, -1),
           loc: Object.assign({}, xp!.loc, { end: state.loc.current?.char }),
         })

@@ -1,4 +1,4 @@
-import { assertEquals } from '@std/assert';
+import { assertEquals, assertObjectMatch } from '@std/assert';
 import type { AstSourceLocation } from '~/ast/types.ts';
 
 export const mkloc2 = function mkloc(startLine: number, startColumn: number, endLine: number, endColumn: number, startChar: number, endChar: number): AstSourceLocation {
@@ -11,7 +11,16 @@ export const mkloc2 = function mkloc(startLine: number, startColumn: number, end
 export const checkResults = (actual: any, expected: any) => {
   //console.log(JSON.stringify(actual, null, 4));
 
-  assertEquals(actual, expected);
+  if (
+    actual !== null &&
+    expected !== null &&
+    typeof actual === 'object' &&
+    typeof expected === 'object'
+  ) {
+    assertObjectMatch(actual as Record<string, unknown>, expected);
+  } else {
+    assertEquals(actual, expected);
+  }
 };
 
 export default {

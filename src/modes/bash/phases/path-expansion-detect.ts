@@ -1,8 +1,8 @@
 import type { LexerPhase } from '~/lexer/types.ts';
 import type { Expansion, TokenIf } from '~/tokenizer/mod.ts';
-import map from '~/utils/iterable/map.ts';
 import type { GlobPattern } from '~/utils/glob-pattern-scanner.ts';
 import { hasUnquotedGlob, scanGlobPatterns } from '~/utils/glob-pattern-scanner.ts';
+import map from '~/utils/iterable/map.ts';
 
 /**
  * Check if a glob pattern overlaps with any existing expansion.
@@ -28,7 +28,7 @@ const overlapsWithExpansion = (glob: GlobPattern, expansions: Expansion[]): bool
 
 /**
  * Detects glob patterns (pathname expansion) in unquoted sections of WORD tokens
- * and adds them as path_expansion entries to the token's expansion array.
+ * and adds them as PathExpansion entries to the token's expansion array.
  *
  * This phase tracks patterns for later resolution - it does NOT resolve them.
  */
@@ -58,9 +58,9 @@ const pathExpansionDetect: LexerPhase = () =>
         return token;
       }
 
-      // Create path_expansion entries
+      // Create PathExpansion entries
       const pathExpansions: Expansion[] = filteredPatterns.map((g) => ({
-        type: 'path_expansion' as const,
+        type: 'PathExpansion' as const,
         pattern: g.pattern,
         resolved: false,
         loc: {
@@ -113,7 +113,7 @@ const pathExpansionDetect: LexerPhase = () =>
       }
 
       const pathExpansions: Expansion[] = filteredPatterns.map((g) => ({
-        type: 'path_expansion' as const,
+        type: 'PathExpansion' as const,
         pattern: g.pattern,
         resolved: false,
         loc: {

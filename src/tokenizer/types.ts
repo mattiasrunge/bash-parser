@@ -109,7 +109,7 @@ export type Expansion = {
 
   value?: string;
   pattern?: string;
-  type?: 'parameter_expansion' | 'command_expansion' | 'arithmetic_expansion' | 'path_expansion';
+  type?: 'ParameterExpansion' | 'CommandExpansion' | 'ArithmeticExpansion' | 'PathExpansion';
   resolved?: boolean;
   loc?: ExpansionLocation;
 };

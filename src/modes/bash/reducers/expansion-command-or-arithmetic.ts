@@ -26,7 +26,7 @@ const expansionCommandOrArithmetic: Reducer = (state, source, reducers) => {
     return {
       nextReduction: state.previousReducer,
       nextState: state.appendChar(char).replaceLastExpansion({
-        type: 'command_expansion',
+        type: 'CommandExpansion',
         loc: Object.assign({}, xp!.loc, { end: state.loc.current?.char }),
       }),
     };

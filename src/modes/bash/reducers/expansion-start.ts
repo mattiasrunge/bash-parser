@@ -26,7 +26,7 @@ const expansionStart: Reducer = (state, source, reducers) => {
       nextReduction: reducers.expansionParameter,
       nextState: state.appendChar(char!).replaceLastExpansion({
         parameter: char,
-        type: 'parameter_expansion',
+        type: 'ParameterExpansion',
       }),
     };
   }

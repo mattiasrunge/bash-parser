@@ -24,7 +24,7 @@ const tokenize = async (text: string, keepLoc?: boolean) => {
   const tokens = await toArray(tokenizer(text));
 
   const results = tokens.map((t) => {
-    const r: any = JSON.parse(JSON.stringify(t));
+    const r: any = t;
     r[r.type] = r.value;
     delete r.ctx;
     delete r.type;
@@ -364,7 +364,7 @@ Deno.test('tokenize', async (t) => {
     const result = await tokenize('a$b-c');
 
     const expansion = [{
-      type: 'parameter_expansion',
+      type: 'ParameterExpansion',
       loc: { start: 1, end: 2 },
       parameter: 'b',
     }];
@@ -381,7 +381,7 @@ Deno.test('tokenize', async (t) => {
   await t.step('parse special parameter expansion', async () => {
     const result = await tokenize('a$@cd');
     const expansion = [{
-      type: 'parameter_expansion',
+      type: 'ParameterExpansion',
       loc: { start: 1, end: 2 },
       parameter: '@',
     }];
@@ -397,7 +397,7 @@ Deno.test('tokenize', async (t) => {
   await t.step('parse extended parameter expansion', async () => {
     const result = await tokenize('a${b}cd');
     const expansion = [{
-      type: 'parameter_expansion',
+      type: 'ParameterExpansion',
       loc: { start: 1, end: 4 },
       parameter: 'b',
     }];
@@ -413,7 +413,7 @@ Deno.test('tokenize', async (t) => {
   await t.step('parse command expansion', async () => {
     const result = await tokenize('a$(b)cd');
     const expansion = [{
-      type: 'command_expansion',
+      type: 'CommandExpansion',
       loc: { start: 1, end: 4 },
       command: 'b',
     }];
@@ -429,7 +429,7 @@ Deno.test('tokenize', async (t) => {
   await t.step('parse command with backticks', async () => {
     const result = await tokenize('a`b`cd');
     const expansion = [{
-      type: 'command_expansion',
+      type: 'CommandExpansion',
       loc: { start: 1, end: 3 },
       command: 'b',
     }];
@@ -445,7 +445,7 @@ Deno.test('tokenize', async (t) => {
   await t.step('parse arithmetic expansion', async () => {
     const result = await tokenize('a$((b))cd');
     const expansion = [{
-      type: 'arithmetic_expansion',
+      type: 'ArithmeticExpansion',
       loc: { start: 1, end: 6 },
       expression: 'b',
     }];
@@ -462,7 +462,7 @@ Deno.test('tokenize', async (t) => {
   await t.step('within double quotes parse parameter expansion', async () => {
     const result = await tokenize('"a$b-c"');
     const expansion = [{
-      type: 'parameter_expansion',
+      type: 'ParameterExpansion',
       loc: { start: 2, end: 3 },
       parameter: 'b',
     }];
@@ -479,7 +479,7 @@ Deno.test('tokenize', async (t) => {
   await t.step('within double quotes parse special parameter expansion', async () => {
     const result = await tokenize('"a$@cd"');
     const expansion = [{
-      type: 'parameter_expansion',
+      type: 'ParameterExpansion',
       loc: { start: 2, end: 3 },
       parameter: '@',
     }];
@@ -495,7 +495,7 @@ Deno.test('tokenize', async (t) => {
   await t.step('within double quotes parse extended parameter expansion', async () => {
     const result = await tokenize('"a${b}cd"');
     const expansion = [{
-      type: 'parameter_expansion',
+      type: 'ParameterExpansion',
       loc: { start: 2, end: 5 },
       parameter: 'b',
     }];
@@ -511,7 +511,7 @@ Deno.test('tokenize', async (t) => {
   await t.step('within double quotes parse command expansion', async () => {
     const result = await tokenize('"a$(b)cd"');
     const expansion = [{
-      type: 'command_expansion',
+      type: 'CommandExpansion',
       loc: { start: 2, end: 5 },
       command: 'b',
     }];
@@ -528,7 +528,7 @@ Deno.test('tokenize', async (t) => {
   await t.step('within double quotes parse command with backticks', async () => {
     const result = await tokenize('"a`b`cd"');
     const expansion = [{
-      type: 'command_expansion',
+      type: 'CommandExpansion',
       loc: { start: 2, end: 4 },
       command: 'b',
     }];
@@ -546,7 +546,7 @@ Deno.test('tokenize', async (t) => {
   await t.step('within double quotes parse arithmetic expansion', async () => {
     const result = await tokenize('"a$((b))cd"');
     const expansion = [{
-      type: 'arithmetic_expansion',
+      type: 'ArithmeticExpansion',
       loc: { start: 2, end: 7 },
       expression: 'b',
     }];
