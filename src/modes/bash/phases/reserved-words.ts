@@ -14,7 +14,8 @@ const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<To
     last.is('DSEMI') || last.value === ';' || last.is('PIPE') ||
     last.is('OR_IF') || last.is('PIPE') || last.is('AND_IF');
 
-  const lastIsReservedWord = !(last.value === 'for') && !(last.value === 'in') && !(last.value === 'case') && Object.values(words).some((word) => last.is(word));
+  const lastIsReservedWord = !(last.value === 'for') && !(last.value === 'in') && !(last.value === 'case') &&
+    (Object.values(words).some((word) => last.is(word)) || last.value! in words);
 
   const thirdInCase = twoAgo.value === 'case' && tk.is('TOKEN') && tk.value!.toLowerCase() === 'in';
   const thirdInFor = twoAgo.value === 'for' && tk.is('TOKEN') &&

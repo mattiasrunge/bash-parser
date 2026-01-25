@@ -83,6 +83,7 @@ export type AstNodeCommand = AstNode & {
   prefix?: Array<AstNodeAssignmentWord | AstNodeRedirect>;
   suffix?: Array<AstNodeWord | AstNodeRedirect>;
   async?: boolean;
+  bang?: boolean;
 };
 
 /**

@@ -1,24 +1,14 @@
-import { parse } from '@babel/parser';
+import { parseArithmetic } from '~/arithmetic/mod.ts';
 import type { LexerPhase } from '~/lexer/types.ts';
 import type { Expansion, TokenIf } from '~/tokenizer/mod.ts';
 import map from '~/utils/iterable/map.ts';
 
 function parseArithmeticAST(xp: Expansion) {
-  let AST;
   try {
-    AST = parse(xp.expression!);
+    return parseArithmetic(xp.expression!);
   } catch (err) {
     throw new SyntaxError(`Cannot parse arithmetic expression "${xp.expression}": ${(err as Error).message}`);
   }
-
-  // @ts-ignore - expression is defined, maybe there is something wrong with the babel types
-  const expression = AST.program.body[0].expression;
-
-  if (expression === undefined) {
-    throw new SyntaxError(`Cannot parse arithmetic expression "${xp.expression}": Not an expression`);
-  }
-
-  return structuredClone(expression);
 }
 
 const arithmeticExpansion: LexerPhase = () =>

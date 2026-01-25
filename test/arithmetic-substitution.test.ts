@@ -91,13 +91,13 @@ Deno.test('arithmetic substitution', async (t) => {
   await t.step('arithmetic substitution node applied to invalid expressions throws', async () => {
     const result = (await assertRejects(() => bashParser('echo $((a b c d))'))) as Error;
     const message = result.message.split('\n')[0];
-    assertEquals(message, 'Cannot parse arithmetic expression "a b c d": Missing semicolon. (1:1)');
+    assertEquals(message, 'Cannot parse arithmetic expression "a b c d": Unexpected token: b');
   });
 
   await t.step('arithmetic substitution node applied to non expressions throws', async () => {
     const result = (await assertRejects(() => bashParser('echo $((while(1);))'))) as Error;
     const message = result.message.split('\n')[0];
-    assertEquals(message, 'Cannot parse arithmetic expression "while(1);": Not an expression');
+    assertEquals(message, 'Cannot parse arithmetic expression "while(1);": Unexpected character: ;');
   });
 
   await t.step('arithmetic ast is parsed', async () => {

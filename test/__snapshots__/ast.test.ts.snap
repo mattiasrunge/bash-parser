@@ -238,6 +238,62 @@ snapshot[`ast 11`] = `
 {
   commands: [
     {
+      clause: {
+        commands: [
+          {
+            bang: true,
+            name: {
+              text: "grep",
+              type: "Word",
+            },
+            suffix: [
+              {
+                text: "-q",
+                type: "Word",
+              },
+              {
+                text: "test",
+                type: "Word",
+              },
+              {
+                text: "/etc/bashrc",
+                type: "Word",
+              },
+            ],
+            type: "Command",
+          },
+        ],
+        type: "CompoundList",
+      },
+      then: {
+        commands: [
+          {
+            name: {
+              text: "echo",
+              type: "Word",
+            },
+            suffix: [
+              {
+                text: "yes",
+                type: "Word",
+              },
+            ],
+            type: "Command",
+          },
+        ],
+        type: "CompoundList",
+      },
+      type: "If",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`ast 12`] = `
+{
+  commands: [
+    {
       name: {
         text: "echo",
         type: "Word",
@@ -255,7 +311,7 @@ snapshot[`ast 11`] = `
 }
 `;
 
-snapshot[`ast 12`] = `
+snapshot[`ast 13`] = `
 {
   commands: [
     {
@@ -286,7 +342,7 @@ snapshot[`ast 12`] = `
 }
 `;
 
-snapshot[`ast 13`] = `
+snapshot[`ast 14`] = `
 {
   commands: [
     {
@@ -308,7 +364,7 @@ snapshot[`ast 13`] = `
 }
 `;
 
-snapshot[`ast 14`] = `
+snapshot[`ast 15`] = `
 {
   commands: [
     {
@@ -335,7 +391,7 @@ snapshot[`ast 14`] = `
 }
 `;
 
-snapshot[`ast 15`] = `
+snapshot[`ast 16`] = `
 {
   commands: [
     {
@@ -375,7 +431,7 @@ snapshot[`ast 15`] = `
 }
 `;
 
-snapshot[`ast 16`] = `
+snapshot[`ast 17`] = `
 {
   commands: [
     {
@@ -418,7 +474,7 @@ snapshot[`ast 16`] = `
 }
 `;
 
-snapshot[`ast 17`] = `
+snapshot[`ast 18`] = `
 {
   commands: [
     {
@@ -469,7 +525,7 @@ snapshot[`ast 17`] = `
 }
 `;
 
-snapshot[`ast 18`] = `
+snapshot[`ast 19`] = `
 {
   commands: [
     {
@@ -491,7 +547,7 @@ snapshot[`ast 18`] = `
 }
 `;
 
-snapshot[`ast 19`] = `
+snapshot[`ast 20`] = `
 {
   commands: [
     {
@@ -514,7 +570,7 @@ snapshot[`ast 19`] = `
 }
 `;
 
-snapshot[`ast 20`] = `
+snapshot[`ast 21`] = `
 {
   commands: [
     {
@@ -541,7 +597,7 @@ snapshot[`ast 20`] = `
 }
 `;
 
-snapshot[`ast 21`] = `
+snapshot[`ast 22`] = `
 {
   commands: [
     {
@@ -575,7 +631,7 @@ snapshot[`ast 21`] = `
 }
 `;
 
-snapshot[`ast 22`] = `
+snapshot[`ast 23`] = `
 {
   commands: [
     {
@@ -598,7 +654,7 @@ snapshot[`ast 22`] = `
 }
 `;
 
-snapshot[`ast 23`] = `
+snapshot[`ast 24`] = `
 {
   commands: [
     {
@@ -626,7 +682,7 @@ snapshot[`ast 23`] = `
 }
 `;
 
-snapshot[`ast 24`] = `
+snapshot[`ast 25`] = `
 {
   commands: [
     {
@@ -651,7 +707,7 @@ snapshot[`ast 24`] = `
 }
 `;
 
-snapshot[`ast 25`] = `
+snapshot[`ast 26`] = `
 {
   commands: [
     {
@@ -668,34 +724,6 @@ snapshot[`ast 25`] = `
           numberIo: {
             text: "2",
             type: "IoNumber",
-          },
-          op: {
-            text: ">",
-            type: "Great",
-          },
-          type: "Redirect",
-        },
-      ],
-      type: "Command",
-    },
-  ],
-  type: "Script",
-}
-`;
-
-snapshot[`ast 26`] = `
-{
-  commands: [
-    {
-      name: {
-        text: "ls",
-        type: "Word",
-      },
-      suffix: [
-        {
-          file: {
-            text: "file.txt",
-            type: "Word",
           },
           op: {
             text: ">",
@@ -726,8 +754,8 @@ snapshot[`ast 27`] = `
             type: "Word",
           },
           op: {
-            text: ">>",
-            type: "Dgreat",
+            text: ">",
+            type: "Great",
           },
           type: "Redirect",
         },
@@ -753,13 +781,9 @@ snapshot[`ast 28`] = `
             text: "file.txt",
             type: "Word",
           },
-          numberIo: {
-            text: "2",
-            type: "IoNumber",
-          },
           op: {
-            text: ">",
-            type: "Great",
+            text: ">>",
+            type: "Dgreat",
           },
           type: "Redirect",
         },
@@ -790,8 +814,8 @@ snapshot[`ast 29`] = `
             type: "IoNumber",
           },
           op: {
-            text: ">>",
-            type: "Dgreat",
+            text: ">",
+            type: "Great",
           },
           type: "Redirect",
         },
@@ -817,24 +841,13 @@ snapshot[`ast 30`] = `
             text: "file.txt",
             type: "Word",
           },
-          op: {
-            text: ">",
-            type: "Great",
-          },
-          type: "Redirect",
-        },
-        {
-          file: {
-            text: "1",
-            type: "Word",
-          },
           numberIo: {
             text: "2",
             type: "IoNumber",
           },
           op: {
-            text: ">&",
-            type: "Greatand",
+            text: ">>",
+            type: "Dgreat",
           },
           type: "Redirect",
         },
@@ -861,8 +874,8 @@ snapshot[`ast 31`] = `
             type: "Word",
           },
           op: {
-            text: ">>",
-            type: "Dgreat",
+            text: ">",
+            type: "Great",
           },
           type: "Redirect",
         },
@@ -904,6 +917,49 @@ snapshot[`ast 32`] = `
             type: "Word",
           },
           op: {
+            text: ">>",
+            type: "Dgreat",
+          },
+          type: "Redirect",
+        },
+        {
+          file: {
+            text: "1",
+            type: "Word",
+          },
+          numberIo: {
+            text: "2",
+            type: "IoNumber",
+          },
+          op: {
+            text: ">&",
+            type: "Greatand",
+          },
+          type: "Redirect",
+        },
+      ],
+      type: "Command",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`ast 33`] = `
+{
+  commands: [
+    {
+      name: {
+        text: "ls",
+        type: "Word",
+      },
+      suffix: [
+        {
+          file: {
+            text: "file.txt",
+            type: "Word",
+          },
+          op: {
             text: "<",
             type: "Less",
           },
@@ -917,7 +973,7 @@ snapshot[`ast 32`] = `
 }
 `;
 
-snapshot[`ast 33`] = `
+snapshot[`ast 34`] = `
 {
   commands: [
     {

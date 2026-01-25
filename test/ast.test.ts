@@ -72,6 +72,13 @@ Deno.test('ast', async (t) => {
     );
   });
 
+  await t.step('bang after reserved word', async () => {
+    await assertSnapshot(
+      t,
+      await bashParser('if ! grep -q test /etc/bashrc; then echo yes; fi'),
+    );
+  });
+
   await t.step('no pre-assignment on suffix', async () => {
     await assertSnapshot(
       t,
