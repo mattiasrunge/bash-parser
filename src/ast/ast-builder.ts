@@ -1,6 +1,7 @@
 import type { AstBuilder, Separator } from '~/ast/builder-if.ts';
 import type {
   AstNode,
+  AstNodeArithmeticCommand,
   AstNodeCase,
   AstNodeCaseItem,
   AstNodeCommand,
@@ -17,6 +18,7 @@ import type {
   AstNodeWhile,
   AstSourceLocation,
 } from '~/ast/types.ts';
+import { parseArithmetic } from '~/arithmetic/mod.ts';
 import last from '~/utils/last.ts';
 
 const isAsyncSeparator = (separator: Separator) => {
@@ -147,6 +149,31 @@ export const astBuilder = (insertLOC?: boolean) => {
 
     subshell: (list, locStart, locEnd) => {
       const node: AstNodeSubshell = { type: 'Subshell', list };
+
+      if (insertLOC) {
+        node.loc = setLocEnd(setLocStart({ start: {}, end: {} }, locStart), locEnd);
+      }
+
+      return node;
+    },
+
+    arithmeticCommand: (words, locStart, locEnd) => {
+      // Join word texts to form the arithmetic expression
+      const expression = words.map((w) => w.text).join(' ');
+
+      // Parse the arithmetic expression
+      let arithmeticAST;
+      try {
+        arithmeticAST = parseArithmetic(expression);
+      } catch (err) {
+        throw new SyntaxError(`Cannot parse arithmetic expression "${expression}": ${(err as Error).message}`);
+      }
+
+      const node: AstNodeArithmeticCommand = {
+        type: 'ArithmeticCommand',
+        expression,
+        arithmeticAST,
+      };
 
       if (insertLOC) {
         node.loc = setLocEnd(setLocStart({ start: {}, end: {} }, locStart), locEnd);

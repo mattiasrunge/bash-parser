@@ -33,6 +33,7 @@ export type AstNodeScript = AstNode & {
     | AstNodeCommand
     | AstNodeFunction
     | AstNodeSubshell
+    | AstNodeArithmeticCommand
     | AstNodeFor
     | AstNodeCase
     | AstNodeIf
@@ -52,6 +53,7 @@ export type AstNodePipeline = AstNode & {
     | AstNodeCommand
     | AstNodeFunction
     | AstNodeSubshell
+    | AstNodeArithmeticCommand
     | AstNodeFor
     | AstNodeCase
     | AstNodeIf
@@ -109,6 +111,7 @@ export type AstNodeCompoundList = AstNode & {
     | AstNodeCommand
     | AstNodeFunction
     | AstNodeSubshell
+    | AstNodeArithmeticCommand
     | AstNodeFor
     | AstNodeCase
     | AstNodeIf
@@ -124,6 +127,17 @@ export type AstNodeCompoundList = AstNode & {
 export type AstNodeSubshell = AstNode & {
   type: 'Subshell';
   list: AstNodeCompoundList;
+  async?: boolean;
+};
+
+/**
+ * `ArithmeticCommand` node represents the (( expression )) compound command.
+ * It evaluates the arithmetic expression and returns exit status 0 if the result is non-zero, 1 otherwise.
+ */
+export type AstNodeArithmeticCommand = AstNode & {
+  type: 'ArithmeticCommand';
+  expression: string;
+  arithmeticAST: AstArithmeticExpression;
   async?: boolean;
 };
 

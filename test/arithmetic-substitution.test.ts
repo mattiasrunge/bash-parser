@@ -263,4 +263,34 @@ Deno.test('arithmetic substitution', async (t) => {
       }],
     });
   });
+
+  await t.step('arithmetic command (( expr ))', async () => {
+    const result = await bashParser('(( 2 + 3 == 5 ))');
+    // console.log(JSON.stringify(result.commands, null, 2));
+
+    utils.checkResults(result.commands[0], {
+      type: 'ArithmeticCommand',
+      expression: '2 + 3 == 5',
+      arithmeticAST: {
+        type: 'BinaryExpression',
+        operator: '==',
+        left: {
+          type: 'BinaryExpression',
+          operator: '+',
+          left: {
+            type: 'NumericLiteral',
+            value: 2,
+          },
+          right: {
+            type: 'NumericLiteral',
+            value: 3,
+          },
+        },
+        right: {
+          type: 'NumericLiteral',
+          value: 5,
+        },
+      },
+    });
+  });
 });

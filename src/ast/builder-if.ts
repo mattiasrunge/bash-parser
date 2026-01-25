@@ -1,6 +1,7 @@
 import type {
   AstIoNumber,
   AstNode,
+  AstNodeArithmeticCommand,
   AstNodeAssignmentWord,
   AstNodeCase,
   AstNodeCaseItem,
@@ -95,6 +96,12 @@ export type AstBuilder = {
     locStart: AstSourceLocation,
     locEnd: AstSourceLocation,
   ) => AstNodeSubshell;
+
+  arithmeticCommand: (
+    words: AstNodeWord[],
+    locStart: AstSourceLocation,
+    locEnd: AstSourceLocation,
+  ) => AstNodeArithmeticCommand;
 
   pipeSequence: (
     command: AstNodeCommand,

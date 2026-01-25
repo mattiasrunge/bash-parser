@@ -1,6 +1,8 @@
 const operators = {
   '&': 'AND',
   '|': 'PIPE',
+  '((': 'DOUBLE_OPEN_PAREN',
+  '))': 'DOUBLE_CLOSE_PAREN',
   '(': 'OPEN_PAREN',
   ')': 'CLOSE_PAREN',
   '>': 'GREAT',

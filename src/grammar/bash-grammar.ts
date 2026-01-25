@@ -75,11 +75,28 @@ export default {
     compound_command: [
       'brace_group',
       'subshell',
+      'arithmetic_command',
       'for_clause',
       'case_clause',
       'if_clause',
       'while_clause',
       'until_clause',
+    ],
+    arithmetic_command: [
+      [
+        'DOUBLE_OPEN_PAREN arithmetic_word_list DOUBLE_CLOSE_PAREN',
+        '$$ = yy.arithmeticCommand($arithmetic_word_list, $DOUBLE_OPEN_PAREN.loc, $DOUBLE_CLOSE_PAREN.loc);',
+      ],
+    ],
+    arithmetic_word_list: [
+      [
+        'WORD',
+        '$$ = [$1];',
+      ],
+      [
+        'arithmetic_word_list WORD',
+        '$1.push($2); $$ = $1;',
+      ],
     ],
     subshell: [
       [
