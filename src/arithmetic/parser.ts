@@ -4,19 +4,19 @@
 
 import type { Token, TokenType } from './tokens.ts';
 import type {
-  Expression,
-  NumericLiteral,
-  Identifier,
-  BinaryExpression,
-  LogicalExpression,
-  UnaryExpression,
-  UpdateExpression,
-  ConditionalExpression,
   AssignmentExpression,
+  AssignmentOperator,
+  BinaryExpression,
+  BinaryOperator,
+  ConditionalExpression,
+  Expression,
+  Identifier,
+  LogicalExpression,
+  NumericLiteral,
   SequenceExpression,
   SourceLocation,
-  BinaryOperator,
-  AssignmentOperator,
+  UnaryExpression,
+  UpdateExpression,
 } from './types.ts';
 
 // Precedence levels (from lowest to highest, matching C/bash)
