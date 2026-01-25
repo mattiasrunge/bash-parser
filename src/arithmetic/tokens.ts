@@ -6,6 +6,7 @@ export type TokenType =
   // Literals
   | 'NUMBER'
   | 'IDENTIFIER'
+  | 'COMMAND_SUBSTITUTION' // $(command) inside arithmetic
   // Single-char operators
   | 'PLUS'
   | 'MINUS'

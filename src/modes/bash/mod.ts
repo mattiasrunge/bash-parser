@@ -11,6 +11,7 @@ const mode: ModePlugin = {
       lexerPhases: [
         phaseCatalog.newLineList,
         phaseCatalog.operatorTokens,
+        phaseCatalog.parenContext,
         phaseCatalog.separator,
         // loggerPhase('1'),
         phaseCatalog.reservedWords,

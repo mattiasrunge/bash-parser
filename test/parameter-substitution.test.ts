@@ -21,12 +21,14 @@ Deno.test('parameter-substitution', async (t) => {
 
   await t.step('parameter substitution skip escaped dollar', async () => {
     const result = await bashParser('echo "\\$ciao"');
-    utils.checkResults((result as any).commands[0].suffix, [{ type: 'Word', text: '\\$ciao' }]);
+    // In bash, \$ inside double quotes becomes $ (backslash removed)
+    utils.checkResults((result as any).commands[0].suffix, [{ type: 'Word', text: '$ciao' }]);
   });
 
   await t.step('parameter substitution skip escaped dollar with braces', async () => {
     const result = await bashParser('echo "\\${ciao}"');
-    utils.checkResults((result as any).commands[0].suffix, [{ type: 'Word', text: '\\${ciao}' }]);
+    // In bash, \$ inside double quotes becomes $ (backslash removed)
+    utils.checkResults((result as any).commands[0].suffix, [{ type: 'Word', text: '${ciao}' }]);
   });
 
   await t.step('parameter substitution skip single quoted words', async () => {

@@ -65,6 +65,8 @@ export type AstBuilder = {
     logicalExpression: AstNodeLogicalExpression,
   ) => AstNodeScript;
 
+  emptyScript: () => AstNodeScript;
+
   checkAsync: (
     list: AstNodeScript,
     separator: Separator,

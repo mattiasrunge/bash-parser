@@ -29,4 +29,21 @@ Deno.test('unquote-word', async (t) => {
     utils.checkResults(parse('a\\ b"c d"\\ e\'f g\' h'), { values: ['a bc d ef g', 'h'] });
     utils.checkResults(parse("x \"bl'a\"'h'"), { values: ['x', "bl'ah"] });
   });
+
+  await t.step('empty quoted strings', () => {
+    utils.checkResults(parse('""'), { values: [''] });
+    utils.checkResults(parse("''"), { values: [''] });
+    utils.checkResults(parse('echo ""'), { values: ['echo', ''] });
+    utils.checkResults(parse('echo "" foo'), { values: ['echo', '', 'foo'] });
+    utils.checkResults(parse('a""b'), { values: ['ab'] });
+  });
+
+  await t.step('escaped special chars in double quotes', () => {
+    // Inside double quotes, backslash removes: $ ` " \ newline
+    utils.checkResults(parse('"\\$HOME"'), { values: ['$HOME'] });
+    utils.checkResults(parse('"\\`cmd\\`"'), { values: ['`cmd`'] });
+    utils.checkResults(parse('"a\\$b"'), { values: ['a$b'] });
+    // Backslash before other chars is preserved
+    utils.checkResults(parse('"\\n"'), { values: ['\\n'] });
+  });
 });

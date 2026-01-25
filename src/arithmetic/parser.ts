@@ -8,6 +8,7 @@ import type {
   AstArithmeticAssignmentOperator,
   AstArithmeticBinaryExpression,
   AstArithmeticBinaryOperator,
+  AstArithmeticCommandSubstitution,
   AstArithmeticConditionalExpression,
   AstArithmeticExpression,
   AstArithmeticIdentifier,
@@ -222,6 +223,11 @@ export class Parser {
       return this.parseIdentifier();
     }
 
+    // Command substitution: $(...)
+    if (token.type === 'COMMAND_SUBSTITUTION') {
+      return this.parseCommandSubstitution();
+    }
+
     throw new SyntaxError(`Unexpected token: ${token.value || token.type}`);
   }
 
@@ -355,6 +361,16 @@ export class Parser {
     return {
       type: 'Identifier',
       name,
+      loc: this.createLoc(token.start, token.end),
+    };
+  }
+
+  private parseCommandSubstitution(): AstArithmeticCommandSubstitution {
+    const token = this.advance();
+
+    return {
+      type: 'CommandSubstitution',
+      command: token.value,
       loc: this.createLoc(token.start, token.end),
     };
   }

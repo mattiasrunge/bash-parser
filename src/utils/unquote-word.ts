@@ -51,7 +51,7 @@ const parseChunk = (chunks: string[], idx: number): SingleParseResult => {
         i += 1;
         c = chunk.charAt(i);
 
-        if (c === DOUBLE_QUOTE || c === BACKSLASH) {
+        if (c === DOUBLE_QUOTE || c === BACKSLASH || c === '$' || c === '`') {
           result.value += c;
         } else {
           result.value += BACKSLASH + c;
@@ -86,7 +86,7 @@ const unquoteWord = (s: string): ParseResult => {
   for (let i = 0; i < chunks.length; i++) {
     const { value, comment } = parseChunk(chunks, i);
 
-    if (value) {
+    if (value !== undefined) {
       result.values.push(value);
     }
 

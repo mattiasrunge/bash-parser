@@ -426,6 +426,17 @@ export type AstArithmeticSequenceExpression = AstNode & {
 };
 
 /**
+ * Command substitution within arithmetic: $(echo 5)
+ * This represents a command substitution that needs to be evaluated
+ * and its output used as a numeric value in the arithmetic expression.
+ */
+export type AstArithmeticCommandSubstitution = AstNode & {
+  type: 'CommandSubstitution';
+  command: string;
+  commandAST?: AstNodeScript;
+};
+
+/**
  * Union type for all arithmetic expression nodes
  */
 export type AstArithmeticExpression =
@@ -437,7 +448,8 @@ export type AstArithmeticExpression =
   | AstArithmeticUpdateExpression
   | AstArithmeticConditionalExpression
   | AstArithmeticAssignmentExpression
-  | AstArithmeticSequenceExpression;
+  | AstArithmeticSequenceExpression
+  | AstArithmeticCommandSubstitution;
 
 /**
  * Helper types

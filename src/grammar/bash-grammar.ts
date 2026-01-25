@@ -18,6 +18,14 @@ export default {
         'separator list separator EOF',
         ' return yy.checkAsync($list, $separator)',
       ],
+      [
+        'EOF',
+        ' return yy.emptyScript() ',
+      ],
+      [
+        'separator EOF',
+        ' return yy.emptyScript() ',
+      ],
     ],
     list: [
       [

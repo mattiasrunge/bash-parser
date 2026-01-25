@@ -33,9 +33,11 @@ Deno.test('arithmetic substitution', async (t) => {
   await t.step('arithmetic substitution skip escaped dollar', async () => {
     const result = await bashParser('echo "\\$(\\(42 * 42))"');
     // utils.logResults(result)
+    // In bash, \$ inside double quotes becomes $ (backslash removed)
+    // \( stays as \( since ( is not a special char inside double quotes
     utils.checkResults((result as any).commands[0].suffix, [{
       type: 'Word',
-      text: '\\$(\\(42 * 42))',
+      text: '$(\\(42 * 42))',
     }]);
   });
 
@@ -292,5 +294,70 @@ Deno.test('arithmetic substitution', async (t) => {
         },
       },
     });
+  });
+
+  await t.step('command substitution inside arithmetic', async () => {
+    const result = await bashParser('echo $(($(echo 5) + 3))');
+    // utils.logResults(result)
+
+    const expansion = (result as any).commands[0].suffix[0].expansion[0];
+    utils.checkResults(expansion.type, 'ArithmeticExpansion');
+    utils.checkResults(expansion.expression, '$(echo 5) + 3');
+
+    // Check that the arithmetic AST contains a CommandSubstitution node
+    const arithmeticAST = expansion.arithmeticAST;
+    utils.checkResults(arithmeticAST.type, 'BinaryExpression');
+    utils.checkResults(arithmeticAST.operator, '+');
+    utils.checkResults(arithmeticAST.left.type, 'CommandSubstitution');
+    utils.checkResults(arithmeticAST.left.command, 'echo 5');
+
+    // Verify the command is recursively parsed
+    utils.checkResults(arithmeticAST.left.commandAST.type, 'Script');
+    utils.checkResults(arithmeticAST.left.commandAST.commands[0].name.text, 'echo');
+  });
+
+  await t.step('multiple command substitutions inside arithmetic', async () => {
+    const result = await bashParser('echo $(($(echo 5) + $(echo 3)))');
+
+    const expansion = (result as any).commands[0].suffix[0].expansion[0];
+    utils.checkResults(expansion.expression, '$(echo 5) + $(echo 3)');
+
+    const arithmeticAST = expansion.arithmeticAST;
+    utils.checkResults(arithmeticAST.left.type, 'CommandSubstitution');
+    utils.checkResults(arithmeticAST.left.command, 'echo 5');
+    utils.checkResults(arithmeticAST.right.type, 'CommandSubstitution');
+    utils.checkResults(arithmeticAST.right.command, 'echo 3');
+  });
+
+  await t.step('nested command substitution inside arithmetic', async () => {
+    const result = await bashParser('echo $(($(echo $(echo 5)) + 1))');
+
+    const expansion = (result as any).commands[0].suffix[0].expansion[0];
+    utils.checkResults(expansion.expression, '$(echo $(echo 5)) + 1');
+
+    const arithmeticAST = expansion.arithmeticAST;
+    utils.checkResults(arithmeticAST.left.type, 'CommandSubstitution');
+    utils.checkResults(arithmeticAST.left.command, 'echo $(echo 5)');
+
+    // The inner command should also be recursively parsed
+    const innerCmd = arithmeticAST.left.commandAST.commands[0];
+    utils.checkResults(innerCmd.suffix[0].expansion[0].type, 'CommandExpansion');
+    utils.checkResults(innerCmd.suffix[0].expansion[0].command, 'echo 5');
+  });
+
+  await t.step('command substitution with complex expression', async () => {
+    const result = await bashParser('x=$(($(cat count.txt) * 2 + $(wc -l < file.txt)))');
+
+    const expansion = (result as any).commands[0].prefix[0].expansion[0];
+    utils.checkResults(expansion.type, 'ArithmeticExpansion');
+
+    const arithmeticAST = expansion.arithmeticAST;
+    // (($(cat count.txt) * 2) + $(wc -l < file.txt))
+    utils.checkResults(arithmeticAST.type, 'BinaryExpression');
+    utils.checkResults(arithmeticAST.operator, '+');
+    utils.checkResults(arithmeticAST.left.type, 'BinaryExpression');
+    utils.checkResults(arithmeticAST.left.operator, '*');
+    utils.checkResults(arithmeticAST.left.left.type, 'CommandSubstitution');
+    utils.checkResults(arithmeticAST.right.type, 'CommandSubstitution');
   });
 });

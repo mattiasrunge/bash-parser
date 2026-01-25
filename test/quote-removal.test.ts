@@ -81,4 +81,110 @@ Deno.test('quote-removal', async (t) => {
       type: 'Word',
     });
   });
+
+  await t.step('handles empty quoted string', async () => {
+    const result = await bashParser('echo ""');
+    utils.checkResults((result as any).commands[0].suffix[0], {
+      type: 'Word',
+      text: '',
+    });
+  });
+
+  await t.step('handles empty single quoted string', async () => {
+    const result = await bashParser("echo ''");
+    utils.checkResults((result as any).commands[0].suffix[0], {
+      type: 'Word',
+      text: '',
+    });
+  });
+
+  await t.step('preserves quotes when expansion is unresolved', async () => {
+    const result = await bashParser('"$var"');
+    // When expansion is unresolved, quotes are preserved
+    utils.checkResults((result as any).commands[0].name, {
+      type: 'Word',
+      text: '"$var"',
+      expansion: [{
+        parameter: 'var',
+        type: 'ParameterExpansion',
+      }],
+    });
+  });
+
+  await t.step('removes quotes when expansion is resolved', async () => {
+    const result = await bashParser('"$var"', {
+      async resolveParameter() {
+        return 'resolved';
+      },
+    });
+    utils.checkResults((result as any).commands[0].name, {
+      type: 'Word',
+      text: 'resolved',
+    });
+  });
+
+  await t.step('handles nested quotes properly', async () => {
+    const result = await bashParser('"outer\'inner\'outer"');
+    utils.checkResults((result as any).commands[0].name, {
+      type: 'Word',
+      text: "outer'inner'outer",
+    });
+  });
+
+  await t.step('handles single quote inside double quotes', async () => {
+    const result = await bashParser('"it\'s"');
+    utils.checkResults((result as any).commands[0].name, {
+      type: 'Word',
+      text: "it's",
+    });
+  });
+
+  await t.step('handles escaped dollar in double quotes', async () => {
+    const result = await bashParser('"foo\\$bar"');
+    utils.checkResults((result as any).commands[0].name, {
+      type: 'Word',
+      text: 'foo$bar',
+    });
+  });
+
+  await t.step('handles backslash-n escape sequence', async () => {
+    const result = await bashParser('"line1\\nline2"');
+    utils.checkResults((result as any).commands[0].name, {
+      type: 'Word',
+      text: 'line1\nline2',
+    });
+  });
+
+  await t.step('handles backslash-t escape sequence', async () => {
+    const result = await bashParser('"col1\\tcol2"');
+    utils.checkResults((result as any).commands[0].name, {
+      type: 'Word',
+      text: 'col1\tcol2',
+    });
+  });
+
+  await t.step('handles consecutive quoted sections', async () => {
+    const result = await bashParser("'first''second'");
+    utils.checkResults((result as any).commands[0].name, {
+      type: 'Word',
+      text: 'firstsecond',
+    });
+  });
+
+  await t.step('handles mixed quote styles', async () => {
+    const result = await bashParser('\'single\'"double"');
+    utils.checkResults((result as any).commands[0].name, {
+      type: 'Word',
+      text: 'singledouble',
+    });
+  });
+
+  await t.step('does not process non-WORD tokens', async () => {
+    const result = await bashParser('echo hello');
+    // The command name is a word, check it was processed
+    utils.checkResults((result as any).commands[0].name, {
+      type: 'Word',
+      text: 'echo',
+    });
+  });
 });

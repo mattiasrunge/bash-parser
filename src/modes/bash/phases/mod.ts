@@ -15,6 +15,7 @@ import ioNumber from './io-number.ts';
 import linebreakIn from './linebreak-in.ts';
 import newLineList from './new-line-list.ts';
 import operatorTokens from './operator-tokens.ts';
+import parenContext from './paren-context.ts';
 import parameterExpansionResolve from './parameter-expansion-resolve.ts';
 import parameterExpansion from './parameter-expansion.ts';
 import pathExpansion from './path-expansion.ts';
@@ -42,6 +43,7 @@ const rules: LexerPhases = {
   linebreakIn,
   newLineList,
   operatorTokens,
+  parenContext,
   parameterExpansion,
   parameterExpansionResolve,
   pathExpansion,

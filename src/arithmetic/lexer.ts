@@ -108,6 +108,10 @@ export class Lexer {
 
     // Handle optional $ prefix for variables
     if (this.input[this.pos] === '$') {
+      // Check for command substitution: $(...)
+      if (this.input[this.pos + 1] === '(') {
+        return this.readCommandSubstitution();
+      }
       value = '$';
       this.pos++;
     }
@@ -118,6 +122,38 @@ export class Lexer {
     }
 
     return { type: 'IDENTIFIER', value, start, end: this.pos };
+  }
+
+  private readCommandSubstitution(): Token {
+    const start = this.pos;
+    this.pos += 2; // skip $(
+
+    let depth = 1;
+    let command = '';
+
+    while (this.pos < this.input.length && depth > 0) {
+      const char = this.input[this.pos];
+
+      if (char === '(') {
+        depth++;
+        command += char;
+      } else if (char === ')') {
+        depth--;
+        if (depth > 0) {
+          command += char;
+        }
+        // else: this closes the command substitution, don't add to command
+      } else {
+        command += char;
+      }
+      this.pos++;
+    }
+
+    if (depth !== 0) {
+      throw new SyntaxError('Unclosed command substitution in arithmetic expression');
+    }
+
+    return { type: 'COMMAND_SUBSTITUTION', value: command, start, end: this.pos };
   }
 
   private readOperator(): Token {

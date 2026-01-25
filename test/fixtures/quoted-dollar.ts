@@ -1,3 +1,4 @@
+// In bash, \$ inside double quotes becomes $ (backslash removed)
 export default {
   sourceCode: 'echo "\\$ciao"',
   result: {
@@ -11,7 +12,7 @@ export default {
         },
         suffix: [
           {
-            text: '\\$ciao',
+            text: '$ciao',
             type: 'Word',
           },
         ],

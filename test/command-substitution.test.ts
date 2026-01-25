@@ -24,9 +24,11 @@ Deno.test('command substitution', async (t) => {
   await t.step('command substitution skip escaped dollar', async () => {
     const result = await bashParser('echo "\\$\\(echo ciao)"');
     // utils.logResults(result)
+    // In bash, \$ inside double quotes becomes $ (backslash removed)
+    // \( stays as \( since ( is not a special char inside double quotes
     utils.checkResults((result as any).commands[0].suffix, [{
       type: 'Word',
-      text: '\\$\\(echo ciao)',
+      text: '$\\(echo ciao)',
     }]);
   });
 
@@ -302,5 +304,46 @@ Deno.test('command substitution', async (t) => {
         type: 'Word',
       }],
     });
+  });
+
+  await t.step('nested command substitution', async () => {
+    const result = await bashParser('echo $(echo $(echo deep))');
+    // utils.logResults(result)
+    const expansion = (result as any).commands[0].suffix[0].expansion[0];
+    utils.checkResults(expansion.command, 'echo $(echo deep)');
+    utils.checkResults(expansion.type, 'CommandExpansion');
+
+    // Verify the inner command is also recursively parsed
+    const innerExpansion = expansion.commandAST.commands[0].suffix[0].expansion[0];
+    utils.checkResults(innerExpansion.command, 'echo deep');
+    utils.checkResults(innerExpansion.type, 'CommandExpansion');
+  });
+
+  await t.step('nested command substitution with multiple levels', async () => {
+    const result = await bashParser('x=$(cat $(echo $(pwd)/file.txt))');
+    // utils.logResults(result)
+    const expansion = (result as any).commands[0].prefix[0].expansion[0];
+    utils.checkResults(expansion.command, 'cat $(echo $(pwd)/file.txt)');
+    utils.checkResults(expansion.type, 'CommandExpansion');
+  });
+
+  await t.step('nested command substitution with parentheses in command', async () => {
+    const result = await bashParser('echo $(test $(echo a) = $(echo a) && echo yes)');
+    const expansion = (result as any).commands[0].suffix[0].expansion[0];
+    utils.checkResults(expansion.command, 'test $(echo a) = $(echo a) && echo yes');
+    utils.checkResults(expansion.type, 'CommandExpansion');
+  });
+
+  await t.step('nested command substitution resolved', async () => {
+    const result = await bashParser('echo $(echo $(echo deep))', {
+      async execCommand(cmd: string) {
+        if (cmd === 'echo deep') return 'deep';
+        if (cmd === 'echo deep') return 'deep';
+        return cmd.replace(/^echo /, '');
+      },
+    });
+    // The outermost expansion should be resolved
+    const expansion = (result as any).commands[0].suffix[0].expansion[0];
+    utils.checkResults(expansion.resolved, true);
   });
 });

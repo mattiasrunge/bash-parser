@@ -93,6 +93,11 @@ export const astBuilder = (insertLOC?: boolean) => {
       return node;
     },
 
+    emptyScript: () => {
+      const node: AstNodeScript = { type: 'Script', commands: [] };
+      return node;
+    },
+
     checkAsync: (list, separator) => {
       if (isAsyncSeparator(separator)) {
         last(list.commands as AstNodeCommand[])!.async = true;
