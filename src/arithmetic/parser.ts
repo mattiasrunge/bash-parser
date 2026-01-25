@@ -369,7 +369,7 @@ export class Parser {
     };
   }
 
-  private parseTernary(test: Expression, questionToken: Token): ConditionalExpression {
+  private parseTernary(test: Expression, _questionToken: Token): ConditionalExpression {
     const consequent = this.parseExpression(Precedence.NONE);
     this.expect('COLON');
     const alternate = this.parseExpression(Precedence.TERNARY);
@@ -385,7 +385,7 @@ export class Parser {
     };
   }
 
-  private parseSequence(first: Expression, commaToken: Token): SequenceExpression {
+  private parseSequence(first: Expression, _commaToken: Token): SequenceExpression {
     const expressions: Expression[] = [first];
 
     // Parse the rest of the sequence
