@@ -1,4 +1,4 @@
-import type { AstNodeScript } from '~/ast/types.ts';
+import type { AstArithmeticExpression, AstNodeScript } from '~/ast/types.ts';
 
 export type TokenContext = {
   maybeStartOfSimpleCommand?: boolean;
@@ -105,7 +105,7 @@ export type Expansion = {
   commandAST?: AstNodeScript;
 
   expression?: string;
-  arithmeticAST?: any;
+  arithmeticAST?: AstArithmeticExpression;
 
   value?: string;
   pattern?: string;

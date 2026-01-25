@@ -4,20 +4,20 @@
 
 import type { Token, TokenType } from './tokens.ts';
 import type {
-  AssignmentExpression,
-  AssignmentOperator,
-  BinaryExpression,
-  BinaryOperator,
-  ConditionalExpression,
-  Expression,
-  Identifier,
-  LogicalExpression,
-  NumericLiteral,
-  SequenceExpression,
-  SourceLocation,
-  UnaryExpression,
-  UpdateExpression,
-} from './types.ts';
+  AstArithmeticAssignmentExpression,
+  AstArithmeticAssignmentOperator,
+  AstArithmeticBinaryExpression,
+  AstArithmeticBinaryOperator,
+  AstArithmeticConditionalExpression,
+  AstArithmeticExpression,
+  AstArithmeticIdentifier,
+  AstArithmeticLogicalExpression,
+  AstArithmeticNumericLiteral,
+  AstArithmeticSequenceExpression,
+  AstArithmeticUnaryExpression,
+  AstArithmeticUpdateExpression,
+  AstSourceLocation,
+} from '~/ast/types.ts';
 
 // Precedence levels (from lowest to highest, matching C/bash)
 const enum Precedence {
@@ -146,7 +146,7 @@ export class Parser {
     this.tokens = tokens;
   }
 
-  parse(): Expression {
+  parse(): AstArithmeticExpression {
     const expr = this.parseExpression(Precedence.NONE);
 
     if (this.current().type !== 'EOF') {
@@ -174,7 +174,7 @@ export class Parser {
     return this.advance();
   }
 
-  private parseExpression(minPrecedence: Precedence): Expression {
+  private parseExpression(minPrecedence: Precedence): AstArithmeticExpression {
     let left = this.parsePrefixExpression();
 
     while (true) {
@@ -189,7 +189,7 @@ export class Parser {
     return left;
   }
 
-  private parsePrefixExpression(): Expression {
+  private parsePrefixExpression(): AstArithmeticExpression {
     const token = this.current();
 
     // Unary operators: - + ! ~
@@ -225,7 +225,7 @@ export class Parser {
     throw new SyntaxError(`Unexpected token: ${token.value || token.type}`);
   }
 
-  private parseInfixExpression(left: Expression, precedence: Precedence): Expression {
+  private parseInfixExpression(left: AstArithmeticExpression, precedence: Precedence): AstArithmeticExpression {
     const token = this.advance();
 
     // Postfix increment/decrement: x++, x--
@@ -260,7 +260,7 @@ export class Parser {
     return this.createBinaryExpression(left, token, right);
   }
 
-  private parseUnaryExpression(): UnaryExpression {
+  private parseUnaryExpression(): AstArithmeticUnaryExpression {
     const token = this.advance();
     const argument = this.parseExpression(Precedence.UNARY);
 
@@ -276,13 +276,11 @@ export class Parser {
       operator: operatorMap[token.type],
       prefix: true,
       argument,
-      start: token.start,
-      end: argument.end,
-      loc: this.createLoc(token.start, argument.end),
+      loc: this.createLoc(token.start, argument.loc?.end?.char ?? token.end),
     };
   }
 
-  private parsePrefixUpdateExpression(): UpdateExpression {
+  private parsePrefixUpdateExpression(): AstArithmeticUpdateExpression {
     const token = this.advance();
 
     if (this.current().type !== 'IDENTIFIER') {
@@ -296,13 +294,11 @@ export class Parser {
       operator: token.value as '++' | '--',
       prefix: true,
       argument,
-      start: token.start,
-      end: argument.end,
-      loc: this.createLoc(token.start, argument.end),
+      loc: this.createLoc(token.start, argument.loc?.end?.char ?? token.end),
     };
   }
 
-  private createUpdateExpression(left: Expression, token: Token, prefix: boolean): UpdateExpression {
+  private createUpdateExpression(left: AstArithmeticExpression, token: Token, prefix: boolean): AstArithmeticUpdateExpression {
     if (left.type !== 'Identifier') {
       throw new SyntaxError('Invalid left-hand side in update expression');
     }
@@ -312,20 +308,18 @@ export class Parser {
       operator: token.value as '++' | '--',
       prefix,
       argument: left,
-      start: left.start,
-      end: token.end,
-      loc: this.createLoc(left.start, token.end),
+      loc: this.createLoc(left.loc?.start?.char ?? 0, token.end),
     };
   }
 
-  private parseParenthesized(): Expression {
+  private parseParenthesized(): AstArithmeticExpression {
     this.advance(); // consume '('
     const expr = this.parseExpression(Precedence.NONE);
     this.expect('RPAREN');
     return expr;
   }
 
-  private parseNumber(): NumericLiteral {
+  private parseNumber(): AstArithmeticNumericLiteral {
     const token = this.advance();
     const raw = token.value;
     let value: number;
@@ -349,13 +343,11 @@ export class Parser {
         rawValue: value,
         raw,
       },
-      start: token.start,
-      end: token.end,
       loc: this.createLoc(token.start, token.end),
     };
   }
 
-  private parseIdentifier(): Identifier {
+  private parseIdentifier(): AstArithmeticIdentifier {
     const token = this.advance();
     // Remove $ prefix if present for the name
     const name = token.value.startsWith('$') ? token.value.slice(1) : token.value;
@@ -363,13 +355,11 @@ export class Parser {
     return {
       type: 'Identifier',
       name,
-      start: token.start,
-      end: token.end,
       loc: this.createLoc(token.start, token.end),
     };
   }
 
-  private parseTernary(test: Expression, _questionToken: Token): ConditionalExpression {
+  private parseTernary(test: AstArithmeticExpression, _questionToken: Token): AstArithmeticConditionalExpression {
     const consequent = this.parseExpression(Precedence.NONE);
     this.expect('COLON');
     const alternate = this.parseExpression(Precedence.TERNARY);
@@ -379,14 +369,12 @@ export class Parser {
       test,
       consequent,
       alternate,
-      start: test.start,
-      end: alternate.end,
-      loc: this.createLoc(test.start, alternate.end),
+      loc: this.createLoc(test.loc?.start?.char ?? 0, alternate.loc?.end?.char ?? 0),
     };
   }
 
-  private parseSequence(first: Expression, _commaToken: Token): SequenceExpression {
-    const expressions: Expression[] = [first];
+  private parseSequence(first: AstArithmeticExpression, _commaToken: Token): AstArithmeticSequenceExpression {
+    const expressions: AstArithmeticExpression[] = [first];
 
     // Parse the rest of the sequence
     expressions.push(this.parseExpression(Precedence.COMMA));
@@ -397,21 +385,20 @@ export class Parser {
       expressions.push(this.parseExpression(Precedence.COMMA));
     }
 
+    const lastExpr = expressions[expressions.length - 1];
     return {
       type: 'SequenceExpression',
       expressions,
-      start: first.start,
-      end: expressions[expressions.length - 1].end,
-      loc: this.createLoc(first.start, expressions[expressions.length - 1].end),
+      loc: this.createLoc(first.loc?.start?.char ?? 0, lastExpr.loc?.end?.char ?? 0),
     };
   }
 
-  private parseAssignment(left: Expression, token: Token): AssignmentExpression {
+  private parseAssignment(left: AstArithmeticExpression, token: Token): AstArithmeticAssignmentExpression {
     if (left.type !== 'Identifier') {
       throw new SyntaxError('Invalid left-hand side in assignment');
     }
 
-    const operatorMap: Record<string, AssignmentOperator> = {
+    const operatorMap: Record<string, AstArithmeticAssignmentOperator> = {
       EQUALS: '=',
       PLUS_EQUALS: '+=',
       MINUS_EQUALS: '-=',
@@ -432,14 +419,12 @@ export class Parser {
       operator: operatorMap[token.type],
       left,
       right,
-      start: left.start,
-      end: right.end,
-      loc: this.createLoc(left.start, right.end),
+      loc: this.createLoc(left.loc?.start?.char ?? 0, right.loc?.end?.char ?? 0),
     };
   }
 
-  private createBinaryExpression(left: Expression, token: Token, right: Expression): BinaryExpression {
-    const operatorMap: Record<string, BinaryOperator> = {
+  private createBinaryExpression(left: AstArithmeticExpression, token: Token, right: AstArithmeticExpression): AstArithmeticBinaryExpression {
+    const operatorMap: Record<string, AstArithmeticBinaryOperator> = {
       PLUS: '+',
       MINUS: '-',
       STAR: '*',
@@ -464,37 +449,33 @@ export class Parser {
       operator: operatorMap[token.type],
       left,
       right,
-      start: left.start,
-      end: right.end,
-      loc: this.createLoc(left.start, right.end),
+      loc: this.createLoc(left.loc?.start?.char ?? 0, right.loc?.end?.char ?? 0),
     };
   }
 
-  private createLogicalExpression(left: Expression, token: Token, right: Expression): LogicalExpression {
+  private createLogicalExpression(left: AstArithmeticExpression, token: Token, right: AstArithmeticExpression): AstArithmeticLogicalExpression {
     return {
       type: 'LogicalExpression',
       operator: token.type === 'AMPERSAND_AMPERSAND' ? '&&' : '||',
       left,
       right,
-      start: left.start,
-      end: right.end,
-      loc: this.createLoc(left.start, right.end),
+      loc: this.createLoc(left.loc?.start?.char ?? 0, right.loc?.end?.char ?? 0),
     };
   }
 
-  private createLoc(start: number, end: number): SourceLocation {
-    // Calculate line/column from offsets
+  private createLoc(start: number, end: number): AstSourceLocation {
+    // Calculate row/col from offsets
     // For simplicity, assuming single-line expressions (which is typical for arithmetic)
     return {
       start: {
-        line: 1,
-        column: start,
-        index: start,
+        row: 1,
+        col: start,
+        char: start,
       },
       end: {
-        line: 1,
-        column: end,
-        index: end,
+        row: 1,
+        col: end,
+        char: end,
       },
     };
   }

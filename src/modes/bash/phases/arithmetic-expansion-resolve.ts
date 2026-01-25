@@ -11,7 +11,7 @@ const arithmeticExpansionResolve: LexerPhase = (ctx) =>
 
       for (const xp of token.expansion) {
         if (xp.type === 'ArithmeticExpansion') {
-          const result = await ctx.resolvers.runArithmeticExpression(xp.expression!, xp.arithmeticAST);
+          const result = await ctx.resolvers.runArithmeticExpression(xp.expression!, xp.arithmeticAST!);
           const replacement = await fieldSplittingMark(result, token.value!, ctx.resolvers.resolveEnv);
 
           rValue.replace(

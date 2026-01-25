@@ -1,6 +1,6 @@
 {
   "name": "@ein/bash-parser",
-  "version": "0.12.1",
+  "version": "0.13.0",
   "exports": "./mod.ts",
   "description": "Bash parser - parse bash scripts into an AST",
   "repository": "https://github.com/mattiasrunge/bash-parser",

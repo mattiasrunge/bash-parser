@@ -2,13 +2,12 @@
  * Arithmetic expression parser for bash $((...)) syntax
  */
 
-export * from './types.ts';
 export { Lexer } from './lexer.ts';
 export { Parser } from './parser.ts';
 
+import type { AstArithmeticExpression } from '~/ast/types.ts';
 import { Lexer } from './lexer.ts';
 import { Parser } from './parser.ts';
-import type { Expression } from './types.ts';
 
 /**
  * Parse an arithmetic expression string into an AST.
@@ -17,7 +16,7 @@ import type { Expression } from './types.ts';
  * @returns The parsed AST
  * @throws SyntaxError if the expression is invalid
  */
-export function parseArithmetic(expression: string): Expression {
+export function parseArithmetic(expression: string): AstArithmeticExpression {
   const lexer = new Lexer(expression);
   const tokens = lexer.tokenize();
   const parser = new Parser(tokens);

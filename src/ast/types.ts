@@ -223,8 +223,6 @@ export type AstNodeAssignmentWord = AstNode & {
 /**
  * A `ArithmeticExpansion` represent an arithmetic expansion operation to perform in the Word.
  *
- * The parsing of the arithmetic expression is done using [Babel parser](https://babeljs.io/docs/babel-parser). See there for the `arithmeticAST` node specification.
- *
  * The `loc.start` property contains the index of the character in the Word text where the substitution starts. The `loc.end` property contains the index where it the ends.
  */
 export type AstArithmeticExpansion = {
@@ -233,7 +231,7 @@ export type AstArithmeticExpansion = {
   loc: ExpansionLocation;
 
   expression: string;
-  arithmeticAST: AstNode; // Maybe this should be specialized
+  arithmeticAST: AstArithmeticExpression;
 };
 
 /** A `CommandExpansion` represent a command substitution operation to perform on the Word.
@@ -283,6 +281,149 @@ export type AstPathExpansion = {
 
   pattern: string;
 };
+
+/**
+ * Arithmetic expression types
+ * These represent parsed arithmetic expressions within $((...)) syntax.
+ */
+
+/**
+ * Numeric literal: 42, 0xFF, 0777, 0b1010
+ */
+export type AstArithmeticNumericLiteral = AstNode & {
+  type: 'NumericLiteral';
+  value: number;
+  extra: {
+    rawValue: number;
+    raw: string;
+  };
+};
+
+/**
+ * Identifier (variable reference): var or $var
+ */
+export type AstArithmeticIdentifier = AstNode & {
+  type: 'Identifier';
+  name: string;
+};
+
+/**
+ * Binary expression: a + b, a * b, a << b
+ */
+export type AstArithmeticBinaryExpression = AstNode & {
+  type: 'BinaryExpression';
+  operator: AstArithmeticBinaryOperator;
+  left: AstArithmeticExpression;
+  right: AstArithmeticExpression;
+};
+
+export type AstArithmeticBinaryOperator =
+  | '+'
+  | '-'
+  | '*'
+  | '/'
+  | '%'
+  | '**'
+  | '&'
+  | '|'
+  | '^'
+  | '<<'
+  | '>>'
+  | '<'
+  | '>'
+  | '<='
+  | '>='
+  | '=='
+  | '!='
+  | '&&'
+  | '||';
+
+/**
+ * Logical expression: a && b, a || b
+ */
+export type AstArithmeticLogicalExpression = AstNode & {
+  type: 'LogicalExpression';
+  operator: '&&' | '||';
+  left: AstArithmeticExpression;
+  right: AstArithmeticExpression;
+};
+
+/**
+ * Unary expression: -x, !x, ~x
+ */
+export type AstArithmeticUnaryExpression = AstNode & {
+  type: 'UnaryExpression';
+  operator: AstArithmeticUnaryOperator;
+  prefix: true;
+  argument: AstArithmeticExpression;
+};
+
+export type AstArithmeticUnaryOperator = '-' | '+' | '!' | '~';
+
+/**
+ * Update expression: ++x, x++, --x, x--
+ */
+export type AstArithmeticUpdateExpression = AstNode & {
+  type: 'UpdateExpression';
+  operator: '++' | '--';
+  prefix: boolean;
+  argument: AstArithmeticIdentifier;
+};
+
+/**
+ * Conditional (ternary) expression: a ? b : c
+ */
+export type AstArithmeticConditionalExpression = AstNode & {
+  type: 'ConditionalExpression';
+  test: AstArithmeticExpression;
+  consequent: AstArithmeticExpression;
+  alternate: AstArithmeticExpression;
+};
+
+/**
+ * Assignment expression: a = b, a += b
+ */
+export type AstArithmeticAssignmentExpression = AstNode & {
+  type: 'AssignmentExpression';
+  operator: AstArithmeticAssignmentOperator;
+  left: AstArithmeticIdentifier;
+  right: AstArithmeticExpression;
+};
+
+export type AstArithmeticAssignmentOperator =
+  | '='
+  | '+='
+  | '-='
+  | '*='
+  | '/='
+  | '%='
+  | '&='
+  | '|='
+  | '^='
+  | '<<='
+  | '>>=';
+
+/**
+ * Sequence expression (comma operator): a, b, c
+ */
+export type AstArithmeticSequenceExpression = AstNode & {
+  type: 'SequenceExpression';
+  expressions: AstArithmeticExpression[];
+};
+
+/**
+ * Union type for all arithmetic expression nodes
+ */
+export type AstArithmeticExpression =
+  | AstArithmeticNumericLiteral
+  | AstArithmeticIdentifier
+  | AstArithmeticBinaryExpression
+  | AstArithmeticLogicalExpression
+  | AstArithmeticUnaryExpression
+  | AstArithmeticUpdateExpression
+  | AstArithmeticConditionalExpression
+  | AstArithmeticAssignmentExpression
+  | AstArithmeticSequenceExpression;
 
 /**
  * Helper types

@@ -32,34 +32,30 @@ export default {
                 expression: '42 + 43',
                 arithmeticAST: {
                   type: 'BinaryExpression',
-                  start: 0,
-                  end: 7,
                   loc: {
                     start: {
-                      line: 1,
-                      column: 0,
-                      index: 0,
+                      row: 1,
+                      col: 0,
+                      char: 0,
                     },
                     end: {
-                      line: 1,
-                      column: 7,
-                      index: 7,
+                      row: 1,
+                      col: 7,
+                      char: 7,
                     },
                   },
                   left: {
                     type: 'NumericLiteral',
-                    start: 0,
-                    end: 2,
                     loc: {
                       start: {
-                        line: 1,
-                        column: 0,
-                        index: 0,
+                        row: 1,
+                        col: 0,
+                        char: 0,
                       },
                       end: {
-                        line: 1,
-                        column: 2,
-                        index: 2,
+                        row: 1,
+                        col: 2,
+                        char: 2,
                       },
                     },
                     extra: {
@@ -71,18 +67,16 @@ export default {
                   operator: '+',
                   right: {
                     type: 'NumericLiteral',
-                    start: 5,
-                    end: 7,
                     loc: {
                       start: {
-                        line: 1,
-                        column: 5,
-                        index: 5,
+                        row: 1,
+                        col: 5,
+                        char: 5,
                       },
                       end: {
-                        line: 1,
-                        column: 7,
-                        index: 7,
+                        row: 1,
+                        col: 7,
+                        char: 7,
                       },
                     },
                     extra: {

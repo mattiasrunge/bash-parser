@@ -145,7 +145,7 @@ export type Options = {
   execCommand?: (command: string, scriptAST: AstNodeScript) => Promise<string>;
 
   /**
-   * A callback to execute an `ArithmeticExpansion`. If specified, the parser calls it whenever it needs to resolve an arithmetic substitution. It receives as argument the AST of an `ArithmeticExpansion` node, and shall return the result of the calculation. If the option is not specified, the parser won't try to resolve any arithmetic expansion substitution. Please note that the arithmetic expression AST is built using [babel/parser](https://babeljs.io/docs/babel-parser), the AST specification can be found there.
+   * A callback to execute an `ArithmeticExpansion`. If specified, the parser calls it whenever it needs to resolve an arithmetic substitution. It receives as argument the AST of an `ArithmeticExpansion` node, and shall return the result of the calculation. If the option is not specified, the parser won't try to resolve any arithmetic expansion substitution.
    *
    * @param expression - The arithmetic expression to evaluate.
    * @param arithmeticAST - The AST of the arithmetic expression to evaluate.
