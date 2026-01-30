@@ -3,6 +3,7 @@
  */
 
 import type { Token, TokenType } from './tokens.ts';
+import { BashSyntaxError } from '~/errors.ts';
 import type {
   AstArithmeticAssignmentExpression,
   AstArithmeticAssignmentOperator,
@@ -142,16 +143,26 @@ function isAssignmentOperator(type: TokenType): boolean {
 export class Parser {
   private tokens: Token[];
   private pos: number = 0;
+  private expression: string;
+  private sourceOffset: number;
 
-  constructor(tokens: Token[]) {
+  constructor(tokens: Token[], expression: string, sourceOffset: number = 0) {
     this.tokens = tokens;
+    this.expression = expression;
+    this.sourceOffset = sourceOffset;
+  }
+
+  private createError(message: string, token?: Token): BashSyntaxError {
+    const localOffset = token?.start ?? this.current().start;
+    // Apply sourceOffset to get absolute position in the full source
+    return BashSyntaxError.fromPosition(message, this.expression, { char: this.sourceOffset + localOffset });
   }
 
   parse(): AstArithmeticExpression {
     const expr = this.parseExpression(Precedence.NONE);
 
     if (this.current().type !== 'EOF') {
-      throw new SyntaxError(`Unexpected token: ${this.current().value}`);
+      throw this.createError(`Unexpected token: ${this.current().value}`);
     }
 
     return expr;
@@ -170,7 +181,7 @@ export class Parser {
   private expect(type: TokenType): Token {
     const token = this.current();
     if (token.type !== type) {
-      throw new SyntaxError(`Expected ${type}, got ${token.type}`);
+      throw this.createError(`Expected ${type}, got ${token.type}`, token);
     }
     return this.advance();
   }
@@ -228,7 +239,7 @@ export class Parser {
       return this.parseCommandSubstitution();
     }
 
-    throw new SyntaxError(`Unexpected token: ${token.value || token.type}`);
+    throw this.createError(`Unexpected token: ${token.value || token.type}`, token);
   }
 
   private parseInfixExpression(left: AstArithmeticExpression, precedence: Precedence): AstArithmeticExpression {
@@ -282,7 +293,10 @@ export class Parser {
       operator: operatorMap[token.type],
       prefix: true,
       argument,
-      loc: this.createLoc(token.start, argument.loc?.end?.char ?? token.end),
+      loc: {
+        start: { char: this.sourceOffset + token.start },
+        end: { char: argument.loc?.end?.char ?? (this.sourceOffset + token.end) },
+      },
     };
   }
 
@@ -290,7 +304,7 @@ export class Parser {
     const token = this.advance();
 
     if (this.current().type !== 'IDENTIFIER') {
-      throw new SyntaxError('Expected identifier after prefix operator');
+      throw this.createError('Expected identifier after prefix operator');
     }
 
     const argument = this.parseIdentifier();
@@ -300,13 +314,16 @@ export class Parser {
       operator: token.value as '++' | '--',
       prefix: true,
       argument,
-      loc: this.createLoc(token.start, argument.loc?.end?.char ?? token.end),
+      loc: {
+        start: { char: this.sourceOffset + token.start },
+        end: { char: argument.loc?.end?.char ?? (this.sourceOffset + token.end) },
+      },
     };
   }
 
   private createUpdateExpression(left: AstArithmeticExpression, token: Token, prefix: boolean): AstArithmeticUpdateExpression {
     if (left.type !== 'Identifier') {
-      throw new SyntaxError('Invalid left-hand side in update expression');
+      throw this.createError('Invalid left-hand side in update expression', token);
     }
 
     return {
@@ -314,7 +331,10 @@ export class Parser {
       operator: token.value as '++' | '--',
       prefix,
       argument: left,
-      loc: this.createLoc(left.loc?.start?.char ?? 0, token.end),
+      loc: {
+        start: { char: left.loc?.start?.char ?? 0 },
+        end: { char: this.sourceOffset + token.end },
+      },
     };
   }
 
@@ -385,7 +405,7 @@ export class Parser {
       test,
       consequent,
       alternate,
-      loc: this.createLoc(test.loc?.start?.char ?? 0, alternate.loc?.end?.char ?? 0),
+      loc: this.createLocFromChildren(test.loc, alternate.loc),
     };
   }
 
@@ -405,13 +425,13 @@ export class Parser {
     return {
       type: 'SequenceExpression',
       expressions,
-      loc: this.createLoc(first.loc?.start?.char ?? 0, lastExpr.loc?.end?.char ?? 0),
+      loc: this.createLocFromChildren(first.loc, lastExpr.loc),
     };
   }
 
   private parseAssignment(left: AstArithmeticExpression, token: Token): AstArithmeticAssignmentExpression {
     if (left.type !== 'Identifier') {
-      throw new SyntaxError('Invalid left-hand side in assignment');
+      throw this.createError('Invalid left-hand side in assignment', token);
     }
 
     const operatorMap: Record<string, AstArithmeticAssignmentOperator> = {
@@ -435,7 +455,7 @@ export class Parser {
       operator: operatorMap[token.type],
       left,
       right,
-      loc: this.createLoc(left.loc?.start?.char ?? 0, right.loc?.end?.char ?? 0),
+      loc: this.createLocFromChildren(left.loc, right.loc),
     };
   }
 
@@ -465,7 +485,7 @@ export class Parser {
       operator: operatorMap[token.type],
       left,
       right,
-      loc: this.createLoc(left.loc?.start?.char ?? 0, right.loc?.end?.char ?? 0),
+      loc: this.createLocFromChildren(left.loc, right.loc),
     };
   }
 
@@ -475,23 +495,34 @@ export class Parser {
       operator: token.type === 'AMPERSAND_AMPERSAND' ? '&&' : '||',
       left,
       right,
-      loc: this.createLoc(left.loc?.start?.char ?? 0, right.loc?.end?.char ?? 0),
+      loc: this.createLocFromChildren(left.loc, right.loc),
     };
   }
 
   private createLoc(start: number, end: number): AstSourceLocation {
-    // Calculate row/col from offsets
-    // For simplicity, assuming single-line expressions (which is typical for arithmetic)
+    // Apply source offset to get absolute positions in the source
+    // Row/col are omitted as they cannot be accurately computed without newline tracking
     return {
       start: {
-        row: 1,
-        col: start,
-        char: start,
+        char: this.sourceOffset + start,
       },
       end: {
-        row: 1,
-        col: end,
-        char: end,
+        char: this.sourceOffset + end,
+      },
+    };
+  }
+
+  // Create location from child node locations (no offset needed as children already have it)
+  private createLocFromChildren(
+    startLoc: AstSourceLocation | undefined,
+    endLoc: AstSourceLocation | undefined,
+  ): AstSourceLocation {
+    return {
+      start: {
+        char: startLoc?.start?.char ?? 0,
+      },
+      end: {
+        char: endLoc?.end?.char ?? 0,
       },
     };
   }

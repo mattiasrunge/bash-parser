@@ -5,7 +5,7 @@ import { Parser } from '~/arithmetic/parser.ts';
 function parse(input: string) {
   const lexer = new Lexer(input);
   const tokens = lexer.tokenize();
-  const parser = new Parser(tokens);
+  const parser = new Parser(tokens, input);
   return parser.parse();
 }
 

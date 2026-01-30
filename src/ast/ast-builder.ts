@@ -1,11 +1,19 @@
+import { parseArithmetic } from '~/arithmetic/mod.ts';
 import type { AstBuilder, Separator } from '~/ast/builder-if.ts';
 import type {
+  AstConditionalBinaryExpression,
+  AstConditionalExpression,
+  AstConditionalLogicalExpression,
+  AstConditionalNegation,
+  AstConditionalUnaryExpression,
+  AstConditionalWord,
   AstNode,
   AstNodeArithmeticCommand,
   AstNodeCase,
   AstNodeCaseItem,
   AstNodeCommand,
   AstNodeCompoundList,
+  AstNodeConditionalCommand,
   AstNodeFor,
   AstNodeFunction,
   AstNodeIf,
@@ -16,9 +24,10 @@ import type {
   AstNodeSubshell,
   AstNodeUntil,
   AstNodeWhile,
+  AstNodeWord,
   AstSourceLocation,
 } from '~/ast/types.ts';
-import { parseArithmetic } from '~/arithmetic/mod.ts';
+import { BashSyntaxError } from '~/errors.ts';
 import last from '~/utils/last.ts';
 
 const isAsyncSeparator = (separator: Separator) => {
@@ -40,6 +49,176 @@ const setLocEnd = (target: AstSourceLocation, source?: AstSourceLocation) => {
 
   return target;
 };
+
+// Operators for conditional expressions
+const UNARY_OPS = new Set([
+  '-a',
+  '-b',
+  '-c',
+  '-d',
+  '-e',
+  '-f',
+  '-g',
+  '-h',
+  '-k',
+  '-L',
+  '-N',
+  '-O',
+  '-G',
+  '-p',
+  '-r',
+  '-s',
+  '-S',
+  '-t',
+  '-u',
+  '-w',
+  '-x',
+  '-z',
+  '-n',
+  '-v',
+  '-R',
+]);
+const BINARY_OPS = new Set([
+  '==',
+  '!=',
+  '=~',
+  '<',
+  '>',
+  '=',
+  '-eq',
+  '-ne',
+  '-lt',
+  '-le',
+  '-gt',
+  '-ge',
+  '-nt',
+  '-ot',
+  '-ef',
+]);
+
+/**
+ * Parse an array of Word tokens into a conditional expression AST.
+ */
+function parseConditionalWords(words: AstNodeWord[]): AstConditionalExpression {
+  let pos = 0;
+
+  const current = (): AstNodeWord | undefined => words[pos];
+  const advance = (): AstNodeWord => words[pos++];
+  const match = (text: string): boolean => {
+    if (current()?.text === text) {
+      advance();
+      return true;
+    }
+    return false;
+  };
+  const hasMore = (): boolean => pos < words.length;
+
+  function parseOr(): AstConditionalExpression {
+    let left = parseAnd();
+    while (match('||')) {
+      const right = parseAnd();
+      const node: AstConditionalLogicalExpression = {
+        type: 'ConditionalLogicalExpression',
+        operator: '||',
+        left,
+        right,
+      };
+      left = node;
+    }
+    return left;
+  }
+
+  function parseAnd(): AstConditionalExpression {
+    let left = parseNot();
+    while (match('&&')) {
+      const right = parseNot();
+      const node: AstConditionalLogicalExpression = {
+        type: 'ConditionalLogicalExpression',
+        operator: '&&',
+        left,
+        right,
+      };
+      left = node;
+    }
+    return left;
+  }
+
+  function parseNot(): AstConditionalExpression {
+    if (match('!')) {
+      const node: AstConditionalNegation = {
+        type: 'ConditionalNegation',
+        argument: parseNot(),
+      };
+      return node;
+    }
+    return parsePrimary();
+  }
+
+  function parsePrimary(): AstConditionalExpression {
+    if (match('(')) {
+      const expr = parseOr();
+      if (!match(')')) {
+        throw new SyntaxError('Expected ) in conditional expression');
+      }
+      return expr;
+    }
+    return parseTest();
+  }
+
+  function parseTest(): AstConditionalExpression {
+    const word = current();
+    if (!word) {
+      throw new SyntaxError('Unexpected end of conditional expression');
+    }
+
+    // Unary operator: -f file, -z "$var"
+    if (UNARY_OPS.has(word.text)) {
+      advance();
+      const arg = parseWord();
+      const node: AstConditionalUnaryExpression = {
+        type: 'ConditionalUnaryExpression',
+        operator: word.text,
+        argument: arg,
+      };
+      return node;
+    }
+
+    // Binary operator: word OP word
+    const left = parseWord();
+    if (hasMore() && BINARY_OPS.has(current()!.text)) {
+      const op = advance().text;
+      const right = parseWord();
+      const node: AstConditionalBinaryExpression = {
+        type: 'ConditionalBinaryExpression',
+        operator: op,
+        left,
+        right,
+      };
+      return node;
+    }
+
+    // Just a word (truthy test for non-empty string)
+    return left;
+  }
+
+  function parseWord(): AstConditionalWord {
+    const word = current();
+    if (!word) {
+      throw new SyntaxError('Expected word in conditional expression');
+    }
+    advance();
+    const node: AstConditionalWord = {
+      type: 'ConditionalWord',
+      text: word.text,
+    };
+    if (word.expansion && word.expansion.length > 0) {
+      node.expansion = word.expansion;
+    }
+    return node;
+  }
+
+  return parseOr();
+}
 
 export const astBuilder = (insertLOC?: boolean) => {
   const builder: AstBuilder = {
@@ -166,11 +345,18 @@ export const astBuilder = (insertLOC?: boolean) => {
       // Join word texts to form the arithmetic expression
       const expression = words.map((w) => w.text).join(' ');
 
+      // Calculate source offset for absolute positions in arithmetic AST
+      // +3 accounts for "(( " (opening parens + typical space)
+      const sourceOffset = locStart?.start?.char !== undefined ? locStart.start.char + 3 : undefined;
+
       // Parse the arithmetic expression
       let arithmeticAST;
       try {
-        arithmeticAST = parseArithmetic(expression);
+        arithmeticAST = parseArithmetic(expression, { sourceOffset });
       } catch (err) {
+        if (err instanceof BashSyntaxError) {
+          throw err;
+        }
         throw new SyntaxError(`Cannot parse arithmetic expression "${expression}": ${(err as Error).message}`);
       }
 
@@ -178,6 +364,34 @@ export const astBuilder = (insertLOC?: boolean) => {
         type: 'ArithmeticCommand',
         expression,
         arithmeticAST,
+      };
+
+      if (insertLOC) {
+        node.loc = setLocEnd(setLocStart({ start: {}, end: {} }, locStart), locEnd);
+      }
+
+      return node;
+    },
+
+    conditionalCommand: (words, locStart, locEnd) => {
+      // Join word texts to form the expression string
+      const expression = words.map((w: AstNodeWord) => w.text).join(' ');
+
+      // Parse the conditional expression
+      let conditionAST;
+      try {
+        conditionAST = parseConditionalWords(words);
+      } catch (err) {
+        if (err instanceof BashSyntaxError) {
+          throw err;
+        }
+        throw new SyntaxError(`Cannot parse conditional expression "${expression}": ${(err as Error).message}`);
+      }
+
+      const node: AstNodeConditionalCommand = {
+        type: 'ConditionalCommand',
+        expression,
+        conditionAST,
       };
 
       if (insertLOC) {

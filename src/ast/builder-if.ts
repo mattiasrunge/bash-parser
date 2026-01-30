@@ -7,6 +7,7 @@ import type {
   AstNodeCaseItem,
   AstNodeCommand,
   AstNodeCompoundList,
+  AstNodeConditionalCommand,
   AstNodeFor,
   AstNodeFunction,
   AstNodeIf,
@@ -104,6 +105,12 @@ export type AstBuilder = {
     locStart: AstSourceLocation,
     locEnd: AstSourceLocation,
   ) => AstNodeArithmeticCommand;
+
+  conditionalCommand: (
+    words: AstNodeWord[],
+    locStart: AstSourceLocation,
+    locEnd: AstSourceLocation,
+  ) => AstNodeConditionalCommand;
 
   pipeSequence: (
     command: AstNodeCommand,

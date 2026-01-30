@@ -3,6 +3,8 @@ const operators = {
   '|': 'PIPE',
   '((': 'DOUBLE_OPEN_PAREN',
   '))': 'DOUBLE_CLOSE_PAREN',
+  '[[': 'DOUBLE_OPEN_BRACKET',
+  ']]': 'DOUBLE_CLOSE_BRACKET',
   '(': 'OPEN_PAREN',
   ')': 'CLOSE_PAREN',
   '>': 'GREAT',

@@ -9,6 +9,7 @@ class State implements ReducerStateIf {
   expansion: Expansion[] = [];
   previousReducer: Reducer;
   loc: ReducerLocation;
+  delimiterStartLoc?: { row?: number; col?: number; char?: number };
 
   constructor(reducers: Reducers, operators: Record<string, string>) {
     this.operators = operators;
@@ -68,6 +69,11 @@ class State implements ReducerStateIf {
 
   saveCurrentLocAsStart() {
     this.loc.start = { ...this.loc.current };
+    return this;
+  }
+
+  saveDelimiterStart() {
+    this.delimiterStartLoc = { ...this.loc.current };
     return this;
   }
 

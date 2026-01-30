@@ -10,7 +10,18 @@ const doubleQuoting: Reducer = (state, source, reducers) => {
       nextReduction: null,
       tokensToEmit: [
         ...state.tokenOrEmpty(),
-        mkToken('CONTINUE', '"'),
+        mkToken(
+          'CONTINUE',
+          '"',
+          state.delimiterStartLoc
+            ? {
+              loc: {
+                start: { ...state.delimiterStartLoc },
+                end: { ...state.delimiterStartLoc },
+              },
+            }
+            : undefined,
+        ),
       ],
       nextState: state,
     };

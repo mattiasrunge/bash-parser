@@ -243,10 +243,10 @@ Deno.test('lexer', async (t) => {
       await tokenize('while [[ -e foo ]]; do sleep 1; done'),
       [
         { token: 'While', value: 'while' },
-        { token: 'WORD', value: '[[' },
+        { token: 'DOUBLE_OPEN_BRACKET', value: '[[' },
         { token: 'WORD', value: '-e' },
         { token: 'WORD', value: 'foo' },
-        { token: 'WORD', value: ']]' },
+        { token: 'DOUBLE_CLOSE_BRACKET', value: ']]' },
         { token: 'SEPARATOR_OP', value: ';' },
         { token: 'Do', value: 'do' },
         { token: 'WORD', value: 'sleep' },

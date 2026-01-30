@@ -3,6 +3,7 @@ import aliasSubstitution from './alias-substitution.ts';
 import arithmeticExpansionResolve from './arithmetic-expansion-resolve.ts';
 import arithmeticExpansion from './arithmetic-expansion.ts';
 import assignmentWord from './assignment-word.ts';
+import bracketContext from './bracket-context.ts';
 import commandExpansionResolve from './command-expansion-resolve.ts';
 import commandExpansion from './command-expansion.ts';
 import defaultNodeType from './default-node-type.ts';
@@ -31,6 +32,7 @@ const rules: LexerPhases = {
   arithmeticExpansion,
   arithmeticExpansionResolve,
   assignmentWord,
+  bracketContext,
   commandExpansion,
   commandExpansionResolve,
   defaultNodeType,

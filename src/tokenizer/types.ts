@@ -49,6 +49,7 @@ export interface ReducerStateIf {
   expansion: Expansion[];
   previousReducer: Reducer;
   loc: ReducerLocation;
+  delimiterStartLoc?: ReducerPosition;
 
   setLoc(loc: ReducerLocation): this;
   setEscaping(escaping: boolean): this;
@@ -59,6 +60,7 @@ export interface ReducerStateIf {
   appendChar(char: string): this;
   removeLastChar(): this;
   saveCurrentLocAsStart(): this;
+  saveDelimiterStart(): this;
   resetCurrent(): this;
   advanceLoc(char: string): this;
   replaceLastExpansion(fields: Partial<Expansion>): this;

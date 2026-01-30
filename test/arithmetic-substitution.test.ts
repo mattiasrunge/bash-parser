@@ -93,45 +93,40 @@ Deno.test('arithmetic substitution', async (t) => {
   await t.step('arithmetic substitution node applied to invalid expressions throws', async () => {
     const result = (await assertRejects(() => bashParser('echo $((a b c d))'))) as Error;
     const message = result.message.split('\n')[0];
-    assertEquals(message, 'Cannot parse arithmetic expression "a b c d": Unexpected token: b');
+    // Location is now stored separately from message, not embedded
+    assertEquals(message, 'Unexpected token: b');
   });
 
   await t.step('arithmetic substitution node applied to non expressions throws', async () => {
     const result = (await assertRejects(() => bashParser('echo $((while(1);))'))) as Error;
     const message = result.message.split('\n')[0];
-    assertEquals(message, 'Cannot parse arithmetic expression "while(1);": Unexpected character: ;');
+    // Location is now stored separately from message, not embedded
+    assertEquals(message, 'Unexpected character: ;');
   });
 
   await t.step('arithmetic ast is parsed', async () => {
     const result = await bashParser('variable=$((42 + 43))');
 
     // utils.logResults(result)
+    // Positions are absolute: token starts at 0, expansion at 9, expression content at 12
     utils.checkResults((result as any).commands[0].prefix[0].expansion[0].arithmeticAST, {
       type: 'BinaryExpression',
       loc: {
         start: {
-          row: 1,
-          col: 0,
-          char: 0,
+          char: 12,
         },
         end: {
-          row: 1,
-          col: 7,
-          char: 7,
+          char: 19,
         },
       },
       left: {
         type: 'NumericLiteral',
         loc: {
           start: {
-            row: 1,
-            col: 0,
-            char: 0,
+            char: 12,
           },
           end: {
-            row: 1,
-            col: 2,
-            char: 2,
+            char: 14,
           },
         },
         extra: {
@@ -145,14 +140,10 @@ Deno.test('arithmetic substitution', async (t) => {
         type: 'NumericLiteral',
         loc: {
           start: {
-            row: 1,
-            col: 5,
-            char: 5,
+            char: 17,
           },
           end: {
-            row: 1,
-            col: 7,
-            char: 7,
+            char: 19,
           },
         },
         extra: {

@@ -84,6 +84,7 @@ export default {
       'brace_group',
       'subshell',
       'arithmetic_command',
+      'conditional_command',
       'for_clause',
       'case_clause',
       'if_clause',
@@ -103,6 +104,22 @@ export default {
       ],
       [
         'arithmetic_word_list WORD',
+        '$1.push($2); $$ = $1;',
+      ],
+    ],
+    conditional_command: [
+      [
+        'DOUBLE_OPEN_BRACKET conditional_word_list DOUBLE_CLOSE_BRACKET',
+        '$$ = yy.conditionalCommand($conditional_word_list, $DOUBLE_OPEN_BRACKET.loc, $DOUBLE_CLOSE_BRACKET.loc);',
+      ],
+    ],
+    conditional_word_list: [
+      [
+        'WORD',
+        '$$ = [$1];',
+      ],
+      [
+        'conditional_word_list WORD',
         '$1.push($2); $$ = $1;',
       ],
     ],

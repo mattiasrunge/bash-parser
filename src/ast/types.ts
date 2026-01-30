@@ -34,6 +34,7 @@ export type AstNodeScript = AstNode & {
     | AstNodeFunction
     | AstNodeSubshell
     | AstNodeArithmeticCommand
+    | AstNodeConditionalCommand
     | AstNodeFor
     | AstNodeCase
     | AstNodeIf
@@ -54,6 +55,7 @@ export type AstNodePipeline = AstNode & {
     | AstNodeFunction
     | AstNodeSubshell
     | AstNodeArithmeticCommand
+    | AstNodeConditionalCommand
     | AstNodeFor
     | AstNodeCase
     | AstNodeIf
@@ -112,6 +114,7 @@ export type AstNodeCompoundList = AstNode & {
     | AstNodeFunction
     | AstNodeSubshell
     | AstNodeArithmeticCommand
+    | AstNodeConditionalCommand
     | AstNodeFor
     | AstNodeCase
     | AstNodeIf
@@ -139,6 +142,82 @@ export type AstNodeArithmeticCommand = AstNode & {
   expression: string;
   arithmeticAST: AstArithmeticExpression;
   async?: boolean;
+};
+
+/**
+ * `ConditionalCommand` node represents the [[ expression ]] compound command.
+ * It evaluates the conditional expression and returns exit status 0 if true, 1 otherwise.
+ */
+export type AstNodeConditionalCommand = AstNode & {
+  type: 'ConditionalCommand';
+  expression: string;
+  conditionAST: AstConditionalExpression;
+  async?: boolean;
+};
+
+/**
+ * Conditional expression types for [[ ... ]] syntax.
+ */
+
+/**
+ * Union type for all conditional expression nodes.
+ */
+export type AstConditionalExpression =
+  | AstConditionalBinaryExpression
+  | AstConditionalUnaryExpression
+  | AstConditionalLogicalExpression
+  | AstConditionalNegation
+  | AstConditionalWord;
+
+/**
+ * Binary conditional expression: "$a" == "$b", $x -eq 10, file1 -nt file2
+ */
+export type AstConditionalBinaryExpression = AstNode & {
+  type: 'ConditionalBinaryExpression';
+  operator: string;
+  left: AstConditionalWord;
+  right: AstConditionalWord;
+};
+
+/**
+ * Unary conditional expression: -f file, -z "$var"
+ */
+export type AstConditionalUnaryExpression = AstNode & {
+  type: 'ConditionalUnaryExpression';
+  operator: string;
+  argument: AstConditionalWord;
+};
+
+/**
+ * Logical conditional expression: cond1 && cond2, cond1 || cond2
+ */
+export type AstConditionalLogicalExpression = AstNode & {
+  type: 'ConditionalLogicalExpression';
+  operator: '&&' | '||';
+  left: AstConditionalExpression;
+  right: AstConditionalExpression;
+};
+
+/**
+ * Negation in conditional expression: ! cond
+ */
+export type AstConditionalNegation = AstNode & {
+  type: 'ConditionalNegation';
+  argument: AstConditionalExpression;
+};
+
+/**
+ * Word/operand in conditional expression (preserves expansion info).
+ */
+export type AstConditionalWord = AstNode & {
+  type: 'ConditionalWord';
+  text: string;
+  expansion?: Array<
+    | AstArithmeticExpansion
+    | AstCommandExpansion
+    | AstParameterExpansion
+    | AstPathExpansion
+  >;
 };
 
 /**

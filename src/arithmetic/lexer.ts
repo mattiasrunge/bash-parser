@@ -3,13 +3,16 @@
  */
 
 import type { Token, TokenType } from './tokens.ts';
+import { BashSyntaxError } from '~/errors.ts';
 
 export class Lexer {
   private input: string;
   private pos: number = 0;
+  private sourceOffset: number;
 
-  constructor(input: string) {
+  constructor(input: string, sourceOffset: number = 0) {
     this.input = input;
+    this.sourceOffset = sourceOffset;
   }
 
   tokenize(): Token[] {
@@ -150,7 +153,7 @@ export class Lexer {
     }
 
     if (depth !== 0) {
-      throw new SyntaxError('Unclosed command substitution in arithmetic expression');
+      throw BashSyntaxError.fromPosition('Unclosed command substitution in arithmetic expression', this.input, { char: start });
     }
 
     return { type: 'COMMAND_SUBSTITUTION', value: command, start, end: this.pos };
@@ -278,7 +281,7 @@ export class Lexer {
       return { type, value: char, start, end: this.pos };
     }
 
-    throw new SyntaxError(`Unexpected character: ${char}`);
+    throw BashSyntaxError.fromPosition(`Unexpected character: ${char}`, this.input, { char: this.sourceOffset + start });
   }
 
   private isDigit(char: string): boolean {

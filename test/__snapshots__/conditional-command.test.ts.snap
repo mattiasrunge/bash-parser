@@ -1,0 +1,742 @@
+export const snapshot = {};
+
+snapshot[`conditional-command > [[ -f /etc/passwd ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        argument: {
+          text: "/etc/passwd",
+          type: "ConditionalWord",
+        },
+        operator: "-f",
+        type: "ConditionalUnaryExpression",
+      },
+      expression: "-f /etc/passwd",
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ -d /tmp ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        argument: {
+          text: "/tmp",
+          type: "ConditionalWord",
+        },
+        operator: "-d",
+        type: "ConditionalUnaryExpression",
+      },
+      expression: "-d /tmp",
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ -z "\$var" ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        argument: {
+          expansion: [
+            {
+              loc: {
+                end: 4,
+                start: 1,
+              },
+              parameter: "var",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: '"\$var"',
+          type: "ConditionalWord",
+        },
+        operator: "-z",
+        type: "ConditionalUnaryExpression",
+      },
+      expression: '-z "\$var"',
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ -n "\$var" ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        argument: {
+          expansion: [
+            {
+              loc: {
+                end: 4,
+                start: 1,
+              },
+              parameter: "var",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: '"\$var"',
+          type: "ConditionalWord",
+        },
+        operator: "-n",
+        type: "ConditionalUnaryExpression",
+      },
+      expression: '-n "\$var"',
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ "\$a" == "\$b" ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          expansion: [
+            {
+              loc: {
+                end: 2,
+                start: 1,
+              },
+              parameter: "a",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: '"\$a"',
+          type: "ConditionalWord",
+        },
+        operator: "==",
+        right: {
+          expansion: [
+            {
+              loc: {
+                end: 2,
+                start: 1,
+              },
+              parameter: "b",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: '"\$b"',
+          type: "ConditionalWord",
+        },
+        type: "ConditionalBinaryExpression",
+      },
+      expression: '"\$a" == "\$b"',
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ "\$a" != "\$b" ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          expansion: [
+            {
+              loc: {
+                end: 2,
+                start: 1,
+              },
+              parameter: "a",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: '"\$a"',
+          type: "ConditionalWord",
+        },
+        operator: "!=",
+        right: {
+          expansion: [
+            {
+              loc: {
+                end: 2,
+                start: 1,
+              },
+              parameter: "b",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: '"\$b"',
+          type: "ConditionalWord",
+        },
+        type: "ConditionalBinaryExpression",
+      },
+      expression: '"\$a" != "\$b"',
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ "\$a" < "\$b" ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          expansion: [
+            {
+              loc: {
+                end: 2,
+                start: 1,
+              },
+              parameter: "a",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: '"\$a"',
+          type: "ConditionalWord",
+        },
+        operator: "<",
+        right: {
+          expansion: [
+            {
+              loc: {
+                end: 2,
+                start: 1,
+              },
+              parameter: "b",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: '"\$b"',
+          type: "ConditionalWord",
+        },
+        type: "ConditionalBinaryExpression",
+      },
+      expression: '"\$a" < "\$b"',
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ "\$a" > "\$b" ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          expansion: [
+            {
+              loc: {
+                end: 2,
+                start: 1,
+              },
+              parameter: "a",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: '"\$a"',
+          type: "ConditionalWord",
+        },
+        operator: ">",
+        right: {
+          expansion: [
+            {
+              loc: {
+                end: 2,
+                start: 1,
+              },
+              parameter: "b",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: '"\$b"',
+          type: "ConditionalWord",
+        },
+        type: "ConditionalBinaryExpression",
+      },
+      expression: '"\$a" > "\$b"',
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ \$x -eq 10 ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          expansion: [
+            {
+              loc: {
+                end: 1,
+                start: 0,
+              },
+              parameter: "x",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: "\$x",
+          type: "ConditionalWord",
+        },
+        operator: "-eq",
+        right: {
+          text: "10",
+          type: "ConditionalWord",
+        },
+        type: "ConditionalBinaryExpression",
+      },
+      expression: "\$x -eq 10",
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ \$x -ne 10 ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          expansion: [
+            {
+              loc: {
+                end: 1,
+                start: 0,
+              },
+              parameter: "x",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: "\$x",
+          type: "ConditionalWord",
+        },
+        operator: "-ne",
+        right: {
+          text: "10",
+          type: "ConditionalWord",
+        },
+        type: "ConditionalBinaryExpression",
+      },
+      expression: "\$x -ne 10",
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ \$x -lt 10 ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          expansion: [
+            {
+              loc: {
+                end: 1,
+                start: 0,
+              },
+              parameter: "x",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: "\$x",
+          type: "ConditionalWord",
+        },
+        operator: "-lt",
+        right: {
+          text: "10",
+          type: "ConditionalWord",
+        },
+        type: "ConditionalBinaryExpression",
+      },
+      expression: "\$x -lt 10",
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ \$x -gt 10 ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          expansion: [
+            {
+              loc: {
+                end: 1,
+                start: 0,
+              },
+              parameter: "x",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: "\$x",
+          type: "ConditionalWord",
+        },
+        operator: "-gt",
+        right: {
+          text: "10",
+          type: "ConditionalWord",
+        },
+        type: "ConditionalBinaryExpression",
+      },
+      expression: "\$x -gt 10",
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ "\$str" =~ ^[0-9]+\$ ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          expansion: [
+            {
+              loc: {
+                end: 4,
+                start: 1,
+              },
+              parameter: "str",
+              type: "ParameterExpansion",
+            },
+          ],
+          text: '"\$str"',
+          type: "ConditionalWord",
+        },
+        operator: "=~",
+        right: {
+          text: "^[0-9]+\$",
+          type: "ConditionalWord",
+        },
+        type: "ConditionalBinaryExpression",
+      },
+      expression: '"\$str" =~ ^[0-9]+\$',
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ -f file && -r file ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          argument: {
+            text: "file",
+            type: "ConditionalWord",
+          },
+          operator: "-f",
+          type: "ConditionalUnaryExpression",
+        },
+        operator: "&&",
+        right: {
+          argument: {
+            text: "file",
+            type: "ConditionalWord",
+          },
+          operator: "-r",
+          type: "ConditionalUnaryExpression",
+        },
+        type: "ConditionalLogicalExpression",
+      },
+      expression: "-f file && -r file",
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ -f file || -d file ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          argument: {
+            text: "file",
+            type: "ConditionalWord",
+          },
+          operator: "-f",
+          type: "ConditionalUnaryExpression",
+        },
+        operator: "||",
+        right: {
+          argument: {
+            text: "file",
+            type: "ConditionalWord",
+          },
+          operator: "-d",
+          type: "ConditionalUnaryExpression",
+        },
+        type: "ConditionalLogicalExpression",
+      },
+      expression: "-f file || -d file",
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ ! -f file ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        argument: {
+          argument: {
+            text: "file",
+            type: "ConditionalWord",
+          },
+          operator: "-f",
+          type: "ConditionalUnaryExpression",
+        },
+        type: "ConditionalNegation",
+      },
+      expression: "! -f file",
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ ( -f file || -d file ) && -r file ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          left: {
+            argument: {
+              text: "file",
+              type: "ConditionalWord",
+            },
+            operator: "-f",
+            type: "ConditionalUnaryExpression",
+          },
+          operator: "||",
+          right: {
+            argument: {
+              text: "file",
+              type: "ConditionalWord",
+            },
+            operator: "-d",
+            type: "ConditionalUnaryExpression",
+          },
+          type: "ConditionalLogicalExpression",
+        },
+        operator: "&&",
+        right: {
+          argument: {
+            text: "file",
+            type: "ConditionalWord",
+          },
+          operator: "-r",
+          type: "ConditionalUnaryExpression",
+        },
+        type: "ConditionalLogicalExpression",
+      },
+      expression: "( -f file || -d file ) && -r file",
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > if [[ -f file ]]; then echo yes; fi 1`] = `
+{
+  commands: [
+    {
+      clause: {
+        commands: [
+          {
+            conditionAST: {
+              argument: {
+                text: "file",
+                type: "ConditionalWord",
+              },
+              operator: "-f",
+              type: "ConditionalUnaryExpression",
+            },
+            expression: "-f file",
+            type: "ConditionalCommand",
+          },
+        ],
+        type: "CompoundList",
+      },
+      then: {
+        commands: [
+          {
+            name: {
+              text: "echo",
+              type: "Word",
+            },
+            suffix: [
+              {
+                text: "yes",
+                type: "Word",
+              },
+            ],
+            type: "Command",
+          },
+        ],
+        type: "CompoundList",
+      },
+      type: "If",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > while [[ \$i -lt 10 ]]; do echo \$i; done 1`] = `
+{
+  commands: [
+    {
+      clause: {
+        commands: [
+          {
+            conditionAST: {
+              left: {
+                expansion: [
+                  {
+                    loc: {
+                      end: 1,
+                      start: 0,
+                    },
+                    parameter: "i",
+                    type: "ParameterExpansion",
+                  },
+                ],
+                text: "\$i",
+                type: "ConditionalWord",
+              },
+              operator: "-lt",
+              right: {
+                text: "10",
+                type: "ConditionalWord",
+              },
+              type: "ConditionalBinaryExpression",
+            },
+            expression: "\$i -lt 10",
+            type: "ConditionalCommand",
+          },
+        ],
+        type: "CompoundList",
+      },
+      do: {
+        commands: [
+          {
+            name: {
+              text: "echo",
+              type: "Word",
+            },
+            suffix: [
+              {
+                expansion: [
+                  {
+                    loc: {
+                      end: 1,
+                      start: 0,
+                    },
+                    parameter: "i",
+                    type: "ParameterExpansion",
+                  },
+                ],
+                text: "\$i",
+                type: "Word",
+              },
+            ],
+            type: "Command",
+          },
+        ],
+        type: "CompoundList",
+      },
+      type: "While",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ file1 -nt file2 ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          text: "file1",
+          type: "ConditionalWord",
+        },
+        operator: "-nt",
+        right: {
+          text: "file2",
+          type: "ConditionalWord",
+        },
+        type: "ConditionalBinaryExpression",
+      },
+      expression: "file1 -nt file2",
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;
+
+snapshot[`conditional-command > [[ file1 -ot file2 ]] 1`] = `
+{
+  commands: [
+    {
+      conditionAST: {
+        left: {
+          text: "file1",
+          type: "ConditionalWord",
+        },
+        operator: "-ot",
+        right: {
+          text: "file2",
+          type: "ConditionalWord",
+        },
+        type: "ConditionalBinaryExpression",
+      },
+      expression: "file1 -ot file2",
+      type: "ConditionalCommand",
+    },
+  ],
+  type: "Script",
+}
+`;

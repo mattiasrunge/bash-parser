@@ -1,14 +1,25 @@
 import { parseArithmetic } from '~/arithmetic/mod.ts';
+import { BashSyntaxError } from '~/errors.ts';
 import type { LexerPhase } from '~/lexer/types.ts';
-import type { Expansion, TokenIf } from '~/tokenizer/mod.ts';
+import type { Expansion, TokenIf, TokenLocation } from '~/tokenizer/mod.ts';
 import type { AstArithmeticCommandSubstitution, AstArithmeticExpression } from '~/ast/types.ts';
 import bashParser from '~/parse.ts';
 import map from '~/utils/iterable/map.ts';
 
-function parseArithmeticAST(xp: Expansion) {
+function parseArithmeticAST(xp: Expansion, tokenLoc?: TokenLocation) {
+  // Calculate source offset for absolute positions in arithmetic AST
+  // For $((expr)), the expression starts 3 characters after the expansion start (after "$((")
+  let sourceOffset: number | undefined;
+  if (tokenLoc?.start?.char !== undefined && xp.loc) {
+    sourceOffset = tokenLoc.start.char + xp.loc.start + 3;
+  }
+
   try {
-    return parseArithmetic(xp.expression!);
+    return parseArithmetic(xp.expression!, { sourceOffset });
   } catch (err) {
+    if (err instanceof BashSyntaxError) {
+      throw err;
+    }
     throw new SyntaxError(`Cannot parse arithmetic expression "${xp.expression}": ${(err as Error).message}`);
   }
 }
@@ -66,7 +77,7 @@ const arithmeticExpansion: LexerPhase = () =>
         await Promise.all(
           token.expansion.map(async (xp: Expansion) => {
             if (xp.type === 'ArithmeticExpansion') {
-              const arithmeticAST = parseArithmeticAST(xp);
+              const arithmeticAST = parseArithmeticAST(xp, token.loc);
               // Resolve any command substitutions in the arithmetic AST
               const resolvedAST = await resolveCommandSubstitutions(arithmeticAST);
               return Object.assign({}, xp, { arithmeticAST: resolvedAST });

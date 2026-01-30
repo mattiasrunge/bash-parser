@@ -79,7 +79,18 @@ const expansionArithmetic: Reducer = (state, source) => {
   if (char === undefined) {
     return {
       nextReduction: state.previousReducer,
-      tokensToEmit: [mkToken('CONTINUE', '$((')],
+      tokensToEmit: [mkToken(
+        'CONTINUE',
+        '$((',
+        xp?.loc
+          ? {
+            loc: {
+              start: { char: xp.loc.start },
+              end: { char: xp.loc.start },
+            },
+          }
+          : undefined,
+      )],
       nextState: state.replaceLastExpansion({
         loc: Object.assign({}, xp!.loc, { end: state.loc.previous?.char }),
       }),

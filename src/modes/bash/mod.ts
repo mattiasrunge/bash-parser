@@ -12,6 +12,7 @@ const mode: ModePlugin = {
         phaseCatalog.newLineList,
         phaseCatalog.operatorTokens,
         phaseCatalog.parenContext,
+        phaseCatalog.bracketContext,
         phaseCatalog.separator,
         // loggerPhase('1'),
         phaseCatalog.reservedWords,

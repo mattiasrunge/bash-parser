@@ -24,28 +24,20 @@ export default {
                 type: 'BinaryExpression',
                 loc: {
                   start: {
-                    row: 1,
-                    col: 0,
-                    char: 0,
+                    char: 8,
                   },
                   end: {
-                    row: 1,
-                    col: 7,
-                    char: 7,
+                    char: 15,
                   },
                 },
                 left: {
                   type: 'NumericLiteral',
                   loc: {
                     start: {
-                      row: 1,
-                      col: 0,
-                      char: 0,
+                      char: 8,
                     },
                     end: {
-                      row: 1,
-                      col: 2,
-                      char: 2,
+                      char: 10,
                     },
                   },
                   extra: {
@@ -59,14 +51,10 @@ export default {
                   type: 'NumericLiteral',
                   loc: {
                     start: {
-                      row: 1,
-                      col: 5,
-                      char: 5,
+                      char: 13,
                     },
                     end: {
-                      row: 1,
-                      col: 7,
-                      char: 7,
+                      char: 15,
                     },
                   },
                   extra: {
