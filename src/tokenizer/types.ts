@@ -29,6 +29,7 @@ export type TokenFields = {
   joined?: string;
   fieldIdx?: number;
   originalText?: string;
+  protectedRanges?: ProtectedRange[];
 };
 
 export type TokenIf = TokenFields & {
@@ -37,6 +38,7 @@ export type TokenIf = TokenFields & {
   setType(type: string): TokenIf;
   setValue(value: string): TokenIf;
   alterValue(value: string): TokenIf;
+  alterValueWithRanges(value: string, protectedRanges: ProtectedRange[]): TokenIf;
   setExpansion(expansion: Expansion[]): TokenIf;
 };
 
@@ -96,6 +98,11 @@ export type ReducerLocation = {
 };
 
 export type ExpansionLocation = {
+  start: number;
+  end: number;
+};
+
+export type ProtectedRange = {
   start: number;
   end: number;
 };

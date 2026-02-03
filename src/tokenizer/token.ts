@@ -1,4 +1,4 @@
-import type { Expansion, TokenContext, TokenFields, TokenIf, TokenLocation } from './types.ts';
+import type { Expansion, ProtectedRange, TokenContext, TokenFields, TokenIf, TokenLocation } from './types.ts';
 
 class Token implements TokenIf {
   type: string = '';
@@ -9,6 +9,7 @@ class Token implements TokenIf {
   joined?: string;
   fieldIdx?: number;
   originalText?: string;
+  protectedRanges?: ProtectedRange[];
 
   constructor(fields: Partial<Pick<TokenFields, 'ctx'>> & Omit<TokenFields, 'ctx'>) {
     this.type = fields.type;
@@ -20,6 +21,7 @@ class Token implements TokenIf {
     this.originalText = fields.originalText;
     this.expansion = fields.expansion;
     this.expansion = (fields.expansion && fields.expansion.length) ? fields.expansion : undefined;
+    this.protectedRanges = fields.protectedRanges;
   }
 
   is(type: string) {
@@ -49,6 +51,14 @@ class Token implements TokenIf {
     return this.clone({
       value,
       originalText: this.originalText || this.value,
+    });
+  }
+
+  alterValueWithRanges(value: string, protectedRanges: ProtectedRange[]) {
+    return this.clone({
+      value,
+      originalText: this.originalText || this.value,
+      protectedRanges: protectedRanges.length > 0 ? protectedRanges : undefined,
     });
   }
 

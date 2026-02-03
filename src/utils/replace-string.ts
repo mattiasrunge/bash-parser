@@ -2,6 +2,12 @@ type Chunk = {
   text: string;
   start: number;
   end: number;
+  isReplacement?: boolean;
+};
+
+export type ProtectedRange = {
+  start: number;
+  end: number;
 };
 
 export class ReplaceString {
@@ -40,6 +46,7 @@ export class ReplaceString {
       text,
       start,
       end,
+      isReplacement: true,
     };
 
     const suffix: Chunk = {
@@ -53,5 +60,20 @@ export class ReplaceString {
 
   get text(): string {
     return this.chunks.map(({ text }) => text).join('');
+  }
+
+  get protectedRanges(): ProtectedRange[] {
+    const ranges: ProtectedRange[] = [];
+    let pos = 0;
+
+    for (const chunk of this.chunks) {
+      const len = chunk.text.length;
+      if (chunk.isReplacement && len > 0) {
+        ranges.push({ start: pos, end: pos + len });
+      }
+      pos += len;
+    }
+
+    return ranges;
   }
 }

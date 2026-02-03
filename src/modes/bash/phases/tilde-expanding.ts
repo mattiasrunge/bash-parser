@@ -37,9 +37,11 @@ const tildeExpanding: LexerPhase = (ctx) =>
     }
 
     if (token.is('ASSIGNMENT_WORD') && typeof ctx.resolvers.resolveHomeUser === 'function') {
-      const parts = token.value!.split('=', 2);
-      const target = parts[0];
-      const sourceParts = parts[1];
+      // Use indexOf to split only on the first '=' - split('=', 2) doesn't work as expected
+      // because the limit just caps returned elements, it doesn't stop splitting early
+      const eqIndex = token.value!.indexOf('=');
+      const target = token.value!.slice(0, eqIndex);
+      const sourceParts = token.value!.slice(eqIndex + 1);
 
       const resolvedsourceParts = await Promise.all(
         sourceParts

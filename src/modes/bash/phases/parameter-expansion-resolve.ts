@@ -26,7 +26,7 @@ const parameterExpansionResolve: LexerPhase = (ctx) =>
           xp.resolved = true;
         }
       }
-      return token.alterValue(rValue.text);
+      return token.alterValueWithRanges(rValue.text, rValue.protectedRanges);
     }
     return token;
   });

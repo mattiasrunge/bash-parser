@@ -80,4 +80,33 @@ Deno.test('tilde-expanding', async (t) => {
       ],
     });
   });
+
+  await t.step('preserves assignment value with multiple equals signs', async () => {
+    // Regression test: assignment values containing '=' should not be truncated
+    // e.g., VAR=$(CMD=1 other) should preserve the full command substitution
+    const result = await bashParser('STAT_OUTPUT=$(JSON_OUTPUT=1 file-stat "$FILENAME")', {
+      async resolveHomeUser() {
+        return '/home/user';
+      },
+    });
+
+    utils.checkResults((result as any).commands[0].prefix[0], {
+      type: 'AssignmentWord',
+      text: 'STAT_OUTPUT=$(JSON_OUTPUT=1 file-stat "$FILENAME")',
+    });
+  });
+
+  await t.step('preserves assignment value with multiple equals in command substitution', async () => {
+    // Another regression test with even more equals signs
+    const result = await bashParser('VAR=$(A=1 B=2 C=3 cmd)', {
+      async resolveHomeUser() {
+        return '/home/user';
+      },
+    });
+
+    utils.checkResults((result as any).commands[0].prefix[0], {
+      type: 'AssignmentWord',
+      text: 'VAR=$(A=1 B=2 C=3 cmd)',
+    });
+  });
 });

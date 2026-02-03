@@ -32,15 +32,18 @@ const pathExpansion: LexerPhase = (ctx) =>
         return token;
       }
 
-      const parts = token.value!.split('=');
-      const resolved = await ctx.resolvers.resolvePath(parts[1]);
+      // Use indexOf to split only on the first '=' - split('=') would lose content after second '='
+      const eqIndex = token.value!.indexOf('=');
+      const varName = token.value!.slice(0, eqIndex);
+      const varValue = token.value!.slice(eqIndex + 1);
+      const resolved = await ctx.resolvers.resolvePath(varValue);
 
       if (Array.isArray(resolved)) {
         // For assignments, use first match or keep original if no matches
-        return token.setValue(parts[0] + '=' + (resolved[0] ?? parts[1]));
+        return token.setValue(varName + '=' + (resolved[0] ?? varValue));
       }
 
-      return token.setValue(parts[0] + '=' + resolved);
+      return token.setValue(varName + '=' + resolved);
     }
 
     return token;

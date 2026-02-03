@@ -187,4 +187,43 @@ Deno.test('quote-removal', async (t) => {
       text: 'echo',
     });
   });
+
+  await t.step('preserves quotes in JSON from variable expansion', async () => {
+    // This tests the case where a variable contains JSON with quotes.
+    // The outer quotes are bash syntax and should be removed,
+    // but the quotes inside the JSON (from expansion) should be preserved.
+    const result = await bashParser('echo "$JSON_DATA"', {
+      async resolveParameter() {
+        return '{"uri":"file:///path","name":"test"}';
+      },
+    });
+    utils.checkResults((result as any).commands[0].suffix[0], {
+      type: 'Word',
+      text: '{"uri":"file:///path","name":"test"}',
+    });
+  });
+
+  await t.step('preserves single quotes in variable expansion', async () => {
+    const result = await bashParser('echo "$DATA"', {
+      async resolveParameter() {
+        return "it's a test";
+      },
+    });
+    utils.checkResults((result as any).commands[0].suffix[0], {
+      type: 'Word',
+      text: "it's a test",
+    });
+  });
+
+  await t.step('preserves backslashes in variable expansion', async () => {
+    const result = await bashParser('echo "$PATH_DATA"', {
+      async resolveParameter() {
+        return 'C:\\Users\\test';
+      },
+    });
+    utils.checkResults((result as any).commands[0].suffix[0], {
+      type: 'Word',
+      text: 'C:\\Users\\test',
+    });
+  });
 });

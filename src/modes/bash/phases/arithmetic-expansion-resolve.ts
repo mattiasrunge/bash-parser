@@ -23,7 +23,7 @@ const arithmeticExpansionResolve: LexerPhase = (ctx) =>
         }
       }
 
-      return token.alterValue(rValue.text);
+      return token.alterValueWithRanges(rValue.text, rValue.protectedRanges);
     }
     return token;
   });

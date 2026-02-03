@@ -3,4 +3,5 @@ export { parseArithmetic, type ParseArithmeticOptions } from './src/arithmetic/m
 export { BashSyntaxError, type ErrorLocation, type ErrorPosition } from './src/errors.ts';
 export { parse } from './src/parse.ts';
 export type * from './src/types.ts';
+export type { ProtectedRange } from './src/tokenizer/types.ts';
 export * as utils from './src/utils/mod.ts';

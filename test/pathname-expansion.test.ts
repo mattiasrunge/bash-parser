@@ -205,4 +205,18 @@ Deno.test('pathname-expansion', async (t) => {
       ],
     });
   });
+
+  await t.step('preserves assignment value with multiple equals signs and glob', async () => {
+    // Regression test: assignment values containing '=' should not be truncated
+    // when the value also contains a glob pattern
+    const result = await bashParser('VAR=prefix=*.txt', {
+      async resolvePath() {
+        return ['prefix=matched.txt'];
+      },
+    });
+    utils.checkResults((result as any).commands[0].prefix[0], {
+      type: 'AssignmentWord',
+      text: 'VAR=prefix=matched.txt',
+    });
+  });
 });
