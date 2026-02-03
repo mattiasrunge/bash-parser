@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from '@std/assert';
-import last from '~/utils/last.ts';
+import last from '../src/utils/last.ts';
 
 Deno.test('last utility', async (t) => {
   await t.step('returns last element of array', () => {

@@ -1,5 +1,5 @@
 import { assertEquals, assertObjectMatch } from '@std/assert';
-import type { AstSourceLocation } from '~/ast/types.ts';
+import type { AstSourceLocation } from '../src/ast/types.ts';
 
 export const mkloc2 = function mkloc(startLine: number, startColumn: number, endLine: number, endColumn: number, startChar: number, endChar: number): AstSourceLocation {
   return {

@@ -1,4 +1,4 @@
-import type { Reducers } from '~/tokenizer/types.ts';
+import type { Reducers } from '../../../tokenizer/types.ts';
 import comment from './comment.ts';
 import doubleQuoting from './double-quoting.ts';
 import end from './end.ts';

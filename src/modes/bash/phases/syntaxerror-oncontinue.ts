@@ -1,7 +1,7 @@
-import type { LexerPhase } from '~/lexer/types.ts';
-import type { TokenIf } from '~/tokenizer/mod.ts';
-import { BashSyntaxError } from '~/errors.ts';
-import map from '~/utils/iterable/map.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import type { TokenIf } from '../../../tokenizer/mod.ts';
+import { BashSyntaxError } from '../../../errors.ts';
+import map from '../../../utils/iterable/map.ts';
 
 const syntaxerrorOnContinue: LexerPhase = () => {
   return map(async (tk: TokenIf) => {

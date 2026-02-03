@@ -1,9 +1,9 @@
-import type { LexerPhase } from '~/lexer/types.ts';
-import { applyVisitor, mkToken, type TokenIf, type Visitor } from '~/tokenizer/mod.ts';
-import compose from '~/utils/iterable/compose.ts';
-import lookahead, { type LookaheadIterable } from '~/utils/iterable/lookahead.ts';
-import map from '~/utils/iterable/map.ts';
-import filterNonNull from '~/utils/non-null.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import { applyVisitor, mkToken, type TokenIf, type Visitor } from '../../../tokenizer/mod.ts';
+import compose from '../../../utils/iterable/compose.ts';
+import lookahead, { type LookaheadIterable } from '../../../utils/iterable/lookahead.ts';
+import map from '../../../utils/iterable/map.ts';
+import filterNonNull from '../../../utils/non-null.ts';
 
 const ReplaceWithLineBreakIn: Visitor = {
   async NEWLINE_LIST(tk: TokenIf, iterable?: AsyncIterable<TokenIf>) {

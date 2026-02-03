@@ -1,6 +1,6 @@
-import type { LexerPhase } from '~/lexer/types.ts';
-import { mkToken, type TokenIf } from '~/tokenizer/mod.ts';
-import map from '~/utils/iterable/map.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import { mkToken, type TokenIf } from '../../../tokenizer/mod.ts';
+import map from '../../../utils/iterable/map.ts';
 
 /**
  * Track when we're inside [[ ]] conditional expressions.

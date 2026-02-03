@@ -1,4 +1,4 @@
-import is from '~/utils/iterable/is.ts';
+import is from '../../utils/iterable/is.ts';
 
 export interface LookaheadIterable<T> extends AsyncIterable<T> {
   ahead(idx: number): T | undefined;

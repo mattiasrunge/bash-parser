@@ -1,4 +1,4 @@
-import is from '~/utils/iterable/is.ts';
+import is from '../../utils/iterable/is.ts';
 
 export type MapFunction<T> = (value: T, idx: number, iter: AsyncIterable<T>) => Promise<T | T[] | null>;
 export type MapperFunction<T> = (it: AsyncIterable<T>) => AsyncIterable<T>;

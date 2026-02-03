@@ -1,8 +1,8 @@
-import type { LexerPhase } from '~/lexer/types.ts';
-import type { TokenIf } from '~/tokenizer/mod.ts';
-import compose from '~/utils/iterable/compose.ts';
-import lookahead, { type LookaheadIterable } from '~/utils/iterable/lookahead.ts';
-import map from '~/utils/iterable/map.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import type { TokenIf } from '../../../tokenizer/mod.ts';
+import compose from '../../../utils/iterable/compose.ts';
+import lookahead, { type LookaheadIterable } from '../../../utils/iterable/lookahead.ts';
+import map from '../../../utils/iterable/map.ts';
 
 const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<TokenIf>, words: Record<string, string>) => {
   const last = iterable.behind(1) || { EMPTY: true, is: (type: string) => type === 'EMPTY', value: '' };

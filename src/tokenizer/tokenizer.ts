@@ -1,4 +1,4 @@
-import last from '~/utils/last.ts';
+import last from '../utils/last.ts';
 import { mkToken } from './token.ts';
 import type { Expansion, Reducer, ReducerLocation, ReducerNextState, Reducers, ReducerStateIf, TokenIf } from './types.ts';
 

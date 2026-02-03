@@ -1,4 +1,4 @@
-import type { Reducer } from '~/tokenizer/types.ts';
+import type { Reducer } from '../../../tokenizer/types.ts';
 
 const isSpecialParameter = (char: string) => {
   return char.match(/^[0-9\-!@#\?\*\$]$/);

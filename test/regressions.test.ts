@@ -1,5 +1,5 @@
-import bashParser from '~/parse.ts';
-import type { AstNodeSubshell } from '~/ast/types.ts';
+import bashParser from '../src/parse.ts';
+import type { AstNodeSubshell } from '../src/ast/types.ts';
 import utils from './_utils.ts';
 
 Deno.test('regressions', async (t) => {

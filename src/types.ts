@@ -1,4 +1,4 @@
-import type { AstArithmeticExpression, AstNodeScript } from '~/ast/types.ts';
+import type { AstArithmeticExpression, AstNodeScript } from './ast/types.ts';
 
 /**
  * The resolvers to use by the parsing to resolve external information when needed.

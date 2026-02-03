@@ -1,5 +1,5 @@
-import { Lexer } from '~/lexer/mod.ts';
-import mode from '~/modes/bash/mod.ts';
+import { Lexer } from '../src/lexer/mod.ts';
+import mode from '../src/modes/bash/mod.ts';
 import utils from './_utils.ts';
 
 const tokenize = async (text: string, rawTokens?: boolean) => {

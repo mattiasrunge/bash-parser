@@ -1,4 +1,4 @@
-import bashParser from '~/parse.ts';
+import bashParser from '../src/parse.ts';
 
 const source = `
   foo () {

@@ -1,5 +1,5 @@
 import { assertSnapshot } from '@std/testing/snapshot';
-import bashParser from '~/parse.ts';
+import bashParser from '../src/parse.ts';
 
 Deno.test('ast', async (t) => {
   await t.step('command with one argument', async () => {

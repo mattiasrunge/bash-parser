@@ -1,4 +1,4 @@
-import type { Enums } from '~/modes/types.ts';
+import type { Enums } from '../../../modes/types.ts';
 import IOFileOperators from './io-file-operators.ts';
 import operators from './operators.ts';
 import parameterOperators from './parameter-operators.ts';

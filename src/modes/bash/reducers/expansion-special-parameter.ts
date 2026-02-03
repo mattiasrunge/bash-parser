@@ -1,5 +1,5 @@
-import type { Reducer } from '~/tokenizer/types.ts';
-import last from '~/utils/last.ts';
+import type { Reducer } from '../../../tokenizer/types.ts';
+import last from '../../../utils/last.ts';
 
 const expansionSpecialParameter: Reducer = (state, source) => {
   const char = source && source.shift();

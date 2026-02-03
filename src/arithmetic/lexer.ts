@@ -3,7 +3,7 @@
  */
 
 import type { Token, TokenType } from './tokens.ts';
-import { BashSyntaxError } from '~/errors.ts';
+import { BashSyntaxError } from '../errors.ts';
 
 export class Lexer {
   private input: string;

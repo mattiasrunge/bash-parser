@@ -20,7 +20,7 @@ import type {
   AstNodeWhile,
   AstNodeWord,
   AstSourceLocation,
-} from '~/ast/types.ts';
+} from '../ast/types.ts';
 
 export type ElseClaus = AstNode & {
   type: 'else';

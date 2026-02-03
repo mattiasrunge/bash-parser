@@ -1,8 +1,8 @@
-import type { LexerPhase } from '~/lexer/types.ts';
-import type { Expansion, TokenIf } from '~/tokenizer/mod.ts';
-import type { GlobPattern } from '~/utils/glob-pattern-scanner.ts';
-import { hasUnquotedGlob, scanGlobPatterns } from '~/utils/glob-pattern-scanner.ts';
-import map from '~/utils/iterable/map.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import type { Expansion, TokenIf } from '../../../tokenizer/mod.ts';
+import type { GlobPattern } from '../../../utils/glob-pattern-scanner.ts';
+import { hasUnquotedGlob, scanGlobPatterns } from '../../../utils/glob-pattern-scanner.ts';
+import map from '../../../utils/iterable/map.ts';
 
 /**
  * Check if a glob pattern overlaps with any existing expansion.

@@ -1,8 +1,8 @@
 import { assert } from '@std/assert';
-import type { LexerPhase } from '~/lexer/types.ts';
-import type { Expansion, TokenIf } from '~/tokenizer/mod.ts';
-import map from '~/utils/iterable/map.ts';
-import toPascal from '~/utils/to-pascal-case.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import type { Expansion, TokenIf } from '../../../tokenizer/mod.ts';
+import map from '../../../utils/iterable/map.ts';
+import toPascal from '../../../utils/to-pascal-case.ts';
 
 const defaultNodeType: LexerPhase = () =>
   map(async (token: TokenIf) => {

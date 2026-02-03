@@ -1,8 +1,8 @@
-import type { LexerPhase } from '~/lexer/types.ts';
-import type { Expansion, ProtectedRange, TokenIf } from '~/tokenizer/mod.ts';
-import map from '~/utils/iterable/map.ts';
-import unescape from '~/utils/unescape.ts';
-import unquoteWord from '~/utils/unquote-word.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import type { Expansion, ProtectedRange, TokenIf } from '../../../tokenizer/mod.ts';
+import map from '../../../utils/iterable/map.ts';
+import unescape from '../../../utils/unescape.ts';
+import unquoteWord from '../../../utils/unquote-word.ts';
 
 const unquote = (text: string) => {
   const result = unquoteWord(text);

@@ -1,9 +1,9 @@
-import type { LexerIf } from '~/grammar/mod.ts';
-import type { LexerContext, LexerPhaseFn } from '~/lexer/types.ts';
-import type { Mode } from '~/modes/types.ts';
-import { type TokenIf, tokenize, type Tokenizer } from '~/tokenizer/mod.ts';
-import type { Options } from '~/types.ts';
-import compose from '~/utils/iterable/compose.ts';
+import type { LexerIf } from '../grammar/mod.ts';
+import type { LexerContext, LexerPhaseFn } from '../lexer/types.ts';
+import type { Mode } from '../modes/types.ts';
+import { type TokenIf, tokenize, type Tokenizer } from '../tokenizer/mod.ts';
+import type { Options } from '../types.ts';
+import compose from '../utils/iterable/compose.ts';
 
 export class Lexer implements LexerIf {
   private tokenizer: Tokenizer;

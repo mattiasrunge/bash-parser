@@ -1,4 +1,4 @@
-import parse from '~/utils/unquote-word.ts';
+import parse from '../src/utils/unquote-word.ts';
 import utils from './_utils.ts';
 
 Deno.test('unquote-word', async (t) => {

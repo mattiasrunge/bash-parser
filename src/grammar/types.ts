@@ -1,5 +1,5 @@
-import type { AstBuilder } from '~/ast/builder-if.ts';
-import type { AstNodeScript } from '~/ast/types.ts';
+import type { AstBuilder } from '../ast/builder-if.ts';
+import type { AstNodeScript } from '../ast/types.ts';
 
 export interface LexerIf {
   yytext?: any;

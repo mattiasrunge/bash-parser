@@ -1,4 +1,4 @@
-import bashParser from '~/parse.ts';
+import bashParser from '../src/parse.ts';
 import utils, { mkloc2 as mkloc } from './_utils.ts';
 
 Deno.test('loc-simple-command', async (t) => {

@@ -1,5 +1,5 @@
-import { mkToken, type Reducer } from '~/tokenizer/mod.ts';
-import last from '~/utils/last.ts';
+import { mkToken, type Reducer } from '../../../tokenizer/mod.ts';
+import last from '../../../utils/last.ts';
 
 // Track nesting depth for proper handling of nested command substitutions like $(echo $(echo deep))
 // We use a WeakMap keyed on expansion objects to track depth without modifying the Expansion type

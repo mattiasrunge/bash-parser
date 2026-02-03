@@ -1,5 +1,5 @@
-import { parseArithmetic } from '~/arithmetic/mod.ts';
-import type { AstBuilder, Separator } from '~/ast/builder-if.ts';
+import { parseArithmetic } from '../arithmetic/mod.ts';
+import type { AstBuilder, Separator } from '../ast/builder-if.ts';
 import type {
   AstConditionalBinaryExpression,
   AstConditionalExpression,
@@ -26,9 +26,9 @@ import type {
   AstNodeWhile,
   AstNodeWord,
   AstSourceLocation,
-} from '~/ast/types.ts';
-import { BashSyntaxError } from '~/errors.ts';
-import last from '~/utils/last.ts';
+} from '../ast/types.ts';
+import { BashSyntaxError } from '../errors.ts';
+import last from '../utils/last.ts';
 
 const isAsyncSeparator = (separator: Separator) => {
   return separator.text.indexOf('&') !== -1;

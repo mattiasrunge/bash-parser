@@ -1,4 +1,4 @@
-import toPascalCase from '~/utils/to-pascal-case.ts';
+import toPascalCase from '../src/utils/to-pascal-case.ts';
 import utils from './_utils.ts';
 
 const cases: { [key: string]: string } = {

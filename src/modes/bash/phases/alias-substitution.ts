@@ -1,8 +1,8 @@
-import type { LexerPhase, LexerPhaseFn } from '~/lexer/types.ts';
-import { applyVisitor, type TokenIf, type Visitor } from '~/tokenizer/mod.ts';
-import type { Resolvers } from '~/types.ts';
-import compose from '~/utils/iterable/compose.ts';
-import map from '~/utils/iterable/map.ts';
+import type { LexerPhase, LexerPhaseFn } from '../../../lexer/types.ts';
+import { applyVisitor, type TokenIf, type Visitor } from '../../../tokenizer/mod.ts';
+import type { Resolvers } from '../../../types.ts';
+import compose from '../../../utils/iterable/compose.ts';
+import map from '../../../utils/iterable/map.ts';
 
 const expandAlias = (preAliasLexer: LexerPhaseFn, resolveAlias: Resolvers['resolveAlias'], reservedWords: string[]) => {
   async function* tryExpandToken(token: TokenIf, expandingAliases: string[]): AsyncIterable<TokenIf> {

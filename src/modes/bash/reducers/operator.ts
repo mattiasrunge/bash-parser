@@ -1,4 +1,4 @@
-import type { Reducer, TokenIf } from '~/tokenizer/types.ts';
+import type { Reducer, TokenIf } from '../../../tokenizer/types.ts';
 
 const operator: Reducer = (state, source, reducers) => {
   const char = source && source.shift();

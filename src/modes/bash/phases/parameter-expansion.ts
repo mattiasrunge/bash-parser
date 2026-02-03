@@ -1,9 +1,9 @@
-import type { AstNodeCommand } from '~/ast/types.ts';
-import type { LexerPhase } from '~/lexer/types.ts';
-import type { Enums, ParameterOp } from '~/modes/types.ts';
-import bashParser from '~/parse.ts';
-import type { Expansion, TokenIf } from '~/tokenizer/mod.ts';
-import map from '~/utils/iterable/map.ts';
+import type { AstNodeCommand } from '../../../ast/types.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import type { Enums, ParameterOp } from '../../../modes/types.ts';
+import bashParser from '../../../parse.ts';
+import type { Expansion, TokenIf } from '../../../tokenizer/mod.ts';
+import map from '../../../utils/iterable/map.ts';
 
 const handleParameter = async (obj: ParameterOp, match: RegExpMatchArray) => {
   const ret = Object.fromEntries(

@@ -1,7 +1,7 @@
-import type { LexerPhase } from '~/lexer/types.ts';
-import bashParser from '~/parse.ts';
-import type { Expansion, TokenIf } from '~/tokenizer/mod.ts';
-import map from '~/utils/iterable/map.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import bashParser from '../../../parse.ts';
+import type { Expansion, TokenIf } from '../../../tokenizer/mod.ts';
+import map from '../../../utils/iterable/map.ts';
 
 const setCommandExpansion = async (xp: Expansion, token: TokenIf) => {
   let command = xp.command!;

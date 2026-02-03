@@ -1,4 +1,4 @@
-import bashParser from '~/parse.ts';
+import bashParser from '../src/parse.ts';
 import utils from './_utils.ts';
 
 Deno.test('positional-parameter', async (t) => {

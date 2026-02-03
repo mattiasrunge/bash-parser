@@ -1,7 +1,7 @@
-import type { LexerPhase } from '~/lexer/types.ts';
-import type { TokenIf } from '~/tokenizer/mod.ts';
-import type { Options } from '~/types.ts';
-import map from '~/utils/iterable/map.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import type { TokenIf } from '../../../tokenizer/mod.ts';
+import type { Options } from '../../../types.ts';
+import map from '../../../utils/iterable/map.ts';
 
 const replace = async (text: string, resolveHomeUser: Options['resolveHomeUser']) => {
   let replaced = false;

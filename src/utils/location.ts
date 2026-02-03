@@ -2,9 +2,9 @@
  * Utilities for working with source locations.
  */
 
-import type { ExpansionLocation, TokenLocation } from '~/tokenizer/types.ts';
-import type { AstSourceLocation } from '~/ast/types.ts';
-import type { ErrorPosition } from '~/errors.ts';
+import type { ExpansionLocation, TokenLocation } from '../tokenizer/types.ts';
+import type { AstSourceLocation } from '../ast/types.ts';
+import type { ErrorPosition } from '../errors.ts';
 
 /**
  * Computes row (1-indexed) and column (1-indexed) from a character offset (0-indexed).

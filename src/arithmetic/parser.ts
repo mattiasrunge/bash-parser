@@ -3,7 +3,7 @@
  */
 
 import type { Token, TokenType } from './tokens.ts';
-import { BashSyntaxError } from '~/errors.ts';
+import { BashSyntaxError } from '../errors.ts';
 import type {
   AstArithmeticAssignmentExpression,
   AstArithmeticAssignmentOperator,
@@ -19,7 +19,7 @@ import type {
   AstArithmeticUnaryExpression,
   AstArithmeticUpdateExpression,
   AstSourceLocation,
-} from '~/ast/types.ts';
+} from '../ast/types.ts';
 
 // Precedence levels (from lowest to highest, matching C/bash)
 const enum Precedence {

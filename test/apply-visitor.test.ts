@@ -1,7 +1,7 @@
 import { assertEquals } from '@std/assert';
-import { applyVisitor } from '~/tokenizer/apply-visitor.ts';
-import { mkToken } from '~/tokenizer/token.ts';
-import type { TokenIf } from '~/tokenizer/types.ts';
+import { applyVisitor } from '../src/tokenizer/apply-visitor.ts';
+import { mkToken } from '../src/tokenizer/token.ts';
+import type { TokenIf } from '../src/tokenizer/types.ts';
 
 async function* asyncIterable<T>(items: T[]): AsyncIterable<T> {
   for (const item of items) {

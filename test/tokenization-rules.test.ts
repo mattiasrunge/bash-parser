@@ -1,9 +1,9 @@
 import { assertEquals } from '@std/assert';
-import type { LexerContext, LexerPhase } from '~/lexer/types.ts';
-import enums from '~/modes/bash/enums/mod.ts';
-import rules from '~/modes/bash/phases/mod.ts';
-import { mkToken, type TokenIf } from '~/tokenizer/mod.ts';
-import fromArray from '~/utils/iterable/from-array.ts';
+import type { LexerContext, LexerPhase } from '../src/lexer/types.ts';
+import enums from '../src/modes/bash/enums/mod.ts';
+import rules from '../src/modes/bash/phases/mod.ts';
+import { mkToken, type TokenIf } from '../src/tokenizer/mod.ts';
+import fromArray from '../src/utils/iterable/from-array.ts';
 // const _utils = require('./_utils');
 
 const check = async (rule: LexerPhase, actual: TokenIf[], expected: TokenIf[]) => {

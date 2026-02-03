@@ -1,4 +1,4 @@
-import type { TokenIf } from '~/tokenizer/types.ts';
+import type { TokenIf } from '../tokenizer/types.ts';
 
 const loggerPhase = (name: string) => () => (async function* (tokens: TokenIf[]) {
   console.log('tokens', tokens);

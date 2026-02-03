@@ -1,7 +1,7 @@
-import type { LexerPhase } from '~/lexer/types.ts';
-import { mkToken, type TokenIf } from '~/tokenizer/mod.ts';
-import compose from '~/utils/iterable/compose.ts';
-import map from '~/utils/iterable/map.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import { mkToken, type TokenIf } from '../../../tokenizer/mod.ts';
+import compose from '../../../utils/iterable/compose.ts';
+import map from '../../../utils/iterable/map.ts';
 
 export const fieldSplitting: LexerPhase = () =>
   compose<TokenIf>(

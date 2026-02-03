@@ -1,5 +1,5 @@
-import { mkToken, type Reducer } from '~/tokenizer/mod.ts';
-import last from '~/utils/last.ts';
+import { mkToken, type Reducer } from '../../../tokenizer/mod.ts';
+import last from '../../../utils/last.ts';
 
 // Track nesting depth for $(...) inside arithmetic expressions
 // This is needed to correctly handle cases like $(($(echo 5) + 3))

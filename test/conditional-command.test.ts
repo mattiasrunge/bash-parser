@@ -1,5 +1,5 @@
 import { assertSnapshot } from '@std/testing/snapshot';
-import bashParser from '~/parse.ts';
+import bashParser from '../src/parse.ts';
 
 Deno.test('conditional-command', async (t) => {
   // Basic unary tests

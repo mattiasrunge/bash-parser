@@ -1,4 +1,4 @@
-import type { Resolvers } from '~/types.ts';
+import type { Resolvers } from '../../../../types.ts';
 
 export const fieldSplittingMark = async (result: string, text: string, resolveEnv: Resolvers['resolveEnv']) => {
   if (typeof resolveEnv === 'function' && text[0] !== "'" && text[0] !== '"') {

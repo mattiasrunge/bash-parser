@@ -1,10 +1,10 @@
-import { parseArithmetic } from '~/arithmetic/mod.ts';
-import { BashSyntaxError } from '~/errors.ts';
-import type { LexerPhase } from '~/lexer/types.ts';
-import type { Expansion, TokenIf, TokenLocation } from '~/tokenizer/mod.ts';
-import type { AstArithmeticCommandSubstitution, AstArithmeticExpression } from '~/ast/types.ts';
-import bashParser from '~/parse.ts';
-import map from '~/utils/iterable/map.ts';
+import { parseArithmetic } from '../../../arithmetic/mod.ts';
+import { BashSyntaxError } from '../../../errors.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import type { Expansion, TokenIf, TokenLocation } from '../../../tokenizer/mod.ts';
+import type { AstArithmeticCommandSubstitution, AstArithmeticExpression } from '../../../ast/types.ts';
+import bashParser from '../../../parse.ts';
+import map from '../../../utils/iterable/map.ts';
 
 function parseArithmeticAST(xp: Expansion, tokenLoc?: TokenLocation) {
   // Calculate source offset for absolute positions in arithmetic AST

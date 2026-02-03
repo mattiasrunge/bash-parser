@@ -1,4 +1,4 @@
-import { mkToken, type Reducer } from '~/tokenizer/mod.ts';
+import { mkToken, type Reducer } from '../../../tokenizer/mod.ts';
 
 const end: Reducer = () => {
   return {

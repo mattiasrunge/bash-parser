@@ -1,5 +1,5 @@
-import type { LexerPhase, LexerPhases } from '~/lexer/types.ts';
-import type { Reducers } from '~/tokenizer/types.ts';
+import type { LexerPhase, LexerPhases } from '../lexer/types.ts';
+import type { Reducers } from '../tokenizer/types.ts';
 
 export type Enums = {
   IOFileOperators: string[];

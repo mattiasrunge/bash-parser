@@ -1,5 +1,5 @@
-import type { AstNodeCommand } from '~/ast/types.ts';
-import bashParser from '~/parse.ts';
+import type { AstNodeCommand } from '../src/ast/types.ts';
+import bashParser from '../src/parse.ts';
 import utils from './_utils.ts';
 
 Deno.test('alias-substitution', async (t) => {

@@ -1,5 +1,5 @@
 import { assertSnapshot } from '@std/testing/snapshot';
-import bashParser from '~/parse.ts';
+import bashParser from '../src/parse.ts';
 
 Deno.test('loc-while', async (t) => {
   await t.step('loc in while statement', async (t) => {

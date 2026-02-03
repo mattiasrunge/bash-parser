@@ -1,5 +1,5 @@
 import { assertRejects } from '@std/assert';
-import bashParser from '~/parse.ts';
+import bashParser from '../src/parse.ts';
 import utils from './_utils.ts';
 
 function testUnclosed(cmd: string, char: string) {

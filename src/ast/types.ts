@@ -1,4 +1,4 @@
-import type { ExpansionLocation } from '~/tokenizer/types.ts';
+import type { ExpansionLocation } from '../tokenizer/types.ts';
 
 /**
  * If the source is parsed specifing the `insertLOC` option, each node contins a `loc` property that contains the starting and ending lines and columns of the node, and the start and end index of the character in the source string.

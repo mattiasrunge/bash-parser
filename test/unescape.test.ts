@@ -1,4 +1,4 @@
-import unescape from '~/utils/unescape.ts';
+import unescape from '../src/utils/unescape.ts';
 import utils from './_utils.ts';
 
 Deno.test('unescape', async (t) => {

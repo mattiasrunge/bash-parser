@@ -1,8 +1,8 @@
 import { assert, assertEquals, assertRejects, assertThrows } from '@std/assert';
-import fromArray from '~/utils/iterable/from-array.ts';
-import isIterable from '~/utils/iterable/is.ts';
-import map from '~/utils/iterable/map.ts';
-import toArray from '~/utils/iterable/to-array.ts';
+import fromArray from '../src/utils/iterable/from-array.ts';
+import isIterable from '../src/utils/iterable/is.ts';
+import map from '../src/utils/iterable/map.ts';
+import toArray from '../src/utils/iterable/to-array.ts';
 
 const fixture = [1, 2, 3];
 const expected = [2, 4, 6];

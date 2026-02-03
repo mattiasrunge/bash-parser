@@ -1,5 +1,5 @@
 import { assertEquals } from '@std/assert';
-import { hasUnquotedGlob, scanGlobPatterns } from '~/utils/glob-pattern-scanner.ts';
+import { hasUnquotedGlob, scanGlobPatterns } from '../src/utils/glob-pattern-scanner.ts';
 
 Deno.test('hasUnquotedGlob', async (t) => {
   // Basic glob characters

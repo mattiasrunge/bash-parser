@@ -1,4 +1,4 @@
-import type { ProtectedRange } from '~/tokenizer/types.ts';
+import type { ProtectedRange } from '../tokenizer/types.ts';
 import unescape from './unescape.ts';
 import unquoteWord, { type ParseResult } from './unquote-word.ts';
 

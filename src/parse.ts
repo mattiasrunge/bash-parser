@@ -1,9 +1,9 @@
-import { astBuilder } from '~/ast/mod.ts';
-import { BashSyntaxError, type ErrorLocation } from '~/errors.ts';
-import { grammar } from '~/grammar/mod.ts';
-import type { Mode, ModePlugin } from '~/modes/types.ts';
-import type { Parse } from '~/types.ts';
-import { positionFromOffset } from '~/utils/location.ts';
+import { astBuilder } from './ast/mod.ts';
+import { BashSyntaxError, type ErrorLocation } from './errors.ts';
+import { grammar } from './grammar/mod.ts';
+import type { Mode, ModePlugin } from './modes/types.ts';
+import type { Parse } from './types.ts';
+import { positionFromOffset } from './utils/location.ts';
 import { Lexer } from './lexer/mod.ts';
 import modeBash from './modes/bash/mod.ts';
 import modeWordExpansion from './modes/word-expansion/mod.ts';

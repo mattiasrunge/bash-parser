@@ -1,9 +1,9 @@
-import type { LexerPhase } from '~/lexer/types.ts';
-import { applyVisitor, type TokenIf } from '~/tokenizer/mod.ts';
-import compose from '~/utils/iterable/compose.ts';
-import lookahead, { type LookaheadIterable } from '~/utils/iterable/lookahead.ts';
-import map from '~/utils/iterable/map.ts';
-import filterNonNull from '~/utils/non-null.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import { applyVisitor, type TokenIf } from '../../../tokenizer/mod.ts';
+import compose from '../../../utils/iterable/compose.ts';
+import lookahead, { type LookaheadIterable } from '../../../utils/iterable/lookahead.ts';
+import map from '../../../utils/iterable/map.ts';
+import filterNonNull from '../../../utils/non-null.ts';
 
 const isSeparator = async (tk: TokenIf) =>
   tk && (

@@ -1,6 +1,6 @@
 import { assertEquals, assertThrows } from '@std/assert';
-import { Lexer } from '~/arithmetic/lexer.ts';
-import { Parser } from '~/arithmetic/parser.ts';
+import { Lexer } from '../src/arithmetic/lexer.ts';
+import { Parser } from '../src/arithmetic/parser.ts';
 
 function parse(input: string) {
   const lexer = new Lexer(input);

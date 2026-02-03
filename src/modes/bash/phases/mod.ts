@@ -1,4 +1,4 @@
-import type { LexerPhases } from '~/lexer/types.ts';
+import type { LexerPhases } from '../../../lexer/types.ts';
 import aliasSubstitution from './alias-substitution.ts';
 import arithmeticExpansionResolve from './arithmetic-expansion-resolve.ts';
 import arithmeticExpansion from './arithmetic-expansion.ts';

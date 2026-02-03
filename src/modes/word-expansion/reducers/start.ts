@@ -1,4 +1,4 @@
-import type { Reducer } from '~/tokenizer/mod.ts';
+import type { Reducer } from '../../../tokenizer/mod.ts';
 
 const start: Reducer = (state, source, reducers) => {
   const char = source && source.shift();

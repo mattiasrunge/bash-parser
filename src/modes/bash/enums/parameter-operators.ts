@@ -1,4 +1,4 @@
-import type { ParameterOp } from '~/modes/types.ts';
+import type { ParameterOp } from '../../../modes/types.ts';
 
 const name = '[a-zA-Z_][a-zA-Z0-9_]*';
 

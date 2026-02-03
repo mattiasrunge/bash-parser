@@ -1,6 +1,6 @@
-import type { LexerPhase } from '~/lexer/types.ts';
-import type { Expansion, TokenIf } from '~/tokenizer/mod.ts';
-import map from '~/utils/iterable/map.ts';
+import type { LexerPhase } from '../../../lexer/types.ts';
+import type { Expansion, TokenIf } from '../../../tokenizer/mod.ts';
+import map from '../../../utils/iterable/map.ts';
 
 const hasPathExpansion = (token: TokenIf): boolean => {
   return token.expansion?.some((xp: Expansion) => xp.type === 'PathExpansion') ?? false;

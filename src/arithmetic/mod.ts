@@ -5,7 +5,7 @@
 export { Lexer } from './lexer.ts';
 export { Parser } from './parser.ts';
 
-import type { AstArithmeticExpression } from '~/ast/types.ts';
+import type { AstArithmeticExpression } from '../ast/types.ts';
 import { Lexer } from './lexer.ts';
 import { Parser } from './parser.ts';
 

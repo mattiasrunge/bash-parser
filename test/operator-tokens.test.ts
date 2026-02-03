@@ -1,8 +1,8 @@
 import { assertEquals } from '@std/assert';
-import operatorTokens from '~/modes/bash/phases/operator-tokens.ts';
-import { mkToken } from '~/tokenizer/token.ts';
-import operators from '~/modes/bash/enums/operators.ts';
-import toArray from '~/utils/iterable/to-array.ts';
+import operatorTokens from '../src/modes/bash/phases/operator-tokens.ts';
+import { mkToken } from '../src/tokenizer/token.ts';
+import operators from '../src/modes/bash/enums/operators.ts';
+import toArray from '../src/utils/iterable/to-array.ts';
 
 async function* asyncIterable<T>(items: T[]): AsyncIterable<T> {
   for (const item of items) {

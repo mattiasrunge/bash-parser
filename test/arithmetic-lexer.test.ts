@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from '@std/assert';
-import { Lexer } from '~/arithmetic/lexer.ts';
+import { Lexer } from '../src/arithmetic/lexer.ts';
 
 function tokenize(input: string) {
   const lexer = new Lexer(input);

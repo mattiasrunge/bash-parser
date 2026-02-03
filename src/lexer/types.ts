@@ -1,6 +1,6 @@
-import type { Enums } from '~/modes/types.ts';
-import type { TokenIf } from '~/tokenizer/types.ts';
-import type { Resolvers } from '~/types.ts';
+import type { Enums } from '../modes/types.ts';
+import type { TokenIf } from '../tokenizer/types.ts';
+import type { Resolvers } from '../types.ts';
 
 /**
  * `LexerPhase` functions are applied, in order, to the iterable returned from the `tokenizer` function. Each phase enhances or alters the tokens to produce a final token iterable, directly consumable by the grammar parser.

@@ -1,5 +1,5 @@
-import { mkToken, type Reducer } from '~/tokenizer/mod.ts';
-import last from '~/utils/last.ts';
+import { mkToken, type Reducer } from '../../../tokenizer/mod.ts';
+import last from '../../../utils/last.ts';
 
 const expansionCommandTick: Reducer = (state, source, reducers) => {
   const char = source && source.shift();

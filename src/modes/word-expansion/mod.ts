@@ -1,4 +1,4 @@
-import type { ModePlugin } from '~/modes/types.ts';
+import type { ModePlugin } from '../../modes/types.ts';
 import phaseCatalog from './phases/mod.ts';
 import reducers from './reducers/mod.ts';
 

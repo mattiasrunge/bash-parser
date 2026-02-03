@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from '@std/assert';
-import { ReplaceString } from '~/utils/replace-string.ts';
+import { ReplaceString } from '../src/utils/replace-string.ts';
 
 Deno.test('ReplaceString', async (t) => {
   await t.step('initial text is preserved', () => {
