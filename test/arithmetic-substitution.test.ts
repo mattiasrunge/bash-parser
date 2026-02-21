@@ -336,6 +336,21 @@ Deno.test('arithmetic substitution', async (t) => {
     utils.checkResults(innerCmd.suffix[0].expansion[0].command, 'echo 5');
   });
 
+  await t.step('arithmetic inside command substitution', async () => {
+    const result = await bashParser(
+      'for i in $(seq 0 $(($FACE_COUNT - 1))); do echo $i; done',
+    );
+    utils.checkResults(result.commands[0].type, 'For');
+
+    // The word list should contain a single word with a CommandExpansion
+    const wordList = (result as any).commands[0].wordlist;
+    assertEquals(wordList.length, 1);
+
+    const expansion = wordList[0].expansion[0];
+    utils.checkResults(expansion.type, 'CommandExpansion');
+    utils.checkResults(expansion.command, 'seq 0 $(($FACE_COUNT - 1))');
+  });
+
   await t.step('command substitution with complex expression', async () => {
     const result = await bashParser('x=$(($(cat count.txt) * 2 + $(wc -l < file.txt)))');
 

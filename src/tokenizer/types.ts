@@ -109,6 +109,7 @@ export type ProtectedRange = {
 
 export type Expansion = {
   parameter?: string;
+  braceDepth?: number;
 
   command?: string;
   commandAST?: AstNodeScript;

@@ -113,4 +113,77 @@ export const unquoteWordWithProtectedRanges = (text: string, protectedRanges: Pr
   };
 };
 
+/**
+ * Remove shell quotes without word splitting.
+ * Used for assignment values where POSIX forbids field splitting.
+ */
+const removeQuotes = (text: string): string => {
+  let result = '';
+  let inSingle = false;
+  let inDouble = false;
+  let isEscaped = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+
+    if (isEscaped) {
+      result += c;
+      isEscaped = false;
+    } else if (inSingle) {
+      if (c === "'") {
+        inSingle = false;
+      } else {
+        result += c;
+      }
+    } else if (inDouble) {
+      if (c === '"') {
+        inDouble = false;
+      } else if (c === '\\') {
+        const next = text[i + 1];
+        if (next === '"' || next === '\\' || next === '$' || next === '`') {
+          result += next;
+          i++;
+        } else {
+          result += c;
+        }
+      } else {
+        result += c;
+      }
+    } else if (c === "'") {
+      inSingle = true;
+    } else if (c === '"') {
+      inDouble = true;
+    } else if (c === '\\') {
+      isEscaped = true;
+    } else {
+      result += c;
+    }
+  }
+
+  return result;
+};
+
+/**
+ * Quote removal for assignment values - no word splitting.
+ * POSIX: Variable assignments do not undergo field splitting.
+ */
+export const unquoteAssignmentWithProtectedRanges = (
+  text: string,
+  protectedRanges: ProtectedRange[],
+): string => {
+  if (!protectedRanges || protectedRanges.length === 0) {
+    return removeQuotes(text);
+  }
+
+  const sortedRanges = [...protectedRanges].sort((a, b) => b.start - a.start);
+
+  let escaped = text;
+  for (const range of sortedRanges) {
+    const content = escaped.slice(range.start, range.end);
+    escaped = escaped.slice(0, range.start) + escapeProtectedContent(content) + escaped.slice(range.end);
+  }
+
+  return restorePlaceholders(removeQuotes(escaped));
+};
+
 export default unquoteWithProtectedRanges;

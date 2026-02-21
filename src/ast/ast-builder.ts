@@ -187,7 +187,14 @@ function parseConditionalWords(words: AstNodeWord[]): AstConditionalExpression {
     const left = parseWord();
     if (hasMore() && BINARY_OPS.has(current()!.text)) {
       const op = advance().text;
-      const right = parseWord();
+      let right: AstConditionalWord;
+      if (op === '=~') {
+        // For =~, collect all remaining words as regex pattern
+        // (parentheses are regex groups, not conditional grouping)
+        right = parseRegexPattern();
+      } else {
+        right = parseWord();
+      }
       const node: AstConditionalBinaryExpression = {
         type: 'ConditionalBinaryExpression',
         operator: op,
@@ -199,6 +206,21 @@ function parseConditionalWords(words: AstNodeWord[]): AstConditionalExpression {
 
     // Just a word (truthy test for non-empty string)
     return left;
+  }
+
+  function parseRegexPattern(): AstConditionalWord {
+    const parts: string[] = [];
+    while (hasMore() && current()!.text !== '&&' && current()!.text !== '||') {
+      parts.push(advance().text);
+    }
+    if (parts.length === 0) {
+      throw new SyntaxError('Expected regex pattern after =~');
+    }
+    const node: AstConditionalWord = {
+      type: 'ConditionalWord',
+      text: parts.join(''),
+    };
+    return node;
   }
 
   function parseWord(): AstConditionalWord {

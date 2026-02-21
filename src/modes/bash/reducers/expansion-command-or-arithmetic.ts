@@ -42,7 +42,7 @@ const expansionCommandOrArithmetic: Reducer = (state, source, reducers) => {
   const quoteState = getQuoteState(xp!);
   const escaping = isEscaping(xp!);
 
-  if (char === '(' && state.current.slice(-2) === '$(') {
+  if (char === '(' && state.current.slice(-2) === '$(' && !xp!.command) {
     return {
       nextReduction: reducers.expansionArithmetic,
       nextState: state.appendChar(char),
