@@ -50,6 +50,22 @@ Deno.test('quote-removal', async (t) => {
     });
   });
 
+  await t.step('single quotes are literal (no escape processing)', async () => {
+    // Bash single quotes are fully literal: backslash sequences must be preserved
+    // verbatim, e.g. \1 must NOT become an octal control char.
+    const backref = await bashParser("echo 's/(a)/\\1/'");
+    utils.checkResults((backref as any).commands[0].suffix[0], {
+      type: 'Word',
+      text: 's/(a)/\\1/',
+    });
+
+    const escapes = await bashParser("echo 'a\\n\\t\\\\b'");
+    utils.checkResults((escapes as any).commands[0].suffix[0], {
+      type: 'Word',
+      text: 'a\\n\\t\\\\b',
+    });
+  });
+
   await t.step('remove quotes from middle of string', async () => {
     const result = await bashParser("ec'h'o");
     utils.checkResults((result as any).commands[0].name, {

@@ -46,7 +46,13 @@ const parseChunk = (chunks: string[], idx: number): SingleParseResult => {
       if (c === currentQuote) {
         currentQuote = null;
       } else if (currentQuote === SINGLE_QUOTE) {
-        result.value += c;
+        // Single-quoted text is fully literal in bash. The quote-removal phase
+        // runs unescape() on the result afterwards (which gives double quotes
+        // their \n, \t handling), and that would wrongly transform backslash
+        // sequences that were single-quoted (e.g. '\1' -> 0x01). Double every
+        // backslash here so the later unescape collapses it back to one literal
+        // backslash, leaving single-quoted content untouched.
+        result.value += c === BACKSLASH ? BACKSLASH + BACKSLASH : c;
       } else if (c === BACKSLASH) {
         i += 1;
         c = chunk.charAt(i);
