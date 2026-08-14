@@ -9,6 +9,27 @@ const SINGLE_QUOTE_PLACEHOLDER = '\x00SQ\x00';
 const BACKSLASH_PLACEHOLDER = '\x00BS\x00';
 
 /**
+ * Shell metacharacters, and the placeholders that hide them from quote removal.
+ *
+ * unquoteWord's chunker treats these as word terminators and drops them (that is what
+ * makes `a > b` three tokens), which is right for command syntax and wrong for anything
+ * that came out of an expansion: `A='x>y'; echo $A` printed `x y` instead of `x>y`.
+ * Operators are recognised when the input is tokenized, not again on the result of an
+ * expansion, so protected content has to survive that pass intact.
+ *
+ * Whitespace is deliberately not in here — field splitting on it still has to happen.
+ */
+const META_PLACEHOLDERS: [string, string][] = [
+  ['|', '\x00PI\x00'],
+  ['&', '\x00AM\x00'],
+  [';', '\x00SC\x00'],
+  ['(', '\x00OP\x00'],
+  [')', '\x00CP\x00'],
+  ['<', '\x00LT\x00'],
+  ['>', '\x00GT\x00'],
+];
+
+/**
  * Escape quote characters in protected content with placeholders.
  * This prevents them from being processed during quote removal.
  * Note: We do NOT escape spaces/tabs here - word splitting on whitespace
@@ -17,20 +38,32 @@ const BACKSLASH_PLACEHOLDER = '\x00BS\x00';
  * whether word splitting occurs, which is handled before this stage.
  */
 const escapeProtectedContent = (content: string): string => {
-  return content
+  let escaped = content
     .replace(/\\/g, BACKSLASH_PLACEHOLDER)
     .replace(/"/g, DOUBLE_QUOTE_PLACEHOLDER)
     .replace(/'/g, SINGLE_QUOTE_PLACEHOLDER);
+
+  for (const [char, placeholder] of META_PLACEHOLDERS) {
+    escaped = escaped.split(char).join(placeholder);
+  }
+
+  return escaped;
 };
 
 /**
  * Restore placeholders to their original characters.
  */
 const restorePlaceholders = (text: string): string => {
-  return text
+  let restored = text
     .replace(new RegExp(BACKSLASH_PLACEHOLDER, 'g'), '\\')
     .replace(new RegExp(DOUBLE_QUOTE_PLACEHOLDER, 'g'), '"')
     .replace(new RegExp(SINGLE_QUOTE_PLACEHOLDER, 'g'), "'");
+
+  for (const [char, placeholder] of META_PLACEHOLDERS) {
+    restored = restored.split(placeholder).join(char);
+  }
+
+  return restored;
 };
 
 /**
