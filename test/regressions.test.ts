@@ -3,6 +3,49 @@ import type { AstNodeSubshell } from '../src/ast/types.ts';
 import utils from './_utils.ts';
 
 Deno.test('regressions', async (t) => {
+  await t.step('A digits-only argument separated from a redirect is not an IO_NUMBER', async () => {
+    // POSIX 2.10.1: an IO_NUMBER is delimited by < or > with *no intervening
+    // blank*. Without that check `seq 20 > file` lost its operand to a bogus
+    // fd 20 redirect and failed with "seq: missing operand".
+    const result = await bashParser('seq 20 > file.txt');
+
+    utils.checkResults(result, {
+      type: 'Script',
+      commands: [{
+        type: 'Command',
+        name: { type: 'Word', text: 'seq' },
+        suffix: [
+          { type: 'Word', text: '20' },
+          {
+            type: 'Redirect',
+            op: { type: 'Great', text: '>' },
+            file: { type: 'Word', text: 'file.txt' },
+          },
+        ],
+      }],
+    });
+  });
+
+  await t.step('A digits-only argument adjacent to a redirect is still an IO_NUMBER', async () => {
+    const result = await bashParser('cmd 2>&1');
+
+    utils.checkResults(result, {
+      type: 'Script',
+      commands: [{
+        type: 'Command',
+        name: { type: 'Word', text: 'cmd' },
+        suffix: [
+          {
+            type: 'Redirect',
+            op: { type: 'Greatand', text: '>&' },
+            file: { type: 'Word', text: '1' },
+            numberIo: { type: 'IoNumber', text: '2' },
+          },
+        ],
+      }],
+    });
+  });
+
   await t.step('Redirect should be allowed immediately following argument', async () => {
     const result = await bashParser('echo foo>file.txt');
 
