@@ -29,6 +29,72 @@ const BACKSLASH = '\\';
  *     between the two quote contexts (e.g. all'one'"token" parses as
  *     "allonetoken")
  */
+const ANSI_C_ESCAPES: Record<string, string> = {
+  a: '\x07',
+  b: '\b',
+  e: '\x1B',
+  E: '\x1B',
+  f: '\f',
+  n: '\n',
+  r: '\r',
+  t: '\t',
+  v: '\v',
+  '\\': '\\',
+  "'": "'",
+  '"': '"',
+  '?': '?',
+};
+
+/**
+ * Decode the body of an ANSI-C quoted string, `$'a\nb'`.
+ *
+ * @param text - The chunk being parsed
+ * @param start - Index of the opening quote
+ * @returns The decoded text and the index of the closing quote
+ */
+const parseAnsiC = (text: string, start: number): { value: string; end: number } => {
+  let value = '';
+  let i = start + 1;
+
+  while (i < text.length && text.charAt(i) !== "'") {
+    const c = text.charAt(i);
+
+    if (c !== '\\') {
+      value += c;
+      i++;
+      continue;
+    }
+
+    const next = text.charAt(i + 1);
+
+    if (next in ANSI_C_ESCAPES) {
+      value += ANSI_C_ESCAPES[next];
+      i += 2;
+    } else if (next === 'x' || next === 'u' || next === 'U') {
+      const digits = next === 'x' ? 2 : next === 'u' ? 4 : 8;
+      const hex = text.slice(i + 2, i + 2 + digits).match(/^[0-9A-Fa-f]+/)?.[0] ?? '';
+
+      if (hex === '') {
+        value += next;
+        i += 2;
+      } else {
+        value += String.fromCodePoint(Number.parseInt(hex, 16));
+        i += 2 + hex.length;
+      }
+    } else if (next >= '0' && next <= '7') {
+      const octal = text.slice(i + 1, i + 4).match(/^[0-7]+/)![0];
+
+      value += String.fromCodePoint(Number.parseInt(octal, 8));
+      i += 1 + octal.length;
+    } else {
+      value += '\\';
+      i++;
+    }
+  }
+
+  return { value, end: i };
+};
+
 const parseChunk = (chunks: string[], idx: number): SingleParseResult => {
   const chunk = chunks[idx];
   const result: SingleParseResult = { value: '' };
@@ -38,6 +104,16 @@ const parseChunk = (chunks: string[], idx: number): SingleParseResult => {
 
   for (let i = 0, len = chunk.length; i < len; i++) {
     let c = chunk.charAt(i);
+
+    if (!isEscaped && !currentQuote && c === '$' && chunk.charAt(i + 1) === "'") {
+      // ANSI-C quoting: the escapes are decoded, the result is literal
+      const ansi = parseAnsiC(chunk, i + 1);
+
+      // Doubled so the unescape() that follows quote removal leaves it alone
+      result.value += ansi.value.replace(/\\/g, '\\\\');
+      i = ansi.end;
+      continue;
+    }
 
     if (isEscaped) {
       result.value += c;

@@ -6,6 +6,7 @@ class State implements ReducerStateIf {
   operators: Record<string, string>;
   current = '';
   escaping = false;
+  arrayAssignment = false;
   expansion: Expansion[] = [];
   previousReducer: Reducer;
   loc: ReducerLocation;
@@ -28,6 +29,11 @@ class State implements ReducerStateIf {
 
   setEscaping(escaping: boolean) {
     this.escaping = escaping;
+    return this;
+  }
+
+  setArrayAssignment(arrayAssignment: boolean) {
+    this.arrayAssignment = arrayAssignment;
     return this;
   }
 

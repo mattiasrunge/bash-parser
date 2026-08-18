@@ -52,9 +52,11 @@ export interface ReducerStateIf {
   previousReducer: Reducer;
   loc: ReducerLocation;
   delimiterStartLoc?: ReducerPosition;
+  arrayAssignment: boolean;
 
   setLoc(loc: ReducerLocation): this;
   setEscaping(escaping: boolean): this;
+  setArrayAssignment(arrayAssignment: boolean): this;
   setExpansion(expansion: Expansion[]): this;
   setPreviousReducer(previousReducer: Reducer): this;
   setCurrent(current: string): this;

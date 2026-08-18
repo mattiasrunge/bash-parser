@@ -1,3 +1,4 @@
+export * from './assignment.ts';
 export * from './is-valid-name.ts';
 export * from './location.ts';
 export * from './replace-string.ts';

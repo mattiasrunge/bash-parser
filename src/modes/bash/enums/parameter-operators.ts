@@ -1,6 +1,10 @@
 import type { ParameterOp } from '../../../modes/types.ts';
 
-const name = '[a-zA-Z_][a-zA-Z0-9_]*';
+// A parameter name, optionally subscripted: every operator below works on one
+// array element (`${a[0]:-x}`) or on the whole array (`${#a[@]}`) as well as on
+// a scalar. The subscript stays part of the captured parameter; splitting it off
+// is the executor's job, since evaluating it needs the variables.
+const name = '[a-zA-Z_][a-zA-Z0-9_]*(?:\\[[^\\]]*\\])?';
 
 const parameterOps: Record<string, ParameterOp> = {
   // POSIX implementation

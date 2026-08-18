@@ -1,6 +1,6 @@
 import type { LexerPhase } from '../../../lexer/types.ts';
 import type { TokenIf } from '../../../tokenizer/mod.ts';
-import isValidName from '../../../utils/is-valid-name.ts';
+import { isAssignmentPrefix } from '../../../utils/assignment.ts';
 import map from '../../../utils/iterable/map.ts';
 
 const assignmentWord: LexerPhase = () => {
@@ -13,13 +13,9 @@ const assignmentWord: LexerPhase = () => {
       commandPrefixNotAllowed = false;
     }
 
-    // check if it is an assignment
-    if (
-      !commandPrefixNotAllowed && tk.is('WORD') && tk.value!.indexOf('=') > 0 && (
-        // left part must be a valid name
-        isValidName(tk.value!.slice(0, tk.value!.indexOf('=')))
-      )
-    ) {
+    // check if it is an assignment: a name, optionally subscripted, optionally
+    // appending — `x=1`, `x+=1`, `x[2]=1`, `x[2]+=1`, `x=(1 2)`
+    if (!commandPrefixNotAllowed && tk.is('WORD') && isAssignmentPrefix(tk.value!)) {
       return tk.setType('ASSIGNMENT_WORD');
     }
 

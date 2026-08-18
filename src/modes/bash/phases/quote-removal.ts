@@ -1,7 +1,9 @@
 import type { LexerPhase } from '../../../lexer/types.ts';
 import type { Expansion, ProtectedRange, TokenIf } from '../../../tokenizer/mod.ts';
+import { ARRAY_ELEMENT_SEPARATOR, parseAssignmentWord } from '../../../utils/assignment.ts';
 import map from '../../../utils/iterable/map.ts';
 import unescape from '../../../utils/unescape.ts';
+import { sliceRanges } from '../../../utils/unquote-with-ranges.ts';
 import unquoteWord from '../../../utils/unquote-word.ts';
 
 const unquote = (text: string) => {
@@ -62,6 +64,40 @@ const unquoteWithProtectedRanges = (text: string, protectedRanges: ProtectedRang
     .replace(new RegExp(SINGLE_QUOTE_PLACEHOLDER, 'g'), "'");
 };
 
+/**
+ * Quote removal for an array literal, `a=(x "b c")`.
+ *
+ * The whole literal is one token but the elements are separate words, so quote
+ * removal applies to each of them on its own — running it over the literal as a
+ * whole would drop the parens (they are metacharacters) and keep only the first
+ * word.
+ */
+const unquoteArrayLiteral = (text: string, protectedRanges: ProtectedRange[]): string | null => {
+  const parts = parseAssignmentWord(text);
+
+  if (!parts?.list) {
+    return null;
+  }
+
+  const elements: string[] = [];
+  let offset = parts.valueStart;
+
+  for (const element of parts.value.split(ARRAY_ELEMENT_SEPARATOR)) {
+    // Runs of blanks, and blanks just inside the parens, leave empty pieces that
+    // are not elements. An element written as '' or "" is not empty here yet, so
+    // dropping them now is what keeps the two apart afterwards.
+    if (element !== '') {
+      const ranges = sliceRanges(protectedRanges, offset, offset + element.length);
+
+      elements.push(ranges.length > 0 ? unquoteWithProtectedRanges(element, ranges) : unquote(element));
+    }
+
+    offset += element.length + ARRAY_ELEMENT_SEPARATOR.length;
+  }
+
+  return `${text.slice(0, parts.valueStart)}${elements.join(ARRAY_ELEMENT_SEPARATOR)})`;
+};
+
 const unresolvedExpansions = (token: TokenIf) => {
   if (!token.expansion) {
     return false;
@@ -74,6 +110,13 @@ const quoteRemoval: LexerPhase = () =>
   map(async (token: TokenIf) => {
     if (token.is('WORD') || token.is('ASSIGNMENT_WORD')) {
       if (!unresolvedExpansions(token)) {
+        // Also for a WORD, so `declare -a x=(1 2)` reaches the builtin intact
+        const literal = unquoteArrayLiteral(token.value!, token.protectedRanges ?? []);
+
+        if (literal !== null) {
+          return token.setValue(literal);
+        }
+
         if (token.protectedRanges && token.protectedRanges.length > 0) {
           return token.setValue(unquoteWithProtectedRanges(token.value!, token.protectedRanges));
         }
