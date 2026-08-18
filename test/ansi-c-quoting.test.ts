@@ -1,10 +1,9 @@
 import { assertEquals } from '@std/assert';
 import { parse } from '../mod.ts';
 import unquoteWord from '../src/utils/unquote-word.ts';
-import unescape from '../src/utils/unescape.ts';
 
-/** Quote removal as the parser runs it: unquoteWord followed by unescape */
-const unquote = (text: string) => unquoteWord(text).values.map(unescape);
+/** Quote removal as the parser runs it */
+const unquote = (text: string) => unquoteWord(text).values;
 
 const words = async (source: string) => {
   const ast = await parse(source);

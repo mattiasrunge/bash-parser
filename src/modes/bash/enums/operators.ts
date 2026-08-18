@@ -13,6 +13,7 @@ const operators = {
   '||': 'OR_IF',
   ';;': 'DSEMI',
   '<<': 'DLESS',
+  '<<<': 'TLESS',
   '>>': 'DGREAT',
   '<&': 'LESSAND',
   '>&': 'GREATAND',

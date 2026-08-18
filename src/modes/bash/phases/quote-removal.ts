@@ -2,7 +2,6 @@ import type { LexerPhase } from '../../../lexer/types.ts';
 import type { Expansion, ProtectedRange, TokenIf } from '../../../tokenizer/mod.ts';
 import { ARRAY_ELEMENT_SEPARATOR, parseAssignmentWord } from '../../../utils/assignment.ts';
 import map from '../../../utils/iterable/map.ts';
-import unescape from '../../../utils/unescape.ts';
 import { sliceRanges } from '../../../utils/unquote-with-ranges.ts';
 import unquoteWord from '../../../utils/unquote-word.ts';
 
@@ -17,7 +16,7 @@ const unquote = (text: string) => {
     return '';
   }
 
-  return unescape(result.values[0]);
+  return result.values[0];
 };
 
 // Placeholder characters that are unlikely to appear in shell input

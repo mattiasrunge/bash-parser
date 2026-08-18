@@ -1,3 +1,5 @@
+// A backslash inside double quotes is literal in bash: "ec\t\nho" is nine
+// characters, not a tab and a newline. Only $'…' decodes escape sequences.
 export default {
   sourceCode: '"ec\\t\\nho"',
   result: {
@@ -6,7 +8,7 @@ export default {
       {
         type: 'Command',
         name: {
-          text: 'ec\t\nho',
+          text: 'ec\\t\\nho',
           type: 'Word',
         },
       },

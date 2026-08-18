@@ -31,7 +31,7 @@ const commandExpansion: LexerPhase = () =>
       return token.setExpansion(
         await Promise.all(
           token.expansion.map(async (xp: Expansion) => {
-            if (xp.type === 'CommandExpansion') {
+            if (xp.type === 'CommandExpansion' || xp.type === 'ProcessSubstitution') {
               return await setCommandExpansion(xp, token);
             }
 

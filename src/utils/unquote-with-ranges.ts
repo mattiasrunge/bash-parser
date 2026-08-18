@@ -1,5 +1,4 @@
 import type { ProtectedRange } from '../tokenizer/types.ts';
-import unescape from './unescape.ts';
 import unquoteWord, { type ParseResult } from './unquote-word.ts';
 
 // Placeholder characters that are unlikely to appear in shell input
@@ -279,7 +278,7 @@ export const unquote = (text: string): string => {
     return '';
   }
 
-  return unescape(result.values[0]);
+  return result.values[0];
 };
 
 /**
@@ -319,7 +318,7 @@ export const unquoteWordWithProtectedRanges = (text: string, protectedRanges: Pr
   if (!protectedRanges || protectedRanges.length === 0) {
     const result = unquoteWord(text);
     return {
-      values: result.values.map(unescape),
+      values: result.values,
       comment: result.comment,
     };
   }
@@ -341,7 +340,7 @@ export const unquoteWordWithProtectedRanges = (text: string, protectedRanges: Pr
 
   const values: string[] = [];
   for (const value of result.values) {
-    for (const field of splitFields(unescape(value))) {
+    for (const field of splitFields(value)) {
       // A marked boundary splits whatever the quoting was, so it is applied last
       values.push(...field.split(FIELD_MARKER).map(restorePlaceholders));
     }

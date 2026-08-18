@@ -34,11 +34,13 @@ Deno.test('quote-removal', async (t) => {
     });
   });
 
-  await t.step('transform escaped characters', async () => {
+  await t.step('keep escaped characters literal, as bash does', async () => {
+    // Only $'…' decodes escape sequences; inside double quotes a backslash
+    // before anything but " \ $ ` is a backslash
     const result = await bashParser('"ec\\t\\nho"');
     utils.checkResults((result as any).commands[0].name, {
       type: 'Word',
-      text: 'ec\t\nho',
+      text: 'ec\\t\\nho',
     });
   });
 
@@ -163,19 +165,19 @@ Deno.test('quote-removal', async (t) => {
     });
   });
 
-  await t.step('handles backslash-n escape sequence', async () => {
+  await t.step('keeps a backslash-n sequence literal', async () => {
     const result = await bashParser('"line1\\nline2"');
     utils.checkResults((result as any).commands[0].name, {
       type: 'Word',
-      text: 'line1\nline2',
+      text: 'line1\\nline2',
     });
   });
 
-  await t.step('handles backslash-t escape sequence', async () => {
-    const result = await bashParser('"col1\\tcol2"');
+  await t.step("a newline comes from $'…' instead", async () => {
+    const result = await bashParser("$'line1\\nline2'");
     utils.checkResults((result as any).commands[0].name, {
       type: 'Word',
-      text: 'col1\tcol2',
+      text: 'line1\nline2',
     });
   });
 

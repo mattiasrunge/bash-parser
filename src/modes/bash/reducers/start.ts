@@ -79,6 +79,21 @@ const start: Reducer = (state, source, reducers) => {
     };
   }
 
+  // Process substitution, `<(cmd)` / `>(cmd)`: a word, not a redirection, and
+  // the body is reduced by the command substitution machinery
+  if (!state.escaping && (char === '<' || char === '>') && source[0] === '(') {
+    source.shift();
+
+    return {
+      nextReduction: reducers.expansionCommandOrArithmetic,
+      nextState: state
+        .appendEmptyExpansion()
+        .replaceLastExpansion({ direction: char === '<' ? 'in' : 'out' })
+        .appendChar(char)
+        .appendChar('('),
+    };
+  }
+
   if (!state.escaping && state.isPartOfOperator(char)) {
     // Special case: '[' and ']' are only potential operators at word boundary.
     // In the middle of a word (like file[0-9].txt), they are glob characters.

@@ -215,6 +215,7 @@ export type AstConditionalWord = AstNode & {
   expansion?: Array<
     | AstArithmeticExpansion
     | AstCommandExpansion
+    | AstProcessSubstitution
     | AstParameterExpansion
     | AstPathExpansion
   >;
@@ -228,6 +229,8 @@ export type AstNodeFor = AstNode & {
   name: AstNodeWord;
   wordlist?: AstNodeWord[];
   do: AstNodeCompoundList;
+  /** Redirections applied to the whole command, `while … done < file` */
+  redirections?: AstNodeRedirect[];
 };
 
 /**
@@ -238,6 +241,8 @@ export type AstNodeCase = AstNode & {
   type: 'Case';
   clause: AstNodeWord;
   cases?: AstNodeCaseItem[];
+  /** Redirections applied to the whole command, `while … done < file` */
+  redirections?: AstNodeRedirect[];
 };
 
 /**
@@ -257,6 +262,8 @@ export type AstNodeIf = AstNode & {
   clause: AstNodeCompoundList;
   then: AstNodeCompoundList;
   else?: AstNodeCompoundList;
+  /** Redirections applied to the whole command, `while … done < file` */
+  redirections?: AstNodeRedirect[];
 };
 
 /**
@@ -266,6 +273,8 @@ export type AstNodeWhile = AstNode & {
   type: 'While';
   clause: AstNodeCompoundList;
   do: AstNodeCompoundList;
+  /** Redirections applied to the whole command, `while … done < file` */
+  redirections?: AstNodeRedirect[];
 };
 
 /**
@@ -275,6 +284,8 @@ export type AstNodeUntil = AstNode & {
   type: 'Until';
   clause: AstNodeCompoundList;
   do: AstNodeCompoundList;
+  /** Redirections applied to the whole command, `while … done < file` */
+  redirections?: AstNodeRedirect[];
 };
 
 /** A `Redirect` represents the redirection of input or output stream of a command to or from a filename or another stream. */
@@ -294,6 +305,7 @@ export type AstNodeWord = AstNode & {
   expansion: Array<
     | AstArithmeticExpansion
     | AstCommandExpansion
+    | AstProcessSubstitution
     | AstParameterExpansion
     | AstPathExpansion
   >;
@@ -308,6 +320,7 @@ export type AstNodeAssignmentWord = AstNode & {
   expansion: Array<
     | AstArithmeticExpansion
     | AstCommandExpansion
+    | AstProcessSubstitution
     | AstParameterExpansion
     | AstPathExpansion
   >;
@@ -333,6 +346,21 @@ export type AstArithmeticExpansion = {
  *
  * The `loc.start` property contains the index of the character in the Word text where the substitution starts. The `loc.end` property contains the index where it the ends.
  */
+/**
+ * A `ProcessSubstitution` represents `<(cmd)` or `>(cmd)`. The command runs on
+ * its own and the word expands to something the command can open: `direction`
+ * says whether the substituted command writes ('in') or reads ('out').
+ */
+export type AstProcessSubstitution = {
+  type: 'ProcessSubstitution';
+  resolved: boolean;
+  loc: ExpansionLocation;
+
+  direction: 'in' | 'out';
+  command: string;
+  commandAST: AstNodeScript;
+};
+
 export type AstCommandExpansion = {
   type: 'CommandExpansion';
   resolved: boolean;

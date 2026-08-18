@@ -22,7 +22,9 @@ const BACKSLASH = '\\';
  *  1. inside single quotes, all characters are printed literally.
  *  2. inside double quotes, all characters are printed literally
  *     except variables prefixed by '$' and backslashes followed by
- *     either a double quote or another backslash.
+ *     '"', '\\', '$' or '`' — any other backslash is literal, so "a\\nb"
+ *     is a backslash and an n, as in bash. $'…' is the form that gives
+ *     escape sequences their C meaning, and it is decoded here.
  *  3. outside of any quotes, backslashes are treated as escape
  *     characters and not printed (unless they are themselves escaped)
  *  4. quote context can switch mid-token if there is no whitespace
@@ -109,8 +111,7 @@ const parseChunk = (chunks: string[], idx: number): SingleParseResult => {
       // ANSI-C quoting: the escapes are decoded, the result is literal
       const ansi = parseAnsiC(chunk, i + 1);
 
-      // Doubled so the unescape() that follows quote removal leaves it alone
-      result.value += ansi.value.replace(/\\/g, '\\\\');
+      result.value += ansi.value;
       i = ansi.end;
       continue;
     }
@@ -122,13 +123,8 @@ const parseChunk = (chunks: string[], idx: number): SingleParseResult => {
       if (c === currentQuote) {
         currentQuote = null;
       } else if (currentQuote === SINGLE_QUOTE) {
-        // Single-quoted text is fully literal in bash. The quote-removal phase
-        // runs unescape() on the result afterwards (which gives double quotes
-        // their \n, \t handling), and that would wrongly transform backslash
-        // sequences that were single-quoted (e.g. '\1' -> 0x01). Double every
-        // backslash here so the later unescape collapses it back to one literal
-        // backslash, leaving single-quoted content untouched.
-        result.value += c === BACKSLASH ? BACKSLASH + BACKSLASH : c;
+        // Single-quoted text is fully literal in bash, backslashes included
+        result.value += c;
       } else if (c === BACKSLASH) {
         i += 1;
         c = chunk.charAt(i);
@@ -136,6 +132,8 @@ const parseChunk = (chunks: string[], idx: number): SingleParseResult => {
         if (c === DOUBLE_QUOTE || c === BACKSLASH || c === '$' || c === '`') {
           result.value += c;
         } else {
+          // Any other backslash is literal inside double quotes: bash prints
+          // `a\nb` for "a\nb", and only $'…' gives an escape its C meaning
           result.value += BACKSLASH + c;
         }
       } else {

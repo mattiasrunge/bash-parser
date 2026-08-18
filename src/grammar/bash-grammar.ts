@@ -430,6 +430,10 @@ export default {
         '$$ =yy.ioRedirect($1, $filename);',
       ],
       [
+        'TLESS filename',
+        '$$ =yy.ioRedirect($1, $filename);',
+      ],
+      [
         'LESSAND filename',
         '$$ =yy.ioRedirect($1, $filename);',
       ],

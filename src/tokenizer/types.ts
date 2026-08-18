@@ -121,7 +121,9 @@ export type Expansion = {
 
   value?: string;
   pattern?: string;
-  type?: 'ParameterExpansion' | 'CommandExpansion' | 'ArithmeticExpansion' | 'PathExpansion';
+  /** Set while reducing `<(cmd)` / `>(cmd)`, which reads like a command substitution */
+  direction?: 'in' | 'out';
+  type?: 'ParameterExpansion' | 'CommandExpansion' | 'ArithmeticExpansion' | 'PathExpansion' | 'ProcessSubstitution';
   resolved?: boolean;
   loc?: ExpansionLocation;
 };
