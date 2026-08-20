@@ -3,21 +3,14 @@ import type { Expansion, ProtectedRange, TokenIf } from '../../../tokenizer/mod.
 import { ARRAY_ELEMENT_SEPARATOR, parseAssignmentWord } from '../../../utils/assignment.ts';
 import map from '../../../utils/iterable/map.ts';
 import { sliceRanges } from '../../../utils/unquote-with-ranges.ts';
-import unquoteWord from '../../../utils/unquote-word.ts';
+import { unquoteSingleWord } from '../../../utils/unquote-word.ts';
 
-const unquote = (text: string) => {
-  const result = unquoteWord(text);
-
-  if (result.values.length === 0) {
-    return text;
-  }
-
-  if (result.comment) {
-    return '';
-  }
-
-  return result.values[0];
-};
+// The token is one word by the time it gets here: the tokenizer split the line
+// and took the comments out. Parsing it as a command line again split it a
+// second time and kept only the first field — which is how `${x:?must be set}`
+// came back as "must" — and read a `#` in it as the start of a comment, which
+// emptied `echo red=#fff` altogether.
+const unquote = (text: string) => unquoteSingleWord(text);
 
 // Placeholder characters that are unlikely to appear in shell input
 // Used to temporarily escape quotes in protected ranges

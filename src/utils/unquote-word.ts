@@ -8,6 +8,16 @@ export type SingleParseResult = {
   comment?: string;
 };
 
+export type UnquoteOptions = {
+  /**
+   * Whether an unquoted `#` starts a comment. True for a command line, which is
+   * what this parses. False for anything already tokenized: the tokenizer takes
+   * comments out before quote removal ever sees a word, so a `#` left in one is
+   * an ordinary character — `echo red=#fff` prints `red=#fff`.
+   */
+  comments?: boolean;
+};
+
 const RE_META = '|&;()<> \\t';
 const RE_BAREWORD = `(\\\\['"${RE_META}']|[^\\s'"${RE_META}'])+`;
 const RE_SINGLE_QUOTE = '"((\\\\"|[^"])*?)"';
@@ -97,7 +107,7 @@ const parseAnsiC = (text: string, start: number): { value: string; end: number }
   return { value, end: i };
 };
 
-const parseChunk = (chunks: string[], idx: number): SingleParseResult => {
+const parseChunk = (chunks: string[], idx: number, comments = true): SingleParseResult => {
   const chunk = chunks[idx];
   const result: SingleParseResult = { value: '' };
 
@@ -141,7 +151,7 @@ const parseChunk = (chunks: string[], idx: number): SingleParseResult => {
       }
     } else if (c === DOUBLE_QUOTE || c === SINGLE_QUOTE) {
       currentQuote = c;
-    } else if (RegExp('^#$').test(c)) {
+    } else if (comments && c === '#') {
       result.comment = chunk.slice(i + 1) + chunks.slice(idx + 1).join(' ');
       break;
     } else if (c === BACKSLASH) {
@@ -154,7 +164,8 @@ const parseChunk = (chunks: string[], idx: number): SingleParseResult => {
   return result;
 };
 
-const unquoteWord = (s: string): ParseResult => {
+const unquoteWord = (s: string, options: UnquoteOptions = {}): ParseResult => {
+  const comments = options.comments ?? true;
   const chunker = new RegExp(
     '(' + RE_BAREWORD + '|' + RE_SINGLE_QUOTE + '|' + RE_DOUBLE_QUOTE + ')*',
     'g',
@@ -164,7 +175,7 @@ const unquoteWord = (s: string): ParseResult => {
   const result: ParseResult = { values: [] };
 
   for (let i = 0; i < chunks.length; i++) {
-    const { value, comment } = parseChunk(chunks, i);
+    const { value, comment } = parseChunk(chunks, i, comments);
 
     if (value !== undefined) {
       result.values.push(value);
@@ -178,6 +189,18 @@ const unquoteWord = (s: string): ParseResult => {
 
   return result;
 };
+
+/**
+ * Remove quotes from a single word, leaving everything else alone.
+ *
+ * `unquoteWord` parses a *command line*: it splits into words at blanks and
+ * metacharacters and looks for a comment. Applied to one word that the
+ * tokenizer has already delimited, that does damage rather than work — the
+ * blanks in `${x:?must be set}` are inside the word, and a `#` in it is data.
+ * This walks the whole string once instead, so quoting is the only thing
+ * removed.
+ */
+export const unquoteSingleWord = (s: string): string => parseChunk([s], 0, false).value;
 
 export default unquoteWord;
 export { unquoteWord };

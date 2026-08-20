@@ -1,4 +1,6 @@
+import { assertEquals } from '@std/assert';
 import bashParser from '../src/parse.ts';
+import { unquoteSingleWord } from '../src/utils/unquote-word.ts';
 import utils from './_utils.ts';
 
 Deno.test('quote-removal', async (t) => {
@@ -243,5 +245,70 @@ Deno.test('quote-removal', async (t) => {
       type: 'Word',
       text: 'C:\\Users\\test',
     });
+  });
+});
+
+/**
+ * Quote removal works on one word at a time.
+ *
+ * It used to run `unquoteWord` — which parses a whole *command line* — over a
+ * token the tokenizer had already delimited. That did two kinds of damage: the
+ * word was split a second time and only the first field survived, and a `#` in
+ * it was read as the start of a comment.
+ */
+Deno.test('quote removal takes the word as one word', async (t) => {
+  const wordsOf = async (source: string): Promise<string[]> => {
+    const ast = await bashParser(source);
+    // deno-lint-ignore no-explicit-any
+    const command = (ast as any).commands[0];
+
+    // deno-lint-ignore no-explicit-any
+    return [command.name.text, ...(command.suffix ?? []).map((w: any) => w.text)];
+  };
+
+  await t.step('a # inside a word is data, not a comment', async () => {
+    // `echo red=#fff` printed nothing at all: the word became the empty string
+    assertEquals(await wordsOf('echo a#b'), ['echo', 'a#b']);
+    assertEquals(await wordsOf('echo red=#fff'), ['echo', 'red=#fff']);
+    assertEquals(await wordsOf('echo "#tag"'), ['echo', '#tag']);
+  });
+
+  await t.step('a real comment is still one, because the tokenizer takes it', async () => {
+    assertEquals(await wordsOf('echo a # b'), ['echo', 'a']);
+    assertEquals(await wordsOf('echo a #b'), ['echo', 'a']);
+  });
+
+  await t.step('unquoteSingleWord removes quotes and nothing else', () => {
+    assertEquals(unquoteSingleWord('a"b c"d'), 'ab cd');
+    assertEquals(unquoteSingleWord("'a b'"), 'a b');
+    assertEquals(unquoteSingleWord('a\\ b'), 'a b');
+    assertEquals(unquoteSingleWord("$'a\\tb'"), 'a\tb');
+  });
+
+  await t.step('unquoteSingleWord keeps blanks, metacharacters and #', () => {
+    assertEquals(unquoteSingleWord('custom message'), 'custom message');
+    assertEquals(unquoteSingleWord('a  b'), 'a  b');
+    assertEquals(unquoteSingleWord('a>b|c;d'), 'a>b|c;d');
+    assertEquals(unquoteSingleWord('a#b'), 'a#b');
+  });
+});
+
+Deno.test('a word given to ${x:-…} keeps all of itself', async (t) => {
+  const wordOf = async (source: string) => {
+    const result = await bashParser(source);
+
+    // deno-lint-ignore no-explicit-any
+    return (result as any).commands[0].name.expansion[0].word;
+  };
+
+  await t.step('blanks, runs of blanks, and quotes inside it', async () => {
+    assertEquals((await wordOf('${x:?must be set}')).text, 'must be set');
+    assertEquals((await wordOf('${x:-a  b}')).text, 'a  b');
+    assertEquals((await wordOf('${x:-a "b c" d}')).text, 'a b c d');
+  });
+
+  await t.step('metacharacters, which are not operators here', async () => {
+    assertEquals((await wordOf('${x:-a>b}')).text, 'a>b');
+    assertEquals((await wordOf('${x:-a|b}')).text, 'a|b');
   });
 });

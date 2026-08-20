@@ -1,5 +1,5 @@
 import type { ProtectedRange } from '../tokenizer/types.ts';
-import unquoteWord, { type ParseResult } from './unquote-word.ts';
+import unquoteWord, { type ParseResult, unquoteSingleWord } from './unquote-word.ts';
 
 // Placeholder characters that are unlikely to appear in shell input
 // Used to temporarily escape quotes in protected ranges
@@ -267,19 +267,7 @@ const splitFields = (value: string): string[] => {
 /**
  * Unquote a string, removing bash quote characters.
  */
-export const unquote = (text: string): string => {
-  const result = unquoteWord(text);
-
-  if (result.values.length === 0) {
-    return text;
-  }
-
-  if (result.comment) {
-    return '';
-  }
-
-  return result.values[0];
-};
+export const unquote = (text: string): string => unquoteSingleWord(text);
 
 /**
  * Unquote text while preserving protected ranges (content from expansions).
@@ -316,7 +304,7 @@ export const unquoteWithProtectedRanges = (text: string, protectedRanges: Protec
  */
 export const unquoteWordWithProtectedRanges = (text: string, protectedRanges: ProtectedRange[], ifs: string = DEFAULT_IFS): ParseResult => {
   if (!protectedRanges || protectedRanges.length === 0) {
-    const result = unquoteWord(text);
+    const result = unquoteWord(text, { comments: false });
     return {
       values: result.values,
       comment: result.comment,
@@ -335,8 +323,9 @@ export const unquoteWordWithProtectedRanges = (text: string, protectedRanges: Pr
     escaped = escaped.slice(0, range.start) + escapeProtectedContent(split) + escaped.slice(range.end);
   }
 
-  // Run normal unquoteWord
-  const result = unquoteWord(escaped);
+  // Run normal unquoteWord. Comments are off: this is one word, already
+  // delimited, and a `#` in it is data — `echo a#$V` used to expand to `a`.
+  const result = unquoteWord(escaped, { comments: false });
 
   const values: string[] = [];
   for (const value of result.values) {
