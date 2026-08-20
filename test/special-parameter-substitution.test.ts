@@ -1,3 +1,4 @@
+import { assertEquals } from '@std/assert';
 import bashParser from '../src/parse.ts';
 import utils from './_utils.ts';
 
@@ -339,5 +340,33 @@ Deno.test('special parameter substitution', async (t) => {
         },
       }],
     });
+  });
+});
+
+Deno.test('a word that is blank, empty or plain text', async (t) => {
+  const wordOf = async (source: string) => {
+    const result = await bashParser(source);
+
+    // deno-lint-ignore no-explicit-any
+    return (result as any).commands[0].name.expansion[0].word;
+  };
+
+  await t.step('an empty word is absent rather than a parse error', async () => {
+    // `${x:-}` used to throw: an empty word parses to no command, and the name
+    // was read off it regardless
+    assertEquals(await wordOf('${other:-}'), undefined);
+    assertEquals(await wordOf('${other:?}'), undefined);
+  });
+
+  await t.step('a word with blanks in it keeps all of it', async () => {
+    // Parsing it as a command line kept only the first field, so `${x:?must be
+    // set}` came back as "must"
+    assertEquals(await wordOf('${other:?must be set}'), { type: 'Word', text: 'must be set' });
+    assertEquals(await wordOf('${other:-a  b}'), { type: 'Word', text: 'a  b' });
+  });
+
+  await t.step('a word that expands still goes through the parser', async () => {
+    assertEquals((await wordOf('${other:-a $B c}')).text, 'a $B c');
+    assertEquals((await wordOf('${other:-"a b"}')).text, 'a b');
   });
 });

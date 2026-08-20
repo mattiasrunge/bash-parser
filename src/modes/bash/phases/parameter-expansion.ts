@@ -26,9 +26,26 @@ const handleParameter = async (obj: ParameterOp, match: RegExpMatchArray) => {
 
   if (ret.expand) {
     for (const prop of ret.expand as string[]) {
-      const ast = await bashParser(ret[prop] as string, { mode: 'word-expansion' });
-      // console.log('expand', ret[prop], ast.commands[0].name);
-      (ret as any)[prop] = (ast.commands[0] as AstNodeCommand).name;
+      const text = (ret[prop] ?? '') as string;
+
+      // Plain text is kept as it stands. Going through the parser for it loses
+      // everything after the first blank — `${x:?must be set}` came back as
+      // "must" — because a word with nothing to expand in it is tokenized into
+      // one WORD per field and only the first reaches the AST. Anything that
+      // *does* need expanding (a $, a backtick, quotes, an escape) still goes
+      // through the parser, which handles those as one word.
+      if (!/[$`'"\\]/.test(text)) {
+        (ret as any)[prop] = text === '' ? undefined : { type: 'Word', text };
+
+        continue;
+      }
+
+      const ast = await bashParser(text, { mode: 'word-expansion' });
+
+      // An empty word parses to no command at all — `${x:-}` and `${x:?}` are
+      // written that way on purpose, so the word is simply absent rather than
+      // something to read a name off.
+      (ret as any)[prop] = (ast.commands[0] as AstNodeCommand | undefined)?.name;
     }
 
     delete ret.expand;
