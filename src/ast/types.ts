@@ -62,6 +62,9 @@ export type AstNodePipeline = AstNode & {
     | AstNodeWhile
     | AstNodeUntil
   >;
+  /** `! a | b` — the bang is on the pipeline, and inverts its exit status. A
+   * single-command pipeline is unwrapped, so there the bang lands on the command. */
+  bang?: boolean;
 };
 
 /**
