@@ -301,7 +301,7 @@ export const astBuilder = (insertLOC?: boolean) => {
 
     checkAsync: (list, separator) => {
       if (isAsyncSeparator(separator)) {
-        last(list.commands as AstNodeCommand[])!.async = true;
+        last(list.commands)!.async = true;
       }
 
       return list;
@@ -309,7 +309,7 @@ export const astBuilder = (insertLOC?: boolean) => {
 
     listAppend: (list, logicalExpression, separator) => {
       if (isAsyncSeparator(separator)) {
-        last(list.commands as AstNodeCommand[])!.async = true;
+        last(list.commands)!.async = true;
       }
 
       list.commands.push(logicalExpression);
@@ -344,7 +344,7 @@ export const astBuilder = (insertLOC?: boolean) => {
 
     termAppend: (term, logicalExpression, separator) => {
       if (isAsyncSeparator(separator)) {
-        last(term.commands as AstNodeCommand[])!.async = true;
+        last(term.commands)!.async = true;
       }
 
       term.commands.push(logicalExpression);

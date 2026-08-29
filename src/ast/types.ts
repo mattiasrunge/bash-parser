@@ -20,6 +20,13 @@ export type AstSourcePosition = {
 export type AstNode = {
   type: string;
   loc?: AstSourceLocation;
+  /**
+   * The node was terminated by `&` and runs in the background. It sits on the
+   * base type because `&` applies to whatever precedes it — a list, a group, a
+   * loop or a subshell just as much as a single command — and the builder marks
+   * the last node of the list whatever its type.
+   */
+  async?: boolean;
 };
 
 /**
@@ -89,7 +96,6 @@ export type AstNodeCommand = AstNode & {
   name?: AstNodeWord;
   prefix?: Array<AstNodeAssignmentWord | AstNodeRedirect>;
   suffix?: Array<AstNodeWord | AstNodeRedirect>;
-  async?: boolean;
   bang?: boolean;
 };
 
@@ -133,7 +139,6 @@ export type AstNodeCompoundList = AstNode & {
 export type AstNodeSubshell = AstNode & {
   type: 'Subshell';
   list: AstNodeCompoundList;
-  async?: boolean;
 };
 
 /**
@@ -144,7 +149,6 @@ export type AstNodeArithmeticCommand = AstNode & {
   type: 'ArithmeticCommand';
   expression: string;
   arithmeticAST: AstArithmeticExpression;
-  async?: boolean;
 };
 
 /**
@@ -155,7 +159,6 @@ export type AstNodeConditionalCommand = AstNode & {
   type: 'ConditionalCommand';
   expression: string;
   conditionAST: AstConditionalExpression;
-  async?: boolean;
 };
 
 /**
