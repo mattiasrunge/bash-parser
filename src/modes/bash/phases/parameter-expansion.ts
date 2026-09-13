@@ -3,6 +3,7 @@ import type { LexerPhase } from '../../../lexer/types.ts';
 import type { Enums, ParameterOp } from '../../../modes/types.ts';
 import bashParser from '../../../parse.ts';
 import type { Expansion, TokenIf } from '../../../tokenizer/mod.ts';
+import deepCopy from '../../../utils/deep-copy.ts';
 import map from '../../../utils/iterable/map.ts';
 
 const handleParameter = async (obj: ParameterOp, match: RegExpMatchArray) => {
@@ -51,7 +52,7 @@ const expandParameter = async (xp: Expansion, enums: Enums): Promise<Expansion> 
       const opProps = await handleParameter(pair[1], match);
       const mergedObject = Object.assign({}, xp, opProps);
 
-      return structuredClone(mergedObject);
+      return deepCopy(mergedObject);
     }
   }
 

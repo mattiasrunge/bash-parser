@@ -101,8 +101,17 @@ class State implements ReducerStateIf {
   }
 
   advanceLoc(char: string) {
-    const loc = structuredClone(this.loc);
-    loc.previous = { ...this.loc.current };
+    // Runs once per character of input, so this is the parser's hot loop. The
+    // location is three flat position records; copying them by hand is ~20x
+    // cheaper than structuredClone, which was most of the cost of parsing.
+    const loc: ReducerLocation = {
+      start: { ...this.loc.start },
+      previous: { ...this.loc.current },
+      current: { ...this.loc.current },
+    };
+    if (this.loc.end) {
+      loc.end = { ...this.loc.end };
+    }
 
     if (char === '\n') {
       loc.current!.row!++;

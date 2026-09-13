@@ -1,3 +1,4 @@
+import deepCopy from '../utils/deep-copy.ts';
 import type { Expansion, ProtectedRange, TokenContext, TokenFields, TokenIf, TokenLocation } from './types.ts';
 
 class Token implements TokenIf {
@@ -30,7 +31,7 @@ class Token implements TokenIf {
 
   clone(fields: Partial<TokenIf>): TokenIf {
     return new Token({
-      ...structuredClone(this),
+      ...deepCopy(this),
       ...fields,
     });
   }
