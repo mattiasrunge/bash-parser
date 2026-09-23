@@ -180,17 +180,55 @@ class State implements ReducerStateIf {
   }
 }
 
+/** A here-document's text, read by the tokenizer: the lines between `<<WORD` and `WORD`. */
+export type HereDocument = {
+  body: string;
+  /** Any part of the delimiter was quoted: the body is taken literally, with no expansion. */
+  quoted: boolean;
+};
+
+/** `'EOF'`, `"EOF"`, `\EOF` and `E"O"F` all end at a line reading `EOF`; quoting any of it makes the body literal. */
+const hereDocumentDelimiter = (raw: string): { delimiter: string; quoted: boolean } => ({
+  delimiter: raw.replace(/\\(.)/g, '$1').replace(/['"]/g, ''),
+  quoted: /['"\\]/.test(raw),
+});
+
 /**
  * A function that receives reducers and returns another function that, given shell source code, returns an iterable of parsed tokens.
  *
+ * Here-documents are read here rather than by a reducer, because their body is not shell code at
+ * all: after `<<` the next word is the delimiter, and when the line that holds it ends, the lines
+ * that follow — up to one that is the delimiter alone — are taken out of the source as they are.
+ * The delimiter's token carries `ctx.heredoc`, an index into `hereDocuments`, which is how the
+ * parser attaches the body to its redirect; the body may only be read after the redirect is
+ * reduced (`cat <<EOF | grep x`), so it cannot travel on the token itself.
+ *
+ * @param hereDocuments Filled with each here-document's text, in the order they appear.
  * @returns A function that takes shell source code and returns an iterable of parsed tokens.
  */
-export const tokenize = (r: Reducers, operators: Record<string, string>) => (async function* (src: string): AsyncIterable<TokenIf> {
+export const tokenize = (r: Reducers, operators: Record<string, string>, hereDocuments: HereDocument[] = []) => (async function* (src: string): AsyncIterable<TokenIf> {
   let state = new State(r, operators);
 
   let reduction: Reducer | null = r.start;
 
   const source = Array.from(src);
+
+  // After `<<` or `<<-`: the next word is a delimiter. Then its body waits for the end of the line.
+  let delimiterNext: { strip: boolean } | null = null;
+  const pending: { index: number; delimiter: string; strip: boolean }[] = [];
+
+  /** One line of the source, taken out of it, without its newline; undefined at the end. */
+  const takeLine = (): string | undefined => {
+    if (source.length === 0) return undefined;
+    let line = '';
+    while (source.length > 0) {
+      const c = source.shift()!;
+      state = state.advanceLoc(c) as State;
+      if (c === '\n') return line;
+      line += c;
+    }
+    return line;
+  };
 
   while (reduction !== null) {
     const char = source[0];
@@ -199,15 +237,57 @@ export const tokenize = (r: Reducers, operators: Record<string, string>) => (asy
 
     const tokensToEmit = reducerdState.tokensToEmit;
     const nextState = reducerdState.nextState;
+    let lineEnded = false;
 
     if (tokensToEmit) {
+      for (const token of tokensToEmit) {
+        if (token.type !== 'TOKEN' && (token.value === '<<' || token.value === '<<-')) {
+          delimiterNext = { strip: token.value === '<<-' };
+        } else if (delimiterNext && token.type === 'TOKEN') {
+          const { delimiter, quoted } = hereDocumentDelimiter(token.value);
+          token.ctx.heredoc = hereDocuments.length;
+          pending.push({ index: hereDocuments.length, delimiter, strip: delimiterNext.strip });
+          hereDocuments.push({ body: '', quoted });
+          delimiterNext = null;
+        } else if (token.type === 'NEWLINE') {
+          lineEnded = true;
+        } else if (token.type === 'EOF' && pending.length > 0) {
+          // Input ended on the `<<` line itself: the body has not come yet.
+          yield mkToken('CONTINUE', 'here-document');
+          return;
+        }
+      }
       yield* tokensToEmit;
     }
 
     if (nextState) {
-      state = nextState.advanceLoc(char);
+      state = nextState.advanceLoc(char) as State;
     } else {
       state = state.advanceLoc(char);
+    }
+
+    // The line with the `<<` ended: its here-documents follow, one after the other.
+    if (lineEnded && pending.length > 0) {
+      for (const doc of pending.splice(0)) {
+        let body = '';
+        let closed = false;
+        for (let line = takeLine(); line !== undefined; line = takeLine()) {
+          // `<<-` drops leading tabs, from the body and from the closing line alike.
+          const text = doc.strip ? line.replace(/^\t+/, '') : line;
+          if (text === doc.delimiter) {
+            closed = true;
+            break;
+          }
+          body += text + '\n';
+        }
+        hereDocuments[doc.index].body = body;
+        if (!closed) {
+          // Like an unclosed quote: an interactive shell asks for the rest, a script fails.
+          yield mkToken('CONTINUE', 'here-document');
+          return;
+        }
+      }
+      state = state.saveCurrentLocAsStart();
     }
   }
 });

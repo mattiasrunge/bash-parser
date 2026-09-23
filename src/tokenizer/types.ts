@@ -6,6 +6,8 @@ export type TokenContext = {
   joinedToSeparator?: boolean;
   maybeSimpleCommandName?: boolean;
   originalType?: string;
+  /** On a here-document's delimiter: its index in the tokenizer's `hereDocuments`. */
+  heredoc?: number;
 };
 
 export type TokenPosition = {

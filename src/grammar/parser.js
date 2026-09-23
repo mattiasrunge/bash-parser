@@ -104,7 +104,7 @@ break;
 case 8:
 this.$ = yy.list($$[$0]);
 break;
-case 9: case 36: case 37: case 96:
+case 9: case 36: case 37: case 96: case 98:
 this.$ = $$[$0];
 break;
 case 10:
@@ -275,11 +275,14 @@ break;
 case 95:
 this.$ = $$[$0-1].concat($$[$0]);
 break;
-case 97:
+case 97: case 99:
 this.$ = yy.numberIoRedirect($$[$0], $$[$0-1]);
 break;
 case 100: case 101: case 102: case 103: case 104: case 105: case 106: case 107:
 this.$ =yy.ioRedirect($$[$0-1], $$[$0]);
+break;
+case 109: case 110:
+this.$ = yy.ioRedirect($$[$0-1], $$[$0]);
 break;
 case 117:
 $$[$0-1].push($$[$0]);

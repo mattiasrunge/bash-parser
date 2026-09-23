@@ -298,8 +298,21 @@ export type AstNodeUntil = AstNode & {
 export type AstNodeRedirect = AstNode & {
   type: 'Redirect';
   op: AstNodeWord;
+  /** The file — or for `<<` and `<<-`, the delimiter word. */
   file: AstNodeWord;
   numberIo?: AstIoNumber;
+  /** For `<<` and `<<-`: the here-document's text. */
+  heredoc?: AstHereDocument;
+};
+
+/**
+ * The text of a here-document, `cat <<EOF` … `EOF`. With the delimiter quoted anywhere (`<<'EOF'`)
+ * the body is literal; otherwise parameter, command and arithmetic expansion apply to it when it is
+ * used, as inside double quotes, but quotes in it are ordinary characters.
+ */
+export type AstHereDocument = {
+  body: string;
+  quoted: boolean;
 };
 
 /**

@@ -5,6 +5,8 @@ import type { Mode, ModePlugin } from './modes/types.ts';
 import type { Parse } from './types.ts';
 import { positionFromOffset } from './utils/location.ts';
 import { Lexer } from './lexer/mod.ts';
+import type { HereDocument } from './tokenizer/mod.ts';
+import type { AstNodeRedirect } from './ast/types.ts';
 import modeBash from './modes/bash/mod.ts';
 import modeWordExpansion from './modes/word-expansion/mod.ts';
 
@@ -36,6 +38,27 @@ const loadPlugin = (name: string): Mode => {
   return modePlugin.init();
 };
 
+/**
+ * Give each here-document redirect its text. The parser reduces a redirect as soon as it has the
+ * delimiter, which can be before the tokenizer reaches the body (`cat <<EOF | grep x`), so the
+ * delimiter only carries an index and the text is attached once the whole input is read.
+ */
+const attachHereDocuments = (node: unknown, docs: HereDocument[]): void => {
+  if (docs.length === 0 || !node || typeof node !== 'object') return;
+  if (Array.isArray(node)) {
+    for (const item of node) attachHereDocuments(item, docs);
+    return;
+  }
+  const record = node as Record<string, unknown>;
+  const file = record.file as { heredoc?: number } | undefined;
+  if (record.type === 'Redirect' && typeof file?.heredoc === 'number') {
+    const doc = docs[file.heredoc];
+    delete file.heredoc;
+    if (doc) (record as AstNodeRedirect).heredoc = { body: doc.body, quoted: doc.quoted };
+  }
+  for (const value of Object.values(record)) attachHereDocuments(value, docs);
+};
+
 export const parse: Parse = async (sourceCode, options?) => {
   try {
     options = options || {};
@@ -43,10 +66,13 @@ export const parse: Parse = async (sourceCode, options?) => {
 
     const mode = loadPlugin(options.mode);
     const parser = new grammar.Parser();
-    parser.lexer = new Lexer(mode, options);
+    const lexer = new Lexer(mode, options);
+    parser.lexer = lexer;
     parser.yy = astBuilder(options.insertLOC);
 
-    return await parser.parse(sourceCode);
+    const ast = await parser.parse(sourceCode);
+    attachHereDocuments(ast, lexer.hereDocuments);
+    return ast;
   } catch (err) {
     // Already a BashSyntaxError - ensure full source and complete location are attached
     if (err instanceof BashSyntaxError) {

@@ -421,8 +421,14 @@ export default {
         'IO_NUMBER io_file',
         '$$ = yy.numberIoRedirect($io_file, $1);',
       ],
-      'io_here',
-      'IO_NUMBER io_here',
+      [
+        'io_here',
+        '$$ = $io_here;',
+      ],
+      [
+        'IO_NUMBER io_here',
+        '$$ = yy.numberIoRedirect($io_here, $1);',
+      ],
     ],
     io_file: [
       [
@@ -462,8 +468,14 @@ export default {
       'WORD',
     ],
     io_here: [
-      'DLESS here_end',
-      'DLESSDASH here_end',
+      [
+        'DLESS here_end',
+        '$$ = yy.ioRedirect($1, $here_end);',
+      ],
+      [
+        'DLESSDASH here_end',
+        '$$ = yy.ioRedirect($1, $here_end);',
+      ],
     ],
     here_end: [
       'WORD',

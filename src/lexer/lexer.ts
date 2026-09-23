@@ -1,7 +1,7 @@
 import type { LexerIf } from '../grammar/mod.ts';
 import type { LexerContext, LexerPhaseFn } from '../lexer/types.ts';
 import type { Mode } from '../modes/types.ts';
-import { type TokenIf, tokenize, type Tokenizer } from '../tokenizer/mod.ts';
+import { type HereDocument, type TokenIf, tokenize, type Tokenizer } from '../tokenizer/mod.ts';
 import type { Options } from '../types.ts';
 import compose from '../utils/iterable/compose.ts';
 
@@ -9,11 +9,13 @@ export class Lexer implements LexerIf {
   private tokenizer: Tokenizer;
   private tokens?: AsyncIterable<TokenIf>;
   private insertLOC: boolean;
+  /** The here-documents of the input being parsed, in order; the delimiters' `heredoc` indexes into it. */
+  public hereDocuments: HereDocument[] = [];
   public yytext?: any;
   public yylineno: number = 0;
 
   constructor(mode: Mode, options: Options) {
-    const tokenizerPhase: LexerPhaseFn = tokenize(mode.reducers, mode.enums.operators);
+    const tokenizerPhase: LexerPhaseFn = tokenize(mode.reducers, mode.enums.operators, this.hereDocuments);
 
     let previousPhases: LexerPhaseFn[] = [
       tokenizerPhase,
@@ -38,6 +40,7 @@ export class Lexer implements LexerIf {
   }
 
   setInput(source: string) {
+    this.hereDocuments.length = 0;
     this.tokens = this.tokenizer(source);
   }
 
@@ -65,6 +68,10 @@ export class Lexer implements LexerIf {
 
     if (tk.joined) {
       this.yytext.joined = tk.joined;
+    }
+
+    if (tk.ctx.heredoc !== undefined) {
+      this.yytext.heredoc = tk.ctx.heredoc;
     }
 
     if (tk.fieldIdx !== undefined) {
