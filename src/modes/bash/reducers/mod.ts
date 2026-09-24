@@ -1,4 +1,5 @@
 import type { Reducers } from '../../../tokenizer/types.ts';
+import arithmeticCommand from './arithmetic-command.ts';
 import comment from './comment.ts';
 import dollarSingleQuoting from './dollar-single-quoting.ts';
 import doubleQuoting from './double-quoting.ts';
@@ -29,6 +30,7 @@ const reducers: Reducers = {
   expansionParameter,
   expansionCommandOrArithmetic,
   expansionParameterExtended,
+  arithmeticCommand,
 };
 
 export default reducers;

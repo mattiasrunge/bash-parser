@@ -21,8 +21,11 @@ const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<To
   const thirdInFor = twoAgo.value === 'for' && tk.is('TOKEN') &&
     (tk.value!.toLowerCase() === 'in' || tk.value!.toLowerCase() === 'do');
 
+  // `for (( … )) do`: bash needs no separator between the arithmetic header and `do`.
+  const doAfterArithmetic = last.value === '))' && tk.is('TOKEN') && tk.value === 'do';
+
   // console.log({tk, startOfCommand, lastIsReservedWord, thirdInFor, thirdInCase, twoAgo})
-  return tk.value === '}' || startOfCommand || lastIsReservedWord || thirdInFor || thirdInCase;
+  return tk.value === '}' || startOfCommand || lastIsReservedWord || thirdInFor || thirdInCase || doAfterArithmetic;
 };
 
 const reservedWords: LexerPhase = (ctx) =>

@@ -1,4 +1,5 @@
 import type { Reducer, TokenIf } from '../../../tokenizer/types.ts';
+import { closesArithmetic } from './arithmetic-command.ts';
 
 const operator: Reducer = (state, source, reducers) => {
   const char = source && source.shift();
@@ -26,8 +27,14 @@ const operator: Reducer = (state, source, reducers) => {
   let tokens: TokenIf[] = [];
   if (state.isOperator()) {
     // console.log('isOperator ', state.current)
+    const arithmetic = state.current === '((' && closesArithmetic([char].concat(source));
     tokens = state.operatorTokens();
     state = state.resetCurrent().saveCurrentLocAsStart();
+    // `((` opens an arithmetic command: what follows up to `))` is one expression, not shell.
+    if (arithmetic) {
+      const ret = reducers.arithmeticCommand(state, [char].concat(source), reducers);
+      return { nextReduction: ret.nextReduction, tokensToEmit: tokens.concat(ret.tokensToEmit ?? []), nextState: ret.nextState };
+    }
   }
 
   const ret = reducers.start(state, [char].concat(source), reducers);

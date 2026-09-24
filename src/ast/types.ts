@@ -43,6 +43,7 @@ export type AstNodeScript = AstNode & {
     | AstNodeArithmeticCommand
     | AstNodeConditionalCommand
     | AstNodeFor
+    | AstNodeArithmeticFor
     | AstNodeCase
     | AstNodeIf
     | AstNodeWhile
@@ -64,6 +65,7 @@ export type AstNodePipeline = AstNode & {
     | AstNodeArithmeticCommand
     | AstNodeConditionalCommand
     | AstNodeFor
+    | AstNodeArithmeticFor
     | AstNodeCase
     | AstNodeIf
     | AstNodeWhile
@@ -125,6 +127,7 @@ export type AstNodeCompoundList = AstNode & {
     | AstNodeArithmeticCommand
     | AstNodeConditionalCommand
     | AstNodeFor
+    | AstNodeArithmeticFor
     | AstNodeCase
     | AstNodeIf
     | AstNodeWhile
@@ -236,6 +239,28 @@ export type AstNodeFor = AstNode & {
   wordlist?: AstNodeWord[];
   do: AstNodeCompoundList;
   /** Redirections applied to the whole command, `while … done < file` */
+  redirections?: AstNodeRedirect[];
+};
+
+/**
+ * One of the three expressions of an `ArithmeticFor`, as written and parsed.
+ */
+export type AstArithmeticForPart = {
+  expression: string;
+  arithmeticAST: AstArithmeticExpression;
+};
+
+/**
+ * `for (( init; test; update )); do …; done`: `init` runs once, then while `test` is non-zero the
+ * body runs and `update` after it. Each part may be left out, as in bash; a missing `test` is true.
+ */
+export type AstNodeArithmeticFor = AstNode & {
+  type: 'ArithmeticFor';
+  init?: AstArithmeticForPart;
+  test?: AstArithmeticForPart;
+  update?: AstArithmeticForPart;
+  do: AstNodeCompoundList;
+  /** Redirections applied to the whole command, `for (( … )); do …; done > file` */
   redirections?: AstNodeRedirect[];
 };
 

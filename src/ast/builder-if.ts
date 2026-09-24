@@ -2,6 +2,7 @@ import type {
   AstIoNumber,
   AstNode,
   AstNodeArithmeticCommand,
+  AstNodeArithmeticFor,
   AstNodeAssignmentWord,
   AstNodeCase,
   AstNodeCaseItem,
@@ -145,6 +146,12 @@ export type AstBuilder = {
     doGroup: AstNodeCompoundList,
     locStart: AstSourceLocation,
   ) => AstNodeFor;
+
+  arithmeticForClause: (
+    words: AstNodeWord[],
+    doGroup: AstNodeCompoundList,
+    locStart: AstSourceLocation,
+  ) => AstNodeArithmeticFor;
 
   forClauseDefault: (
     name: AstNodeWord,

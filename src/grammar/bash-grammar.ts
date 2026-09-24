@@ -175,6 +175,14 @@ export default {
         '$$ = yy.forClause($name, $wordlist, $do_group, $For.loc);',
         /* todo: here allow only ';' separator */
       ],
+      [
+        'For DOUBLE_OPEN_PAREN arithmetic_word_list DOUBLE_CLOSE_PAREN linebreak do_group',
+        '$$ = yy.arithmeticForClause($arithmetic_word_list, $do_group, $For.loc);',
+      ],
+      [
+        'For DOUBLE_OPEN_PAREN arithmetic_word_list DOUBLE_CLOSE_PAREN SEPARATOR_OP linebreak do_group',
+        '$$ = yy.arithmeticForClause($arithmetic_word_list, $do_group, $For.loc);',
+      ],
     ],
     name: [
       'NAME',

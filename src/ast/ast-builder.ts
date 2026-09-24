@@ -1,6 +1,7 @@
 import { parseArithmetic } from '../arithmetic/mod.ts';
 import type { AstBuilder, Separator } from '../ast/builder-if.ts';
 import type {
+  AstArithmeticForPart,
   AstConditionalBinaryExpression,
   AstConditionalExpression,
   AstConditionalLogicalExpression,
@@ -9,6 +10,7 @@ import type {
   AstConditionalWord,
   AstNode,
   AstNodeArithmeticCommand,
+  AstNodeArithmeticFor,
   AstNodeCase,
   AstNodeCaseItem,
   AstNodeCommand,
@@ -367,9 +369,9 @@ export const astBuilder = (insertLOC?: boolean) => {
       // Join word texts to form the arithmetic expression
       const expression = words.map((w) => w.text).join(' ');
 
-      // Calculate source offset for absolute positions in arithmetic AST
-      // +3 accounts for "(( " (opening parens + typical space)
-      const sourceOffset = locStart?.start?.char !== undefined ? locStart.start.char + 3 : undefined;
+      // Absolute positions in the arithmetic AST start where the body does: its word's own location,
+      // or — without locations — after "(( ", the usual spacing.
+      const sourceOffset = words[0]?.loc?.start?.char ?? (locStart?.start?.char !== undefined ? locStart.start.char + 3 : undefined);
 
       // Parse the arithmetic expression
       let arithmeticAST;
@@ -483,6 +485,53 @@ export const astBuilder = (insertLOC?: boolean) => {
 
     forClause: (name, wordlist, doGroup, locStart) => {
       const node: AstNodeFor = { type: 'For', name, wordlist, do: doGroup };
+
+      if (insertLOC) {
+        node.loc = setLocEnd(setLocStart({ start: {}, end: {} }, locStart), doGroup.loc);
+      }
+
+      return node;
+    },
+
+    arithmeticForClause: (words, doGroup, locStart) => {
+      // The tokenizer reads the whole `(( … ))` body as one word; its three parts are split at the
+      // `;` outside any parentheses, and an empty part is left out.
+      const body = words.map((w) => w.text).join(' ');
+      const bodyStart = words[0]?.loc?.start?.char;
+      const parts: { text: string; offset: number }[] = [];
+      let depth = 0;
+      let from = 0;
+      for (let i = 0; i <= body.length; i++) {
+        const char = body[i];
+        if (char === '(') depth++;
+        else if (char === ')') depth--;
+        else if ((char === ';' && depth === 0) || i === body.length) {
+          parts.push({ text: body.slice(from, i), offset: from });
+          from = i + 1;
+        }
+      }
+      if (parts.length !== 3) {
+        throw new SyntaxError(`for (( … )) takes three expressions separated by ';', got "${body}"`);
+      }
+
+      const part = ({ text, offset }: { text: string; offset: number }): AstArithmeticForPart | undefined => {
+        const expression = text.trim();
+        if (expression === '') return undefined;
+        const lead = text.length - text.trimStart().length;
+        const sourceOffset = bodyStart !== undefined ? bodyStart + offset + lead : undefined;
+        try {
+          return { expression, arithmeticAST: parseArithmetic(expression, { sourceOffset }) };
+        } catch (err) {
+          if (err instanceof BashSyntaxError) throw err;
+          throw new SyntaxError(`Cannot parse arithmetic expression "${expression}": ${(err as Error).message}`);
+        }
+      };
+
+      const node: AstNodeArithmeticFor = { type: 'ArithmeticFor', do: doGroup };
+      const [init, test, update] = parts.map(part);
+      if (init) node.init = init;
+      if (test) node.test = test;
+      if (update) node.update = update;
 
       if (insertLOC) {
         node.loc = setLocEnd(setLocStart({ start: {}, end: {} }, locStart), doGroup.loc);
