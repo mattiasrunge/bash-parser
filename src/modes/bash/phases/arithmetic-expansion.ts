@@ -2,7 +2,7 @@ import { parseArithmetic } from '../../../arithmetic/mod.ts';
 import { BashSyntaxError } from '../../../errors.ts';
 import type { LexerPhase } from '../../../lexer/types.ts';
 import type { Expansion, TokenIf, TokenLocation } from '../../../tokenizer/mod.ts';
-import type { AstArithmeticCommandSubstitution, AstArithmeticExpression } from '../../../ast/types.ts';
+import type { AstArithmeticCommandSubstitution, AstArithmeticExpression, AstNodeCommand, AstNodeWord } from '../../../ast/types.ts';
 import bashParser from '../../../parse.ts';
 import map from '../../../utils/iterable/map.ts';
 
@@ -24,14 +24,25 @@ function parseArithmeticAST(xp: Expansion, tokenLoc?: TokenLocation) {
   }
 }
 
-// Recursively walk the arithmetic AST to find and parse command substitutions
-async function resolveCommandSubstitutions(node: AstArithmeticExpression): Promise<AstArithmeticExpression> {
+/**
+ * Walk an arithmetic AST and parse what the shell must run or expand in it: a `$(…)` becomes its
+ * script, a `${…}` its word. Used for `$(( ))` here, and for `(( ))` and `for (( ))` after the
+ * whole input is parsed (`parse.ts`), whose grammar actions cannot wait for a parse.
+ */
+export async function resolveCommandSubstitutions(node: AstArithmeticExpression): Promise<AstArithmeticExpression> {
   if (!node) return node;
 
   switch (node.type) {
     case 'CommandSubstitution': {
+      if (node.commandAST) return node;
       const commandAST = await bashParser(node.command);
       return { ...node, commandAST } as AstArithmeticCommandSubstitution;
+    }
+    case 'ParameterExpansion': {
+      if (node.word) return node;
+      const script = await bashParser(`: ${node.text}`);
+      const word = (script.commands[0] as AstNodeCommand).suffix?.[0] as AstNodeWord | undefined;
+      return word ? { ...node, word } : node;
     }
     case 'BinaryExpression':
     case 'LogicalExpression': {

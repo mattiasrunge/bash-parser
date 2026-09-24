@@ -588,6 +588,17 @@ export type AstArithmeticCommandSubstitution = AstNode & {
 };
 
 /**
+ * `${…}` inside an arithmetic expression: `text` as written, `word` the same text parsed as a
+ * shell word (filled in after parsing), which the executor expands and evaluates as a number —
+ * or, when the expansion is not a number, as an arithmetic expression of its own.
+ */
+export type AstArithmeticParameterExpansion = AstNode & {
+  type: 'ParameterExpansion';
+  text: string;
+  word?: AstNodeWord;
+};
+
+/**
  * Union type for all arithmetic expression nodes
  */
 export type AstArithmeticExpression =
@@ -600,7 +611,8 @@ export type AstArithmeticExpression =
   | AstArithmeticConditionalExpression
   | AstArithmeticAssignmentExpression
   | AstArithmeticSequenceExpression
-  | AstArithmeticCommandSubstitution;
+  | AstArithmeticCommandSubstitution
+  | AstArithmeticParameterExpansion;
 
 /**
  * Helper types

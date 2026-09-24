@@ -75,3 +75,34 @@ Deno.test('for (( init; test; update ))', async (t) => {
     assertEquals(node.type, 'For');
   });
 });
+
+Deno.test('${…} and $(…) inside arithmetic', async (t) => {
+  type Node = { type: string; text?: string; word?: { text: string }; command?: string; commandAST?: unknown };
+  const nodes = (n: unknown, out: Node[] = []): Node[] => {
+    if (!n || typeof n !== 'object') return out;
+    const node = n as Node;
+    if ((node.type === 'ParameterExpansion' && 'text' in node) || (node.type === 'CommandSubstitution' && 'command' in node)) out.push(node);
+    for (const v of Object.values(n)) nodes(v, out);
+    return out;
+  };
+
+  for (const source of ['echo $(( ${x:-3} + 1 ))', '(( ${#s} > 1 ))', 'echo $(( ${a[1]} * 2 ))', 'for ((i=${n:-0}; i<3; i++)); do :; done']) {
+    await t.step(`${source}: the expansion is a node with its word`, async () => {
+      const found = nodes(await bashParser(source)).filter((n) => n.type === 'ParameterExpansion');
+      assertEquals(found.length, 1);
+      assertEquals(found[0].word?.text, found[0].text);
+    });
+  }
+
+  await t.step('(( )) and for (( )) get their command substitutions parsed, as $(( )) does', async () => {
+    for (const source of ['(( $(echo 5) > 3 ))', 'for ((i=0; i<$(echo 3); i++)); do :; done']) {
+      const found = nodes(await bashParser(source)).filter((n) => n.type === 'CommandSubstitution');
+      assertEquals(found.length, 1);
+      assertEquals(!!found[0].commandAST, true, source);
+    }
+  });
+
+  await t.step('an unclosed ${ is a syntax error', async () => {
+    await assertRejects(() => bashParser('echo $(( ${x + 1 ))'));
+  });
+});

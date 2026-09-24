@@ -6,7 +6,8 @@ import type { Parse } from './types.ts';
 import { positionFromOffset } from './utils/location.ts';
 import { Lexer } from './lexer/mod.ts';
 import type { HereDocument } from './tokenizer/mod.ts';
-import type { AstNodeRedirect } from './ast/types.ts';
+import type { AstNodeArithmeticCommand, AstNodeArithmeticFor, AstNodeRedirect } from './ast/types.ts';
+import { resolveCommandSubstitutions } from './modes/bash/phases/arithmetic-expansion.ts';
 import modeBash from './modes/bash/mod.ts';
 import modeWordExpansion from './modes/word-expansion/mod.ts';
 
@@ -59,6 +60,31 @@ const attachHereDocuments = (node: unknown, docs: HereDocument[]): void => {
   for (const value of Object.values(record)) attachHereDocuments(value, docs);
 };
 
+/**
+ * Parse the `$(…)` and `${…}` inside each `(( … ))` and `for (( … ))`. Their nodes are built by the
+ * grammar's synchronous actions; `$(( ))` gets the same in its lexer phase.
+ */
+const resolveArithmeticCommands = async (node: unknown): Promise<void> => {
+  if (!node || typeof node !== 'object') return;
+  if (Array.isArray(node)) {
+    for (const item of node) await resolveArithmeticCommands(item);
+    return;
+  }
+  const record = node as Record<string, unknown>;
+  if (record.type === 'ArithmeticCommand') {
+    const command = record as AstNodeArithmeticCommand;
+    command.arithmeticAST = await resolveCommandSubstitutions(command.arithmeticAST);
+    return;
+  }
+  if (record.type === 'ArithmeticFor') {
+    const loop = record as AstNodeArithmeticFor;
+    for (const part of [loop.init, loop.test, loop.update]) {
+      if (part) part.arithmeticAST = await resolveCommandSubstitutions(part.arithmeticAST);
+    }
+  }
+  for (const value of Object.values(record)) await resolveArithmeticCommands(value);
+};
+
 export const parse: Parse = async (sourceCode, options?) => {
   try {
     options = options || {};
@@ -72,6 +98,7 @@ export const parse: Parse = async (sourceCode, options?) => {
 
     const ast = await parser.parse(sourceCode);
     attachHereDocuments(ast, lexer.hereDocuments);
+    await resolveArithmeticCommands(ast);
     return ast;
   } catch (err) {
     // Already a BashSyntaxError - ensure full source and complete location are attached

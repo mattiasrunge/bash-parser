@@ -115,6 +115,10 @@ export class Lexer {
       if (this.input[this.pos + 1] === '(') {
         return this.readCommandSubstitution();
       }
+      // ${name}, ${name:-default}, ${#name}, ${a[i]}: the whole expansion, for the shell to expand.
+      if (this.input[this.pos + 1] === '{') {
+        return this.readParameterExpansion();
+      }
       value = '$';
       this.pos++;
     }
@@ -125,6 +129,29 @@ export class Lexer {
     }
 
     return { type: 'IDENTIFIER', value, start, end: this.pos };
+  }
+
+  private readParameterExpansion(): Token {
+    const start = this.pos;
+    this.pos += 2; // skip ${
+
+    let depth = 1;
+    while (this.pos < this.input.length && depth > 0) {
+      const char = this.input[this.pos];
+      if (char === '\\') {
+        this.pos += 2;
+        continue;
+      }
+      if (char === '{') depth++;
+      else if (char === '}') depth--;
+      this.pos++;
+    }
+
+    if (depth !== 0) {
+      throw BashSyntaxError.fromPosition('Unclosed parameter expansion in arithmetic expression', this.input, { char: start });
+    }
+
+    return { type: 'PARAMETER_EXPANSION', value: this.input.slice(start, this.pos), start, end: this.pos };
   }
 
   private readCommandSubstitution(): Token {

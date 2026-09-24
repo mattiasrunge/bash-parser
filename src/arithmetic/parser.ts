@@ -15,6 +15,7 @@ import type {
   AstArithmeticIdentifier,
   AstArithmeticLogicalExpression,
   AstArithmeticNumericLiteral,
+  AstArithmeticParameterExpansion,
   AstArithmeticSequenceExpression,
   AstArithmeticUnaryExpression,
   AstArithmeticUpdateExpression,
@@ -237,6 +238,13 @@ export class Parser {
     // Command substitution: $(...)
     if (token.type === 'COMMAND_SUBSTITUTION') {
       return this.parseCommandSubstitution();
+    }
+
+    // Parameter expansion: ${...}
+    if (token.type === 'PARAMETER_EXPANSION') {
+      const t = this.advance();
+      const node: AstArithmeticParameterExpansion = { type: 'ParameterExpansion', text: t.value, loc: this.createLoc(t.start, t.end) };
+      return node;
     }
 
     throw this.createError(`Unexpected token: ${token.value || token.type}`, token);

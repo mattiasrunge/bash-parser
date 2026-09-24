@@ -7,6 +7,7 @@ export type TokenType =
   | 'NUMBER'
   | 'IDENTIFIER'
   | 'COMMAND_SUBSTITUTION' // $(command) inside arithmetic
+  | 'PARAMETER_EXPANSION' // ${name…} inside arithmetic
   // Single-char operators
   | 'PLUS'
   | 'MINUS'
