@@ -7,6 +7,7 @@ class State implements ReducerStateIf {
   current = '';
   escaping = false;
   arrayAssignment = false;
+  extglobDepth = 0;
   expansion: Expansion[] = [];
   previousReducer: Reducer;
   loc: ReducerLocation;
@@ -34,6 +35,11 @@ class State implements ReducerStateIf {
 
   setArrayAssignment(arrayAssignment: boolean) {
     this.arrayAssignment = arrayAssignment;
+    return this;
+  }
+
+  setExtglobDepth(depth: number) {
+    this.extglobDepth = depth;
     return this;
   }
 

@@ -61,10 +61,13 @@ export interface ReducerStateIf {
   loc: ReducerLocation;
   delimiterStartLoc?: ReducerPosition;
   arrayAssignment: boolean;
+  /** Inside an extended pattern's parentheses, `+(a|b)`: how deep */
+  extglobDepth: number;
 
   setLoc(loc: ReducerLocation): this;
   setEscaping(escaping: boolean): this;
   setArrayAssignment(arrayAssignment: boolean): this;
+  setExtglobDepth(depth: number): this;
   setExpansion(expansion: Expansion[]): this;
   setPreviousReducer(previousReducer: Reducer): this;
   setCurrent(current: string): this;

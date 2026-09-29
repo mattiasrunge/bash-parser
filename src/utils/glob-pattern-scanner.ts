@@ -42,8 +42,8 @@ export function hasUnquotedGlob(text: string): boolean {
     }
 
     if (!currentQuote) {
-      // * and ? are always glob chars
-      if (c === '*' || c === '?') {
+      // * and ? are always glob chars, and so is an extended pattern, @(a|b)
+      if (c === '*' || c === '?' || ('@+!'.includes(c) && text[i + 1] === '(')) {
         return true;
       }
       // [ starts a potential bracket expression
@@ -132,7 +132,7 @@ export function scanGlobPatterns(text: string): GlobPattern[] {
       } else if (c === ']' && inBracket) {
         inBracket = false;
         segmentHasGlob = true; // Bracket expression complete - this is a glob
-      } else if ((c === '*' || c === '?') && !inBracket) {
+      } else if ((c === '*' || c === '?' || ('@+!'.includes(c) && text[i + 1] === '(')) && !inBracket) {
         segmentHasGlob = true;
       }
     }

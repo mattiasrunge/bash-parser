@@ -29,8 +29,11 @@ Deno.test('unquote-with-ranges', async (t) => {
     utils.checkResults(unquoteWordWithProtectedRanges(text, whole(text)), { values: [text] });
   });
 
-  await t.step('metacharacters outside a protected range still terminate a word', () => {
-    utils.checkResults(unquoteWordWithProtectedRanges('a>b', []), { values: ['a', 'b'] });
+  // The text is one word, delimited by the tokenizer already: an operator
+  // character in it is data, as the ( | ) of an extended pattern are
+  await t.step('metacharacters in the word do not split it', () => {
+    utils.checkResults(unquoteWordWithProtectedRanges('a>b', []), { values: ['a>b'] });
+    utils.checkResults(unquoteWordWithProtectedRanges('*.@(c|h)', []), { values: ['*.@(c|h)'] });
   });
 
   await t.step('assignment values keep metacharacters and are not split', () => {

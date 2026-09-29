@@ -111,3 +111,11 @@ Deno.test('more of what bash accepts', async (t) => {
     assertEquals((await parses('echo $(( (1+2)*3 ))')).suffix[0].expansion[0].type, 'ArithmeticExpansion');
   });
 });
+
+Deno.test('extended patterns are part of their word', async () => {
+  const words = async (source: string) => (((await bashParser(source)).commands[0] as any).suffix as { text: string }[]).map((w) => w.text);
+
+  assertEquals(await words('echo *.@(c|h) a*!(x) +([[:alpha:].]) x'), ['*.@(c|h)', 'a*!(x)', '+([[:alpha:].])', 'x']);
+  assertEquals(await words('echo @(a|"q r"|$p)'), ['@(a|"q r"|$p)']);
+  assertEquals(await words('echo <(printf hi) >(cat)'), ['<(printf hi)', '>(cat)']);
+});

@@ -302,11 +302,27 @@ export const unquoteWithProtectedRanges = (text: string, protectedRanges: Protec
  * @param ifs - The field separators to split expansion output on, defaults to space/tab/newline
  * @returns ParseResult with unquoted values, preserving protected range content
  */
+/**
+ * The shell's operator characters as placeholders. The text is one word,
+ * already delimited, and unquoteWord reads it as a command line: an unquoted
+ * `(`, `|` or `)` — which only an extended pattern has, `*.@(c|h)` — would
+ * split it.
+ */
+const protectMetacharacters = (text: string): string => {
+  let escaped = text;
+
+  for (const [char, placeholder] of META_PLACEHOLDERS) {
+    escaped = escaped.split(char).join(placeholder);
+  }
+
+  return escaped;
+};
+
 export const unquoteWordWithProtectedRanges = (text: string, protectedRanges: ProtectedRange[], ifs: string = DEFAULT_IFS): ParseResult => {
   if (!protectedRanges || protectedRanges.length === 0) {
-    const result = unquoteWord(text, { comments: false });
+    const result = unquoteWord(protectMetacharacters(text), { comments: false });
     return {
-      values: result.values,
+      values: result.values.map(restorePlaceholders),
       comment: result.comment,
     };
   }
@@ -325,7 +341,7 @@ export const unquoteWordWithProtectedRanges = (text: string, protectedRanges: Pr
 
   // Run normal unquoteWord. Comments are off: this is one word, already
   // delimited, and a `#` in it is data — `echo a#$V` used to expand to `a`.
-  const result = unquoteWord(escaped, { comments: false });
+  const result = unquoteWord(protectMetacharacters(escaped), { comments: false });
 
   const values: string[] = [];
   for (const value of result.values) {
