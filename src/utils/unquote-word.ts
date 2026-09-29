@@ -92,14 +92,14 @@ const parseAnsiC = (text: string, start: number): { value: string; end: number }
       } else {
         const code = Number.parseInt(hex, 16);
 
-        // Past the last code point is nothing, as in bash: `$'\Uffffffff'` is empty
-        value += code <= 0x10ffff ? String.fromCodePoint(code) : '';
+        // `\x` is a byte; past the last code point is nothing, as in bash: `$'\Uffffffff'` is empty
+        value += next === 'x' ? escapedByte(code) : code <= 0x10ffff ? String.fromCodePoint(code) : '';
         i += 2 + hex.length;
       }
     } else if (next >= '0' && next <= '7') {
       const octal = text.slice(i + 1, i + 4).match(/^[0-7]+/)![0];
 
-      value += String.fromCodePoint(Number.parseInt(octal, 8));
+      value += escapedByte(Number.parseInt(octal, 8));
       i += 1 + octal.length;
     } else {
       value += '\\';
@@ -107,8 +107,29 @@ const parseAnsiC = (text: string, start: number): { value: string; end: number }
     }
   }
 
-  return { value, end: i };
+  return { value: decodeEscapedBytes(value), end: i };
 };
+
+/**
+ * An escape's byte: 0x80 and up stands as U+DC80 to U+DCFF until the string is
+ * done, and a run of them that is UTF-8 becomes the text it spells, `$'\303\251'`
+ * being é — bash deals in bytes. What is not UTF-8 stays those stand-ins, for a
+ * host to write as the bytes (bash-executor's `encodeShellText`).
+ */
+const escapedByte = (value: number): string => {
+  const byte = value & 0xff;
+
+  return String.fromCharCode(byte < 0x80 ? byte : 0xdc00 + byte);
+};
+
+const decodeEscapedBytes = (text: string): string =>
+  text.replace(/[\udc80-\udcff]+/g, (run) => {
+    try {
+      return new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(run, (char) => char.charCodeAt(0) - 0xdc00));
+    } catch {
+      return run;
+    }
+  });
 
 const parseChunk = (chunks: string[], idx: number, comments = true): SingleParseResult => {
   const chunk = chunks[idx];
