@@ -4,6 +4,7 @@ import arithmeticExpansionResolve from './arithmetic-expansion-resolve.ts';
 import arithmeticExpansion from './arithmetic-expansion.ts';
 import assignmentWord from './assignment-word.ts';
 import bracketContext from './bracket-context.ts';
+import braceExpansion from './brace-expansion.ts';
 import casePatterns from './case-patterns.ts';
 import commandExpansionResolve from './command-expansion-resolve.ts';
 import commandExpansion from './command-expansion.ts';
@@ -33,6 +34,7 @@ const rules: LexerPhases = {
   arithmeticExpansion,
   arithmeticExpansionResolve,
   assignmentWord,
+  braceExpansion,
   bracketContext,
   casePatterns,
   commandExpansion,

@@ -22,6 +22,7 @@ const mode: ModePlugin = {
         phaseCatalog.ioNumber,
         phaseCatalog.identifyMaybeSimpleCommands,
         phaseCatalog.assignmentWord,
+        phaseCatalog.braceExpansion,
         phaseCatalog.parameterExpansion,
         phaseCatalog.arithmeticExpansion,
         phaseCatalog.commandExpansion,
