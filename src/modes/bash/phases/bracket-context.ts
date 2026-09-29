@@ -2,7 +2,21 @@ import type { LexerPhase } from '../../../lexer/types.ts';
 import { mkToken, type TokenIf } from '../../../tokenizer/mod.ts';
 
 /** Tokens after which a word stands where a command starts. */
-const COMMAND_SEPARATORS = ['SEMICOLON', 'SEPARATOR_OP', 'NEWLINE', 'NEWLINE_LIST', 'AND_IF', 'OR_IF', 'PIPE', 'AND', 'OPEN_PAREN', 'CLOSE_PAREN', 'DSEMI'];
+const COMMAND_SEPARATORS = [
+  'SEMICOLON',
+  'SEPARATOR_OP',
+  'NEWLINE',
+  'NEWLINE_LIST',
+  'AND_IF',
+  'OR_IF',
+  'PIPE',
+  'AND',
+  'OPEN_PAREN',
+  'CLOSE_PAREN',
+  'DSEMI',
+  'SEMI_AND',
+  'DSEMI_AND',
+];
 
 /** Reserved words (still plain words at this phase) after which a command starts. */
 const COMMAND_STARTING_WORDS = new Set(['then', 'do', 'else', 'elif', 'if', 'while', 'until', '{', '!', 'time']);

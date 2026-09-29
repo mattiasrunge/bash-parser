@@ -67,7 +67,7 @@ const casePatterns: LexerPhase = () =>
           continue;
         }
       } else if (frame?.state === 'body') {
-        if (token.is('DSEMI')) {
+        if (token.is('DSEMI') || token.is('SEMI_AND') || token.is('DSEMI_AND')) {
           frame.state = 'patterns';
         } else if (token.is('Esac')) {
           frames.pop();

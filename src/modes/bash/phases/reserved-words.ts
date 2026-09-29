@@ -11,15 +11,15 @@ const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<To
   // evaluate based on last token
   const startOfCommand = last.is('EMPTY') || last.is('SEPARATOR_OP') || last.is('OPEN_PAREN') ||
     last.is('CLOSE_PAREN') || last.is('NEWLINE') || last.is('NEWLINE_LIST') ||
-    last.is('DSEMI') || last.value === ';' || last.is('PIPE') ||
+    last.is('DSEMI') || last.is('SEMI_AND') || last.is('DSEMI_AND') || last.value === ';' || last.is('PIPE') ||
     last.is('OR_IF') || last.is('PIPE') || last.is('AND_IF');
 
   // What the last token became, not what it reads: in `t ! !` the first `!` is an argument
-  const lastIsReservedWord = !(last.value === 'for') && !(last.value === 'in') && !(last.value === 'case') &&
+  const lastIsReservedWord = !(last.value === 'for') && !(last.value === 'select') && !(last.value === 'in') && !(last.value === 'case') &&
     (Object.values(words).some((word) => last.is(word)) || lastWasReserved);
 
   const thirdInCase = twoAgo.value === 'case' && tk.is('TOKEN') && tk.value!.toLowerCase() === 'in';
-  const thirdInFor = twoAgo.value === 'for' && tk.is('TOKEN') &&
+  const thirdInFor = (twoAgo.value === 'for' || twoAgo.value === 'select') && tk.is('TOKEN') &&
     (tk.value!.toLowerCase() === 'in' || tk.value!.toLowerCase() === 'do');
 
   // `function name { … }`: the body's `{` follows the name directly
@@ -29,7 +29,8 @@ const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<To
   const afterConditional = last.is('DOUBLE_CLOSE_BRACKET');
 
   // `for (( … )) do`: bash needs no separator between the arithmetic header and `do`.
-  const doAfterArithmetic = last.value === '))' && tk.is('TOKEN') && tk.value === 'do';
+  // …and none after `((…))` either: `if ((x)) then`, `for ((…)) {`
+  const doAfterArithmetic = last.value === '))' && tk.is('TOKEN');
 
   // console.log({tk, startOfCommand, lastIsReservedWord, thirdInFor, thirdInCase, twoAgo})
   // `}` too closes a group only where a command could start: `echo }` is an argument

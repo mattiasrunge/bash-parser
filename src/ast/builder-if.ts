@@ -16,6 +16,7 @@ import type {
   AstNodePipeline,
   AstNodeRedirect,
   AstNodeScript,
+  AstNodeSelect,
   AstNodeSubshell,
   AstNodeUntil,
   AstNodeWhile,
@@ -42,6 +43,7 @@ export type AstBuilder = {
     body: AstNodeCompoundList,
     locStart: AstSourceLocation,
     locEnd: AstSourceLocation,
+    terminator?: string,
   ) => AstNodeCaseItem;
 
   caseClause: (
@@ -124,7 +126,8 @@ export type AstBuilder = {
 
   bangPipeLine: (
     pipe: AstNodePipeline,
-  ) => AstNode & { bang: boolean };
+    count?: number,
+  ) => AstNode & { bang?: boolean };
 
   pipeLine: (
     pipe: AstNodePipeline,
@@ -158,6 +161,13 @@ export type AstBuilder = {
     doGroup: AstNodeCompoundList,
     locStart: AstSourceLocation,
   ) => AstNodeFor;
+
+  selectClause: (
+    name: AstNodeWord,
+    wordlist: AstNodeWord[] | null,
+    doGroup: AstNodeCompoundList,
+    locStart: AstSourceLocation,
+  ) => AstNodeSelect;
 
   functionDefinition: (
     name: AstNodeWord,

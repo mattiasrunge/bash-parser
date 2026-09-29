@@ -11,6 +11,7 @@ const reservedWords = {
   'while': 'While',
   'until': 'Until',
   'for': 'For',
+  'select': 'Select',
   'in': 'In',
   '{': 'Lbrace',
   '}': 'Rbrace',

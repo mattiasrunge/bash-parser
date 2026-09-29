@@ -44,3 +44,39 @@ Deno.test('where a parameter expansion ends', async (t) => {
     assertEquals(await words('echo ${a:-G { I } K }'), ['${a:-G { I }', 'K', '}']);
   });
 });
+
+Deno.test('case item terminators', async () => {
+  const result = await bashParser('case x in a) ;; b) ;& c) ;;& d) esac');
+  const items = (result.commands[0] as any).cases as { terminator?: string }[];
+  assertEquals(items.map((item) => item.terminator), [undefined, ';&', ';;&', undefined]);
+});
+
+Deno.test('grammar bash allows beyond POSIX', async (t) => {
+  const first = async (source: string) => (await bashParser(source)).commands[0] as any;
+
+  await t.step('select, with and without in', async () => {
+    assertEquals((await first('select i in a b; do echo; done')).type, 'Select');
+    assertEquals((await first('select i; do echo; done')).wordlist, undefined);
+  });
+
+  await t.step('for name; do', async () => {
+    assertEquals((await first('for i; do echo; done')).type, 'For');
+  });
+
+  await t.step('(( )), a reserved word after )), a { } body for for (( ))', async () => {
+    assertEquals((await first('(( ))')).type, 'ArithmeticCommand');
+    assertEquals((await first('if ((1)) then ((2)) fi')).type, 'If');
+    assertEquals((await first('for ((i=0; i<3; i++)) { echo $i; }')).type, 'ArithmeticFor');
+  });
+
+  await t.step('$(( )) ends after its own groups', async () => {
+    const word = (await first('echo $((1 ? 20 : (x+=2)))')).suffix[0];
+    assertEquals(word.expansion[0].expression, '1 ? 20 : (x+=2)');
+  });
+
+  await t.step('! counted: even cancels, alone negates nothing', async () => {
+    assertEquals((await first('! ! true')).bang, undefined);
+    assertEquals((await first('! ! ! true')).bang, true);
+    assertEquals((await first('!')).bang, true);
+  });
+});

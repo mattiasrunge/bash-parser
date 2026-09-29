@@ -23,6 +23,7 @@ import type {
   AstNodePipeline,
   AstNodeRedirect,
   AstNodeScript,
+  AstNodeSelect,
   AstNodeSubshell,
   AstNodeUntil,
   AstNodeWhile,
@@ -246,8 +247,13 @@ function parseConditionalWords(words: AstNodeWord[]): AstConditionalExpression {
 
 export const astBuilder = (insertLOC?: boolean) => {
   const builder: AstBuilder = {
-    caseItem: (pattern, body, locStart, locEnd) => {
+    caseItem: (pattern, body, locStart, locEnd, terminator) => {
       const node: AstNodeCaseItem = { type: 'CaseItem', pattern, body };
+
+      // `;;` is what an item without one means; only the other two are kept
+      if (terminator === ';&' || terminator === ';;&') {
+        node.terminator = terminator;
+      }
 
       if (insertLOC) {
         node.loc = setLocEnd(setLocStart({ start: {}, end: {} }, locStart), locEnd);
@@ -437,7 +443,12 @@ export const astBuilder = (insertLOC?: boolean) => {
       return pipe;
     },
 
-    bangPipeLine: (pipe) => {
+    bangPipeLine: (pipe, count = 1) => {
+      // Two negations cancel out
+      if (count % 2 === 0) {
+        return pipe.commands.length === 1 ? pipe.commands[0] : pipe;
+      }
+
       const bang = true;
 
       if (pipe.commands.length === 1) {
@@ -519,6 +530,20 @@ export const astBuilder = (insertLOC?: boolean) => {
       if (init) node.init = init;
       if (test) node.test = test;
       if (update) node.update = update;
+
+      if (insertLOC) {
+        node.loc = setLocEnd(setLocStart({ start: {}, end: {} }, locStart), doGroup.loc);
+      }
+
+      return node;
+    },
+
+    selectClause: (name, wordlist, doGroup, locStart) => {
+      const node: AstNodeSelect = { type: 'Select', name, do: doGroup };
+
+      if (wordlist) {
+        node.wordlist = wordlist;
+      }
 
       if (insertLOC) {
         node.loc = setLocEnd(setLocStart({ start: {}, end: {} }, locStart), doGroup.loc);

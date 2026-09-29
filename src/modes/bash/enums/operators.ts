@@ -10,6 +10,8 @@ const operators = {
   '&&': 'AND_IF',
   '||': 'OR_IF',
   ';;': 'DSEMI',
+  ';&': 'SEMI_AND',
+  ';;&': 'DSEMI_AND',
   '<<': 'DLESS',
   '<<<': 'TLESS',
   '>>': 'DGREAT',

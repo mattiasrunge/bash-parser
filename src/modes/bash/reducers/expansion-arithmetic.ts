@@ -1,7 +1,7 @@
 import { mkToken, type Reducer } from '../../../tokenizer/mod.ts';
 import last from '../../../utils/last.ts';
 
-// Track nesting depth for $(...) inside arithmetic expressions
+// Track nesting depth for $(...) and (...) inside arithmetic expressions
 // This is needed to correctly handle cases like $(($(echo 5) + 3))
 const nestingDepthMap = new WeakMap<object, number>();
 // Track consecutive closing parens at depth 0 to detect ))
@@ -29,10 +29,10 @@ const expansionArithmetic: Reducer = (state, source) => {
   const xp = last(state.expansion);
   const currentDepth = getNestingDepth(xp!);
   const value = xp?.value || '';
-  const prevChar = value.slice(-1);
 
-  // Track $( to enter command substitution nesting
-  if (char === '(' && prevChar === '$') {
+  // Every ( nests, a $( substitution's and a grouping's alike: `$((1 ? 2 : (x+=2)))`
+  // ends at the )) after the group's own )
+  if (char === '(') {
     setNestingDepth(xp!, currentDepth + 1);
     setConsecutiveClose(xp!, 0); // Reset consecutive close counter
     return {

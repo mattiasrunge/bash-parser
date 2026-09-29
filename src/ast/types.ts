@@ -43,6 +43,7 @@ export type AstNodeScript = AstNode & {
     | AstNodeArithmeticCommand
     | AstNodeConditionalCommand
     | AstNodeFor
+    | AstNodeSelect
     | AstNodeArithmeticFor
     | AstNodeCase
     | AstNodeIf
@@ -65,6 +66,7 @@ export type AstNodePipeline = AstNode & {
     | AstNodeArithmeticCommand
     | AstNodeConditionalCommand
     | AstNodeFor
+    | AstNodeSelect
     | AstNodeArithmeticFor
     | AstNodeCase
     | AstNodeIf
@@ -127,6 +129,7 @@ export type AstNodeCompoundList = AstNode & {
     | AstNodeArithmeticCommand
     | AstNodeConditionalCommand
     | AstNodeFor
+    | AstNodeSelect
     | AstNodeArithmeticFor
     | AstNodeCase
     | AstNodeIf
@@ -244,6 +247,19 @@ export type AstNodeFor = AstNode & {
 };
 
 /**
+ * `select name in words; do …; done`: a menu of the words on stderr, a line
+ * read from stdin for each pass, `name` set to the chosen word and `REPLY` to
+ * the line. Without `in`, the words are the positional parameters.
+ */
+export type AstNodeSelect = AstNode & {
+  type: 'Select';
+  name: AstNodeWord;
+  wordlist?: AstNodeWord[];
+  do: AstNodeCompoundList;
+  redirections?: AstNodeRedirect[];
+};
+
+/**
  * One of the three expressions of an `ArithmeticFor`, as written and parsed.
  */
 export type AstArithmeticForPart = {
@@ -285,6 +301,12 @@ export type AstNodeCaseItem = AstNode & {
   type: 'CaseItem';
   pattern: AstNodeWord[];
   body: AstNodeCompoundList;
+  /**
+   * How the item ends when it is not `;;`: `;&` runs the next item's commands
+   * as well, without testing its patterns; `;;&` goes on testing the patterns
+   * of the items after it.
+   */
+  terminator?: ';&' | ';;&';
 };
 
 /**

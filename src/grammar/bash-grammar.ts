@@ -56,10 +56,19 @@ export default {
         'pipe_sequence',
         '$$ = yy.pipeLine($pipe_sequence);',
       ],
+      // `! ! cmd` negates twice, and `!` alone negates an empty command, which is 1
       [
-        'Bang pipe_sequence',
-        '$$ = yy.bangPipeLine($pipe_sequence);',
+        'bang_list pipe_sequence',
+        '$$ = yy.bangPipeLine($pipe_sequence, $bang_list);',
       ],
+      [
+        'bang_list',
+        "$$ = yy.bangPipeLine(yy.pipeSequence({ type: 'Command' }), $bang_list);",
+      ],
+    ],
+    bang_list: [
+      ['Bang', '$$ = 1;'],
+      ['bang_list Bang', '$$ = $1 + 1;'],
     ],
     pipe_sequence: [
       [
@@ -86,6 +95,7 @@ export default {
       'arithmetic_command',
       'conditional_command',
       'for_clause',
+      'select_clause',
       'case_clause',
       'if_clause',
       'while_clause',
@@ -95,6 +105,11 @@ export default {
       [
         'DOUBLE_OPEN_PAREN arithmetic_word_list DOUBLE_CLOSE_PAREN',
         '$$ = yy.arithmeticCommand($arithmetic_word_list, $DOUBLE_OPEN_PAREN.loc, $DOUBLE_CLOSE_PAREN.loc);',
+      ],
+      // `(( ))`: an empty expression, which is 0 and so fails
+      [
+        'DOUBLE_OPEN_PAREN DOUBLE_CLOSE_PAREN',
+        '$$ = yy.arithmeticCommand([], $DOUBLE_OPEN_PAREN.loc, $DOUBLE_CLOSE_PAREN.loc);',
       ],
     ],
     arithmetic_word_list: [
@@ -162,6 +177,11 @@ export default {
         'For name linebreak do_group',
         '$$ = yy.forClauseDefault($name, $do_group, $For.loc);',
       ],
+      // `for i; do`: POSIX's sequential separator between the name and `do`
+      [
+        'For name SEPARATOR_OP linebreak do_group',
+        '$$ = yy.forClauseDefault($name, $do_group, $For.loc);',
+      ],
       [
         'For name LINEBREAK_IN separator do_group',
         '$$ = yy.forClauseDefault($name, $do_group, $For.loc);',
@@ -182,6 +202,37 @@ export default {
       [
         'For DOUBLE_OPEN_PAREN arithmetic_word_list DOUBLE_CLOSE_PAREN SEPARATOR_OP linebreak do_group',
         '$$ = yy.arithmeticForClause($arithmetic_word_list, $do_group, $For.loc);',
+      ],
+      // bash also takes a { } group for the body: `for ((i=0; i<3; i++)) { echo $i; }`
+      [
+        'For DOUBLE_OPEN_PAREN arithmetic_word_list DOUBLE_CLOSE_PAREN linebreak brace_group',
+        '$$ = yy.arithmeticForClause($arithmetic_word_list, $brace_group, $For.loc);',
+      ],
+      [
+        'For DOUBLE_OPEN_PAREN arithmetic_word_list DOUBLE_CLOSE_PAREN SEPARATOR_OP linebreak brace_group',
+        '$$ = yy.arithmeticForClause($arithmetic_word_list, $brace_group, $For.loc);',
+      ],
+    ],
+    select_clause: [
+      [
+        'Select name linebreak do_group',
+        '$$ = yy.selectClause($name, null, $do_group, $Select.loc);',
+      ],
+      [
+        'Select name SEPARATOR_OP linebreak do_group',
+        '$$ = yy.selectClause($name, null, $do_group, $Select.loc);',
+      ],
+      [
+        'Select name LINEBREAK_IN separator do_group',
+        '$$ = yy.selectClause($name, null, $do_group, $Select.loc);',
+      ],
+      [
+        'Select name In separator do_group',
+        '$$ = yy.selectClause($name, null, $do_group, $Select.loc);',
+      ],
+      [
+        'Select name in wordlist separator do_group',
+        '$$ = yy.selectClause($name, $wordlist, $do_group, $Select.loc);',
       ],
     ],
     name: [
@@ -250,21 +301,27 @@ export default {
     ],
     case_item: [
       [
-        'pattern CLOSE_PAREN linebreak DSEMI linebreak',
-        '$$ = yy.caseItem($pattern, null, $pattern[0].loc, $DSEMI.loc);',
+        'pattern CLOSE_PAREN linebreak case_terminator linebreak',
+        '$$ = yy.caseItem($pattern, null, $pattern[0].loc, $case_terminator.loc, $case_terminator.text);',
       ],
       [
-        'pattern CLOSE_PAREN compound_list DSEMI linebreak',
-        '$$ = yy.caseItem($pattern, $compound_list, $pattern[0].loc, $DSEMI.loc);',
+        'pattern CLOSE_PAREN compound_list case_terminator linebreak',
+        '$$ = yy.caseItem($pattern, $compound_list, $pattern[0].loc, $case_terminator.loc, $case_terminator.text);',
       ],
       [
-        'OPEN_PAREN pattern CLOSE_PAREN linebreak DSEMI linebreak',
-        '$$ = yy.caseItem($pattern, null, $OPEN_PAREN.loc, $DSEMI.loc );',
+        'OPEN_PAREN pattern CLOSE_PAREN linebreak case_terminator linebreak',
+        '$$ = yy.caseItem($pattern, null, $OPEN_PAREN.loc, $case_terminator.loc, $case_terminator.text);',
       ],
       [
-        'OPEN_PAREN pattern CLOSE_PAREN compound_list DSEMI linebreak',
-        '$$ = yy.caseItem($pattern, $compound_list, $OPEN_PAREN.loc, $DSEMI.loc);',
+        'OPEN_PAREN pattern CLOSE_PAREN compound_list case_terminator linebreak',
+        '$$ = yy.caseItem($pattern, $compound_list, $OPEN_PAREN.loc, $case_terminator.loc, $case_terminator.text);',
       ],
+    ],
+    // `;;` ends the case, `;&` runs the next item's commands too, `;;&` goes on testing the patterns after
+    case_terminator: [
+      ['DSEMI', '$$ = $1;'],
+      ['SEMI_AND', '$$ = $1;'],
+      ['DSEMI_AND', '$$ = $1;'],
     ],
     pattern: [
       [
