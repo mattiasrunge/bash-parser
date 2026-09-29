@@ -100,6 +100,11 @@ const unresolvedExpansions = (token: TokenIf) => {
 
 const quoteRemoval: LexerPhase = () =>
   map(async (token: TokenIf) => {
+    // A pattern is matched by the executor, which has to see its quotes
+    if (token.ctx.pattern) {
+      return token;
+    }
+
     if (token.is('WORD') || token.is('ASSIGNMENT_WORD')) {
       if (!unresolvedExpansions(token)) {
         // Also for a WORD, so `declare -a x=(1 2)` reaches the builtin intact

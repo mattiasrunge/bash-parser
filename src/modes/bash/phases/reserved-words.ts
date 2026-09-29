@@ -4,7 +4,7 @@ import compose from '../../../utils/iterable/compose.ts';
 import lookahead, { type LookaheadIterable } from '../../../utils/iterable/lookahead.ts';
 import map from '../../../utils/iterable/map.ts';
 
-const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<TokenIf>, words: Record<string, string>) => {
+const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<TokenIf>, words: Record<string, string>, lastWasReserved: boolean) => {
   const last = iterable.behind(1) || { EMPTY: true, is: (type: string) => type === 'EMPTY', value: '' };
   const twoAgo = iterable.behind(2) || { EMPTY: true, is: (type: string) => type === 'EMPTY', value: '' };
 
@@ -14,28 +14,37 @@ const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<To
     last.is('DSEMI') || last.value === ';' || last.is('PIPE') ||
     last.is('OR_IF') || last.is('PIPE') || last.is('AND_IF');
 
+  // What the last token became, not what it reads: in `t ! !` the first `!` is an argument
   const lastIsReservedWord = !(last.value === 'for') && !(last.value === 'in') && !(last.value === 'case') &&
-    (Object.values(words).some((word) => last.is(word)) || last.value! in words);
+    (Object.values(words).some((word) => last.is(word)) || lastWasReserved);
 
   const thirdInCase = twoAgo.value === 'case' && tk.is('TOKEN') && tk.value!.toLowerCase() === 'in';
   const thirdInFor = twoAgo.value === 'for' && tk.is('TOKEN') &&
     (tk.value!.toLowerCase() === 'in' || tk.value!.toLowerCase() === 'do');
 
+  // `if [[ x ]] then`: `]]` ends the command, and bash needs no separator after it either
+  const afterConditional = last.is('DOUBLE_CLOSE_BRACKET');
+
   // `for (( … )) do`: bash needs no separator between the arithmetic header and `do`.
   const doAfterArithmetic = last.value === '))' && tk.is('TOKEN') && tk.value === 'do';
 
   // console.log({tk, startOfCommand, lastIsReservedWord, thirdInFor, thirdInCase, twoAgo})
-  return tk.value === '}' || startOfCommand || lastIsReservedWord || thirdInFor || thirdInCase || doAfterArithmetic;
+  return tk.value === '}' || startOfCommand || lastIsReservedWord || thirdInFor || thirdInCase || doAfterArithmetic || afterConditional;
 };
 
-const reservedWords: LexerPhase = (ctx) =>
-  compose<TokenIf>(
+const reservedWords: LexerPhase = (ctx) => {
+  let lastWasReserved = false;
+
+  return compose<TokenIf>(
     map(async (tk: TokenIf, _idx, iterable) => {
-      // console.log(tk, isValidReservedWordPosition(tk, iterable), hasOwnProperty(words, tk.value))
+      const valid = isValidReservedWordPosition(tk, iterable as LookaheadIterable<TokenIf>, ctx.enums.reservedWords, lastWasReserved);
+
+      lastWasReserved = false;
+
       // TOKEN tokens consisting of a reserved word
       // are converted to their own token types
-      // console.log({tk, v:isValidReservedWordPosition(tk, iterable)})
-      if (isValidReservedWordPosition(tk, iterable as LookaheadIterable<TokenIf>, ctx.enums.reservedWords) && tk.value! in ctx.enums.reservedWords) {
+      if (tk.is('TOKEN') && valid && tk.value! in ctx.enums.reservedWords) {
+        lastWasReserved = true;
         return tk.setType(ctx.enums.reservedWords[tk.value!]);
       }
 
@@ -50,5 +59,6 @@ const reservedWords: LexerPhase = (ctx) =>
     }),
     lookahead.depth(2),
   );
+};
 
 export default reservedWords;

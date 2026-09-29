@@ -8,6 +8,12 @@ export type TokenContext = {
   originalType?: string;
   /** On a here-document's delimiter: its index in the tokenizer's `hereDocuments`. */
   heredoc?: number;
+  /**
+   * A pattern — a `case` pattern, the right-hand side of `[[ == ]]`, `!=` or
+   * `=~`. Quote removal leaves it as written: whoever matches it has to know
+   * what was quoted, which matches literally.
+   */
+  pattern?: boolean;
 };
 
 export type TokenPosition = {

@@ -18,6 +18,7 @@ const mode: ModePlugin = {
         phaseCatalog.reservedWords,
         // loggerPhase('2'),
         phaseCatalog.linebreakIn,
+        phaseCatalog.casePatterns,
         phaseCatalog.ioNumber,
         phaseCatalog.identifyMaybeSimpleCommands,
         phaseCatalog.assignmentWord,
