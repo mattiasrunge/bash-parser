@@ -1,3 +1,4 @@
+import { assertEquals } from '@std/assert';
 import bashParser from '../src/parse.ts';
 import type { AstNodeSubshell } from '../src/ast/types.ts';
 import utils from './_utils.ts';
@@ -150,5 +151,16 @@ Deno.test('regressions', async (t) => {
   await t.step('Arithmetic inside subshell', async () => {
     const result = await bashParser('(echo $((1+2)))');
     utils.checkResults(result.commands[0], { type: 'Subshell' });
+  });
+
+  await t.step("A line's expansions stay on its words, not the next line's first word", async () => {
+    // The first word after a newline took the previous line's expansions as
+    // well, so `$(…)` there ran twice
+    for (const line of ['echo $(date)', 'x=$((1 + 2))', 'echo "$x"']) {
+      const result = await bashParser(`${line}\necho b`);
+      const second = result.commands[1] as { name: { expansion?: unknown[] } };
+
+      assertEquals(second.name.expansion, undefined, line);
+    }
   });
 });

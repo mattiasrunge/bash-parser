@@ -149,9 +149,10 @@ class State implements ReducerStateIf {
         expansion,
       });
 
-      /* if (state.expansion && state.expansion.length) {
-        token.expansion = state.expansion;
-      }*/
+      // The expansions went out with their word. Left behind, the next word to
+      // be emitted without a reset in between — the first one on the next line —
+      // took them too, and ran every `$(…)` of the line before a second time.
+      this.expansion = [];
 
       return [token];
     }
