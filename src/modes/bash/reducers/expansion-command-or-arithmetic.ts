@@ -1,5 +1,10 @@
 import { mkToken, type Reducer } from '../../../tokenizer/mod.ts';
 import last from '../../../utils/last.ts';
+import { substitutionEnd } from '../../../utils/substitution-end.ts';
+
+// How many characters of a `$(` body remain before its closing `)`, as the
+// substitution scanner found them on the body's first character
+const remainingMap = new WeakMap<object, number>();
 
 // Track nesting depth for proper handling of nested command substitutions like $(echo $(echo deep))
 // We use a WeakMap keyed on expansion objects to track depth without modifying the Expansion type
@@ -46,6 +51,37 @@ const expansionCommandOrArithmetic: Reducer = (state, source, reducers) => {
     return {
       nextReduction: reducers.expansionArithmetic,
       nextState: state.appendChar(char),
+    };
+  }
+
+  // The first character of the body: find where it ends, as bash would, once.
+  // Until then the characters are the command's, whatever they are.
+  if (char !== undefined && xp && !remainingMap.has(xp) && !quoteState && !getNestingDepth(xp) && !xp.command) {
+    const end = substitutionEnd(char + source.join(''));
+
+    if (end !== -1) {
+      remainingMap.set(xp, end);
+    }
+  }
+
+  const remaining = xp ? remainingMap.get(xp) : undefined;
+
+  if (char !== undefined && remaining !== undefined) {
+    if (remaining === 0) {
+      return {
+        nextReduction: state.previousReducer,
+        nextState: state.appendChar(char).replaceLastExpansion({
+          type: xp!.direction ? 'ProcessSubstitution' : 'CommandExpansion',
+          loc: Object.assign({}, xp!.loc, { end: state.loc.current?.char }),
+        }),
+      };
+    }
+
+    remainingMap.set(xp!, remaining - 1);
+
+    return {
+      nextReduction: reducers.expansionCommandOrArithmetic,
+      nextState: state.appendChar(char).replaceLastExpansion({ command: (xp!.command || '') + char }),
     };
   }
 
