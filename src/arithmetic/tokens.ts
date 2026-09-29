@@ -58,4 +58,6 @@ export type Token = {
   value: string;
   start: number;
   end: number;
+  /** For an IDENTIFIER written `name[…]`: the text between the brackets */
+  subscript?: string;
 };

@@ -454,12 +454,9 @@ Deno.test('arithmetic parser', async (t) => {
     );
   });
 
-  await t.step('throws on expected identifier after prefix operator', () => {
-    assertThrows(
-      () => parse('++1'),
-      SyntaxError,
-      'Expected identifier after prefix operator',
-    );
+  // `++1` is +(+1) in bash; only an operator with nothing after it is an error
+  await t.step('throws on a prefix operator without an operand', () => {
+    assertThrows(() => parse('++'), SyntaxError);
   });
 
   await t.step('throws on missing colon in ternary', () => {
@@ -476,5 +473,45 @@ Deno.test('arithmetic parser', async (t) => {
       SyntaxError,
       'Expected RPAREN',
     );
+  });
+});
+
+Deno.test('arithmetic parser: what bash accepts beyond C', async (t) => {
+  await t.step('an array element keeps its subscript text and parses it', () => {
+    const result = parse('a[i + 1]') as any;
+    assertEquals(result.type, 'Identifier');
+    assertEquals(result.name, 'a');
+    assertEquals(result.subscript, 'i + 1');
+    assertEquals(result.index.type, 'BinaryExpression');
+  });
+
+  await t.step('an element can be updated and assigned', () => {
+    assertEquals((parse('a[0]++') as any).argument.subscript, '0');
+    assertEquals((parse('m[k] += 2') as any).left.subscript, 'k');
+  });
+
+  await t.step('a subscript that is not arithmetic keeps only its text', () => {
+    const result = parse('m[a b]') as any;
+    assertEquals(result.subscript, 'a b');
+    assertEquals(result.index, undefined);
+  });
+
+  await t.step('base#digits', () => {
+    assertEquals((parse('16#ff') as any).value, 255);
+    assertEquals((parse('2#101') as any).value, 5);
+    assertEquals((parse('36#Z') as any).value, 35);
+    assertEquals((parse('64#@_') as any).value, 4031);
+  });
+
+  await t.step('a digit too large for its base is an error', () => {
+    assertThrows(() => parse('2#102'));
+    assertThrows(() => parse('65#1'));
+  });
+
+  await t.step('++ and -- before a non-variable are two signs', () => {
+    const result = parse('++7') as any;
+    assertEquals(result.type, 'UnaryExpression');
+    assertEquals(result.argument.type, 'UnaryExpression');
+    assertEquals(result.argument.argument.value, 7);
   });
 });

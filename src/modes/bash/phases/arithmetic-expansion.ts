@@ -1,5 +1,4 @@
-import { parseArithmetic } from '../../../arithmetic/mod.ts';
-import { BashSyntaxError } from '../../../errors.ts';
+import { tryParseArithmetic } from '../../../arithmetic/mod.ts';
 import type { LexerPhase } from '../../../lexer/types.ts';
 import type { Expansion, TokenIf, TokenLocation } from '../../../tokenizer/mod.ts';
 import type { AstArithmeticCommandSubstitution, AstArithmeticExpression, AstNodeCommand, AstNodeWord } from '../../../ast/types.ts';
@@ -14,14 +13,7 @@ function parseArithmeticAST(xp: Expansion, tokenLoc?: TokenLocation) {
     sourceOffset = tokenLoc.start.char + xp.loc.start + 3;
   }
 
-  try {
-    return parseArithmetic(xp.expression!, { sourceOffset });
-  } catch (err) {
-    if (err instanceof BashSyntaxError) {
-      throw err;
-    }
-    throw new SyntaxError(`Cannot parse arithmetic expression "${xp.expression}": ${(err as Error).message}`);
-  }
+  return tryParseArithmetic(xp.expression!, { sourceOffset });
 }
 
 /**
@@ -29,7 +21,8 @@ function parseArithmeticAST(xp: Expansion, tokenLoc?: TokenLocation) {
  * script, a `${…}` its word. Used for `$(( ))` here, and for `(( ))` and `for (( ))` after the
  * whole input is parsed (`parse.ts`), whose grammar actions cannot wait for a parse.
  */
-export async function resolveCommandSubstitutions(node: AstArithmeticExpression): Promise<AstArithmeticExpression> {
+export async function resolveCommandSubstitutions<T extends AstArithmeticExpression | undefined>(node: T): Promise<T>;
+export async function resolveCommandSubstitutions(node: AstArithmeticExpression | undefined): Promise<AstArithmeticExpression | undefined> {
   if (!node) return node;
 
   switch (node.type) {

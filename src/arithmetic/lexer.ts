@@ -102,6 +102,14 @@ export class Lexer {
       value += this.input[this.pos++];
     }
 
+    // base#digits, 2 to 64: the digits are 0-9, a-z, A-Z, @ and _
+    if (this.input[this.pos] === '#') {
+      value += this.input[this.pos++];
+      while (this.pos < this.input.length && /[0-9a-zA-Z@_]/.test(this.input[this.pos])) {
+        value += this.input[this.pos++];
+      }
+    }
+
     return { type: 'NUMBER', value, start, end: this.pos };
   }
 
@@ -126,6 +134,34 @@ export class Lexer {
     // Read identifier characters
     while (this.pos < this.input.length && this.isIdentifierPart(this.input[this.pos])) {
       value += this.input[this.pos++];
+    }
+
+    // An array element, `a[i + 1]`: the subscript runs to the matching `]`
+    if (this.input[this.pos] === '[' && !value.startsWith('$')) {
+      const open = this.pos;
+      let depth = 0;
+
+      for (; this.pos < this.input.length; this.pos++) {
+        const char = this.input[this.pos];
+
+        if (char === '\\') {
+          this.pos++;
+        } else if (char === '[') {
+          depth++;
+        } else if (char === ']' && --depth === 0) {
+          break;
+        }
+      }
+
+      if (depth !== 0) {
+        throw BashSyntaxError.fromPosition(`bad array subscript`, this.input, { char: this.sourceOffset + open });
+      }
+
+      const subscript = this.input.slice(open + 1, this.pos);
+
+      this.pos++;
+
+      return { type: 'IDENTIFIER', value, start, end: this.pos, subscript };
     }
 
     return { type: 'IDENTIFIER', value, start, end: this.pos };

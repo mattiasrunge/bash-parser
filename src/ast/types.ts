@@ -151,7 +151,8 @@ export type AstNodeSubshell = AstNode & {
 export type AstNodeArithmeticCommand = AstNode & {
   type: 'ArithmeticCommand';
   expression: string;
-  arithmeticAST: AstArithmeticExpression;
+  /** Absent when the text is not arithmetic as written: bash parses it only after expansion, at run time. */
+  arithmeticAST?: AstArithmeticExpression;
 };
 
 /**
@@ -247,7 +248,8 @@ export type AstNodeFor = AstNode & {
  */
 export type AstArithmeticForPart = {
   expression: string;
-  arithmeticAST: AstArithmeticExpression;
+  /** Absent when the text is not arithmetic as written: bash parses it only after expansion, at run time. */
+  arithmeticAST?: AstArithmeticExpression;
 };
 
 /**
@@ -381,7 +383,8 @@ export type AstArithmeticExpansion = {
   loc: ExpansionLocation;
 
   expression: string;
-  arithmeticAST: AstArithmeticExpression;
+  /** Absent when the text is not arithmetic as written: bash parses it only after expansion, at run time. */
+  arithmeticAST?: AstArithmeticExpression;
 };
 
 /** A `CommandExpansion` represent a command substitution operation to perform on the Word.
@@ -470,6 +473,14 @@ export type AstArithmeticNumericLiteral = AstNode & {
 export type AstArithmeticIdentifier = AstNode & {
   type: 'Identifier';
   name: string;
+  /**
+   * An array element, `a[…]`: the text between the brackets. An indexed array
+   * evaluates it as arithmetic, an associative one uses it as a key — which
+   * the executor knows and the parser does not.
+   */
+  subscript?: string;
+  /** The subscript parsed as arithmetic, when it is arithmetic as written. */
+  index?: AstArithmeticExpression;
 };
 
 /**

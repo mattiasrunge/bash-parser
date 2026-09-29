@@ -1,4 +1,4 @@
-import { assertEquals, assertRejects } from '@std/assert';
+import { assertEquals } from '@std/assert';
 import bashParser from '../src/parse.ts';
 import utils from './_utils.ts';
 
@@ -90,18 +90,19 @@ Deno.test('arithmetic substitution', async (t) => {
     });
   });
 
-  await t.step('arithmetic substitution node applied to invalid expressions throws', async () => {
-    const result = (await assertRejects(() => bashParser('echo $((a b c d))'))) as Error;
-    const message = result.message.split('\n')[0];
-    // Location is now stored separately from message, not embedded
-    assertEquals(message, 'Unexpected token: b');
+  // bash checks arithmetic only after expansion, when it runs: `bash -n` accepts both
+  await t.step('an invalid expression parses, keeping its text and no AST', async () => {
+    const result = await bashParser('echo $((a b c d))');
+    const expansion = (result.commands[0] as any).suffix[0].expansion[0];
+    assertEquals(expansion.expression, 'a b c d');
+    assertEquals(expansion.arithmeticAST, undefined);
   });
 
-  await t.step('arithmetic substitution node applied to non expressions throws', async () => {
-    const result = (await assertRejects(() => bashParser('echo $((while(1);))'))) as Error;
-    const message = result.message.split('\n')[0];
-    // Location is now stored separately from message, not embedded
-    assertEquals(message, 'Unexpected character: ;');
+  await t.step('a non-expression parses too, for the executor to reject', async () => {
+    const result = await bashParser('echo $((while(1);))');
+    const expansion = (result.commands[0] as any).suffix[0].expansion[0];
+    assertEquals(expansion.expression, 'while(1);');
+    assertEquals(expansion.arithmeticAST, undefined);
   });
 
   await t.step('arithmetic ast is parsed', async () => {

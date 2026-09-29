@@ -35,3 +35,26 @@ export function parseArithmetic(
   const parser = new Parser(tokens, expression, sourceOffset);
   return parser.parse();
 }
+
+/**
+ * Parse an arithmetic expression the way bash's own parser treats one: not at
+ * all. Bash only balances the parentheses of `$(( ))` and `(( ))`; the text is
+ * expanded and evaluated when it runs, so `$(( 16#ff ))`, `(( a[i]++ ))` or
+ * even `(( -- ))` never make a script a syntax error. This parses what it can
+ * ahead of time and returns undefined for the rest, which the executor then
+ * parses after expansion.
+ *
+ * @param expression - The arithmetic expression to parse
+ * @param options - Optional parsing options
+ * @returns The parsed AST, or undefined when the text is not arithmetic as written
+ */
+export function tryParseArithmetic(
+  expression: string,
+  options?: ParseArithmeticOptions,
+): AstArithmeticExpression | undefined {
+  try {
+    return parseArithmetic(expression, options);
+  } catch {
+    return undefined;
+  }
+}

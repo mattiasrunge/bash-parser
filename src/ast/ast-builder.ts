@@ -1,4 +1,4 @@
-import { parseArithmetic } from '../arithmetic/mod.ts';
+import { tryParseArithmetic } from '../arithmetic/mod.ts';
 import type { AstBuilder, Separator } from '../ast/builder-if.ts';
 import type {
   AstArithmeticForPart,
@@ -373,16 +373,8 @@ export const astBuilder = (insertLOC?: boolean) => {
       // or — without locations — after "(( ", the usual spacing.
       const sourceOffset = words[0]?.loc?.start?.char ?? (locStart?.start?.char !== undefined ? locStart.start.char + 3 : undefined);
 
-      // Parse the arithmetic expression
-      let arithmeticAST;
-      try {
-        arithmeticAST = parseArithmetic(expression, { sourceOffset });
-      } catch (err) {
-        if (err instanceof BashSyntaxError) {
-          throw err;
-        }
-        throw new SyntaxError(`Cannot parse arithmetic expression "${expression}": ${(err as Error).message}`);
-      }
+      // Absent when the text is not arithmetic as written; the executor parses it after expansion
+      const arithmeticAST = tryParseArithmetic(expression, { sourceOffset });
 
       const node: AstNodeArithmeticCommand = {
         type: 'ArithmeticCommand',
@@ -519,12 +511,7 @@ export const astBuilder = (insertLOC?: boolean) => {
         if (expression === '') return undefined;
         const lead = text.length - text.trimStart().length;
         const sourceOffset = bodyStart !== undefined ? bodyStart + offset + lead : undefined;
-        try {
-          return { expression, arithmeticAST: parseArithmetic(expression, { sourceOffset }) };
-        } catch (err) {
-          if (err instanceof BashSyntaxError) throw err;
-          throw new SyntaxError(`Cannot parse arithmetic expression "${expression}": ${(err as Error).message}`);
-        }
+        return { expression, arithmeticAST: tryParseArithmetic(expression, { sourceOffset }) };
       };
 
       const node: AstNodeArithmeticFor = { type: 'ArithmeticFor', do: doGroup };

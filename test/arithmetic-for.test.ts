@@ -102,7 +102,9 @@ Deno.test('${…} and $(…) inside arithmetic', async (t) => {
     }
   });
 
-  await t.step('an unclosed ${ is a syntax error', async () => {
-    await assertRejects(() => bashParser('echo $(( ${x + 1 ))'));
+  await t.step('an unclosed ${ is left for the executor, as bash leaves it', async () => {
+    const result = await bashParser('echo $(( ${x + 1 ))');
+    const expansion = (result.commands[0] as any).suffix[0].expansion[0];
+    assertEquals(expansion.arithmeticAST, undefined);
   });
 });

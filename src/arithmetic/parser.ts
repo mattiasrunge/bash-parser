@@ -2,6 +2,7 @@
  * Pratt parser for arithmetic expressions
  */
 
+import { Lexer } from './lexer.ts';
 import type { Token, TokenType } from './tokens.ts';
 import { BashSyntaxError } from '../errors.ts';
 import type {
@@ -138,6 +139,45 @@ function isAssignmentOperator(type: TokenType): boolean {
       return true;
     default:
       return false;
+  }
+}
+
+/** `base#digits`: 0-9, then a-z and A-Z (the same up to base 36), then @ and _ up to 64. */
+function parseBase(raw: string, error: (message: string) => BashSyntaxError): number {
+  const [baseText, digits] = raw.split('#');
+  const base = Number(baseText);
+
+  if (!(base >= 2 && base <= 64) || digits === '') {
+    throw error('invalid arithmetic base');
+  }
+
+  let value = 0;
+
+  for (const char of digits) {
+    let digit: number;
+
+    if (char >= '0' && char <= '9') digit = char.charCodeAt(0) - 48;
+    else if (char >= 'a' && char <= 'z') digit = char.charCodeAt(0) - 97 + 10;
+    else if (char >= 'A' && char <= 'Z') digit = char.charCodeAt(0) - 65 + (base <= 36 ? 10 : 36);
+    else if (char === '@') digit = 62;
+    else digit = 63;
+
+    if (digit >= base) {
+      throw error('value too great for base');
+    }
+
+    value = value * base + digit;
+  }
+
+  return value;
+}
+
+/** A subscript as arithmetic, or undefined when it is not (an associative key, say). */
+function tryParseSubscript(text: string): AstArithmeticExpression | undefined {
+  try {
+    return new Parser(new Lexer(text).tokenize(), text, 0).parse();
+  } catch {
+    return undefined;
   }
 }
 
@@ -308,11 +348,20 @@ export class Parser {
     };
   }
 
-  private parsePrefixUpdateExpression(): AstArithmeticUpdateExpression {
+  private parsePrefixUpdateExpression(): AstArithmeticUpdateExpression | AstArithmeticUnaryExpression {
     const token = this.advance();
 
+    // Before anything but a variable, bash reads `++`/`--` as two signs: `++7` is +(+7)
     if (this.current().type !== 'IDENTIFIER') {
-      throw this.createError('Expected identifier after prefix operator');
+      const operator = token.type === 'PLUS_PLUS' ? '+' : '-';
+      const argument = this.parseExpression(Precedence.UNARY);
+      const loc = {
+        start: { char: this.sourceOffset + token.start },
+        end: { char: argument.loc?.end?.char ?? (this.sourceOffset + token.end) },
+      };
+      const inner: AstArithmeticUnaryExpression = { type: 'UnaryExpression', operator, prefix: true, argument, loc };
+
+      return { type: 'UnaryExpression', operator, prefix: true, argument: inner, loc };
     }
 
     const argument = this.parseIdentifier();
@@ -359,7 +408,9 @@ export class Parser {
     let value: number;
 
     // Parse based on prefix
-    if (raw.startsWith('0x') || raw.startsWith('0X')) {
+    if (raw.includes('#')) {
+      value = parseBase(raw, (message) => this.createError(message, token));
+    } else if (raw.startsWith('0x') || raw.startsWith('0X')) {
       value = parseInt(raw, 16);
     } else if (raw.startsWith('0b') || raw.startsWith('0B')) {
       value = parseInt(raw.slice(2), 2);
@@ -385,12 +436,14 @@ export class Parser {
     const token = this.advance();
     // Remove $ prefix if present for the name
     const name = token.value.startsWith('$') ? token.value.slice(1) : token.value;
+    const node: AstArithmeticIdentifier = { type: 'Identifier', name, loc: this.createLoc(token.start, token.end) };
 
-    return {
-      type: 'Identifier',
-      name,
-      loc: this.createLoc(token.start, token.end),
-    };
+    if (token.subscript !== undefined) {
+      node.subscript = token.subscript;
+      node.index = tryParseSubscript(token.subscript);
+    }
+
+    return node;
   }
 
   private parseCommandSubstitution(): AstArithmeticCommandSubstitution {
