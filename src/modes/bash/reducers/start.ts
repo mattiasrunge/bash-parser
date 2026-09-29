@@ -64,6 +64,14 @@ const start: Reducer = (state, source, reducers) => {
   }
 
   if (!state.escaping && state.arrayAssignment) {
+    // A comment where an element could start runs to the end of the line
+    if (char === '#' && (state.current.endsWith(ARRAY_ELEMENT_SEPARATOR) || state.current.endsWith('('))) {
+      return {
+        nextReduction: reducers.arrayComment,
+        nextState: state,
+      };
+    }
+
     if (char === ')') {
       return {
         nextReduction: reducers.start,

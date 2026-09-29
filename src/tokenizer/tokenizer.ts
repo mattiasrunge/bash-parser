@@ -279,6 +279,15 @@ export const tokenize = (r: Reducers, operators: Record<string, string>, hereDoc
         let body = '';
         let closed = false;
         for (let line = takeLine(); line !== undefined; line = takeLine()) {
+          // In a here-document whose delimiter is not quoted, a backslash-newline
+          // joins lines, the closing one included: `EO\` then `F` ends at EOF
+          while (!hereDocuments[doc.index].quoted && /(^|[^\\])(\\\\)*\\$/.test(line)) {
+            const next = takeLine();
+
+            if (next === undefined) break;
+            line = line.slice(0, -1) + next;
+          }
+
           // `<<-` drops leading tabs, from the body and from the closing line alike.
           const text = doc.strip ? line.replace(/^\t+/, '') : line;
           if (text === doc.delimiter) {

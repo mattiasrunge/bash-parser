@@ -119,3 +119,26 @@ Deno.test('extended patterns are part of their word', async () => {
   assertEquals(await words('echo @(a|"q r"|$p)'), ['@(a|"q r"|$p)']);
   assertEquals(await words('echo <(printf hi) >(cat)'), ['<(printf hi)', '>(cat)']);
 });
+
+Deno.test('comments in arrays, any for name, joined here-document lines, backslashes in backticks', async (t) => {
+  const first = async (source: string) => (await bashParser(source)).commands[0] as any;
+
+  await t.step('a comment inside an array literal', async () => {
+    const word = (await first('x=(\n a # one\n b # two\n)')).prefix[0];
+    assertEquals(word.text, 'x=(a\x1fb)');
+  });
+
+  await t.step('for 1 in parses; the executor rejects the name', async () => {
+    assertEquals((await first('for 1 in a; do :; done')).name.text, '1');
+  });
+
+  await t.step('a backslash-newline joins here-document lines, the delimiter too', async () => {
+    const redirect = (await first('cat << EOF\nhi \\\nthere\nEO\\\nF\n')).suffix[0];
+    assertEquals(redirect.heredoc.body, 'hi there\n');
+  });
+
+  await t.step('between backticks a backslash quotes only $ ` and \\', async () => {
+    assertEquals((await first('echo `echo "(\\")"`')).suffix[0].expansion[0].command, 'echo "(\\")"');
+    assertEquals((await first('echo `echo \\$x`')).suffix[0].expansion[0].command, 'echo $x');
+  });
+});

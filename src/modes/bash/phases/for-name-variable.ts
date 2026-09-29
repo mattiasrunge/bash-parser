@@ -1,6 +1,5 @@
 import type { LexerPhase } from '../../../lexer/types.ts';
 import type { TokenIf } from '../../../tokenizer/mod.ts';
-import isValidName from '../../../utils/is-valid-name.ts';
 import compose from '../../../utils/iterable/compose.ts';
 import lookahead, { type LookaheadIterable } from '../../../utils/iterable/lookahead.ts';
 import map from '../../../utils/iterable/map.ts';
@@ -14,7 +13,8 @@ const forNameVariable: LexerPhase = () => {
       // if last token is For and current token form a valid name
       // type of token is changed from WORD to NAME
 
-      if ((lastToken.is('For') || lastToken.is('Select')) && tk.is('WORD') && isValidName(tk.value!)) {
+      // Any word, valid name or not: bash takes `for 1 in` apart only when it runs
+      if ((lastToken.is('For') || lastToken.is('Select')) && tk.is('WORD')) {
         return tk.setType('NAME');
       }
 

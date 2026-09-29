@@ -37,7 +37,9 @@ const expansionCommandTick: Reducer = (state, source, reducers) => {
     };
   }
 
-  if (!state.escaping && char === '\\') {
+  // Between backticks a backslash quotes only $, ` and \; before anything else
+  // it is itself, and part of the command: `echo "(\")"` keeps its \"
+  if (!state.escaping && char === '\\' && '$`\\'.includes(source[0] ?? '')) {
     return {
       nextReduction: reducers.expansionCommandTick,
       nextState: state.appendChar(char).setEscaping(true),
