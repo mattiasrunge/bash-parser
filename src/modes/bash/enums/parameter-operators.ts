@@ -144,11 +144,15 @@ const parameterOps: Record<string, ParameterOp> = {
   // This is referred to as Substring Expansion.
   // It expands to up to length characters of the value
   // of parameter starting at the character specified by offset.
-  [`^(${name}):([^:]*):?([^:]*)$`]: {
+  // Both are arithmetic expressions, `${x:i:n}`, as written; `offset` and
+  // `length` are their values when they are plain numbers
+  [`^(${name}):([^:]*)(?::([^:]*))?$`]: {
     op: 'substring',
     parameter: (m) => m[1],
     offset: (m) => parseInt(m[2], 10),
-    length: (m) => parseInt(m[3], 10) || undefined,
+    length: (m) => m[3] === undefined ? undefined : parseInt(m[3], 10),
+    offsetExpression: (m) => m[2],
+    lengthExpression: (m) => m[3],
   },
 
   // Expands to the names of variables whose names begin with prefix,

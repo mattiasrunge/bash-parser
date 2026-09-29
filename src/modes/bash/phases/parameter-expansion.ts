@@ -27,12 +27,16 @@ const handleParameter = async (obj: ParameterOp, match: RegExpMatchArray) => {
 
   if (ret.expand) {
     for (const prop of ret.expand as string[]) {
-      const ast = await bashParser((ret[prop] ?? '') as string, { mode: 'word-expansion' });
+      const source = (ret[prop] ?? '') as string;
+      const ast = await bashParser(source, { mode: 'word-expansion' });
 
       // An empty word parses to no command at all — `${x:-}` and `${x:?}` are
       // written that way on purpose, so the word is simply absent rather than
       // something to read a name off.
       (ret as any)[prop] = (ast.commands[0] as AstNodeCommand | undefined)?.name;
+      // As written, quotes and all: a word without expansions comes out of
+      // parsing with its quotes removed, and whether it was quoted still matters
+      (ret as any)[`${prop}Source`] = ret[prop] === undefined ? undefined : source;
     }
 
     delete ret.expand;
