@@ -56,19 +56,30 @@ export default {
         'pipe_sequence',
         '$$ = yy.pipeLine($pipe_sequence);',
       ],
-      // `! ! cmd` negates twice, and `!` alone negates an empty command, which is 1
+      // `! ! cmd` negates twice, and `!` alone negates an empty command, which is 1.
+      // `time` prefixes a pipeline the same way, and the two nest either way round.
       [
-        'bang_list pipe_sequence',
-        '$$ = yy.bangPipeLine($pipe_sequence, $bang_list);',
+        'Bang pipeline',
+        '$$ = yy.bangPipeLine($pipeline);',
       ],
       [
-        'bang_list',
-        "$$ = yy.bangPipeLine(yy.pipeSequence({ type: 'Command' }), $bang_list);",
+        'Bang',
+        "$$ = yy.bangPipeLine(yy.pipeLine(yy.pipeSequence({ type: 'Command' })));",
+      ],
+      [
+        'timespec pipeline',
+        '$$ = yy.timedPipeLine($pipeline, $timespec);',
+      ],
+      [
+        'timespec',
+        "$$ = yy.timedPipeLine(yy.pipeLine(yy.pipeSequence({ type: 'Command' })), $timespec);",
       ],
     ],
-    bang_list: [
-      ['Bang', '$$ = 1;'],
-      ['bang_list Bang', '$$ = $1 + 1;'],
+    // `time`, `time -p`, `time -p --`: whether to report in POSIX's format
+    timespec: [
+      ['Time', '$$ = false;'],
+      ['Time TimeOpt', '$$ = true;'],
+      ['Time TimeOpt TimeIgn', '$$ = true;'],
     ],
     pipe_sequence: [
       [
@@ -93,6 +104,30 @@ export default {
         '$$ = yy.addRedirections($compound_command, $redirect_list)',
       ],
       'function_definition',
+      'coproc',
+    ],
+    // `coproc cmd args`, or `coproc [NAME] compound-command [redirections]`
+    coproc: [
+      [
+        'Coproc simple_command',
+        "$$ = yy.coproc('COPROC', $simple_command, $Coproc.loc);",
+      ],
+      [
+        'Coproc compound_command',
+        "$$ = yy.coproc('COPROC', $compound_command, $Coproc.loc);",
+      ],
+      [
+        'Coproc compound_command redirect_list',
+        "$$ = yy.coproc('COPROC', yy.addRedirections($compound_command, $redirect_list), $Coproc.loc);",
+      ],
+      [
+        'Coproc WORD compound_command',
+        '$$ = yy.coproc($WORD, $compound_command, $Coproc.loc);',
+      ],
+      [
+        'Coproc WORD compound_command redirect_list',
+        '$$ = yy.coproc($WORD, yy.addRedirections($compound_command, $redirect_list), $Coproc.loc);',
+      ],
     ],
     compound_command: [
       'brace_group',

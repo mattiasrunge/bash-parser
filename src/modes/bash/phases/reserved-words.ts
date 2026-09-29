@@ -4,7 +4,7 @@ import compose from '../../../utils/iterable/compose.ts';
 import lookahead, { type LookaheadIterable } from '../../../utils/iterable/lookahead.ts';
 import map from '../../../utils/iterable/map.ts';
 
-const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<TokenIf>, words: Record<string, string>, lastWasReserved: boolean) => {
+const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<TokenIf>, words: Record<string, string>, lastWasReserved: boolean, emitted: string[]) => {
   const last = iterable.behind(1) || { EMPTY: true, is: (type: string) => type === 'EMPTY', value: '' };
   const twoAgo = iterable.behind(2) || { EMPTY: true, is: (type: string) => type === 'EMPTY', value: '' };
 
@@ -25,6 +25,12 @@ const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<To
   // `function name { … }`: the body's `{` follows the name directly
   const braceAfterFunction = tk.value === '{' && twoAgo.value === 'function';
 
+  // `coproc NAME { … }`: so does a coproc's compound command, after its name
+  const afterCoprocName = emitted[1] === 'Coproc' && emitted[0] === 'WORD';
+
+  // `time -p cmd`, `time -p -- cmd`: the command starts after the options
+  const afterTimeOptions = emitted[0] === 'TimeOpt' || emitted[0] === 'TimeIgn';
+
   // `if [[ x ]] then`: `]]` ends the command, and bash needs no separator after it either
   const afterConditional = last.is('DOUBLE_CLOSE_BRACKET');
 
@@ -34,36 +40,51 @@ const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<To
 
   // console.log({tk, startOfCommand, lastIsReservedWord, thirdInFor, thirdInCase, twoAgo})
   // `}` too closes a group only where a command could start: `echo }` is an argument
-  return startOfCommand || lastIsReservedWord || thirdInFor || thirdInCase || doAfterArithmetic || afterConditional || braceAfterFunction;
+  return startOfCommand || lastIsReservedWord || thirdInFor || thirdInCase || doAfterArithmetic || afterConditional || braceAfterFunction ||
+    afterCoprocName || afterTimeOptions;
 };
 
 const reservedWords: LexerPhase = (ctx) => {
   let lastWasReserved = false;
+  // The types this phase gave the last two tokens, latest first: the lookahead holds them as they came in
+  let emitted: string[] = [];
 
   return compose<TokenIf>(
     map(async (tk: TokenIf, _idx, iterable) => {
-      const valid = isValidReservedWordPosition(tk, iterable as LookaheadIterable<TokenIf>, ctx.enums.reservedWords, lastWasReserved);
+      const out = typed(tk, iterable as LookaheadIterable<TokenIf>);
 
-      lastWasReserved = false;
+      emitted = [out.type!, emitted[0]];
 
-      // TOKEN tokens consisting of a reserved word
-      // are converted to their own token types
-      if (tk.is('TOKEN') && valid && tk.value! in ctx.enums.reservedWords) {
-        lastWasReserved = true;
-        return tk.setType(ctx.enums.reservedWords[tk.value!]);
-      }
-
-      // otherwise, TOKEN tokens are converted to
-      // WORD tokens
-      if (tk.is('TOKEN')) {
-        return tk.setType('WORD');
-      }
-
-      // other tokens are amitted as-is
-      return tk;
+      return out;
     }),
     lookahead.depth(2),
   );
+
+  function typed(tk: TokenIf, iterable: LookaheadIterable<TokenIf>): TokenIf {
+    const valid = isValidReservedWordPosition(tk, iterable, ctx.enums.reservedWords, lastWasReserved, emitted);
+
+    lastWasReserved = false;
+
+    // `-p` right after `time` is its option, and `--` after that ends the options
+    if (tk.is('TOKEN') && tk.value === '-p' && emitted[0] === 'Time') return tk.setType('TimeOpt');
+    if (tk.is('TOKEN') && tk.value === '--' && emitted[0] === 'TimeOpt') return tk.setType('TimeIgn');
+
+    // TOKEN tokens consisting of a reserved word
+    // are converted to their own token types
+    if (tk.is('TOKEN') && valid && tk.value! in ctx.enums.reservedWords) {
+      lastWasReserved = true;
+      return tk.setType(ctx.enums.reservedWords[tk.value!]);
+    }
+
+    // otherwise, TOKEN tokens are converted to
+    // WORD tokens
+    if (tk.is('TOKEN')) {
+      return tk.setType('WORD');
+    }
+
+    // other tokens are amitted as-is
+    return tk;
+  }
 };
 
 export default reservedWords;

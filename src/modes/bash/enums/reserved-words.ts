@@ -17,6 +17,8 @@ const reservedWords = {
   '}': 'Rbrace',
   '!': 'Bang',
   'function': 'Function',
+  'time': 'Time',
+  'coproc': 'Coproc',
 };
 
 export default reservedWords;

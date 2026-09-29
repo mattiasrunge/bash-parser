@@ -17,6 +17,7 @@ import type {
   AstNodeCommand,
   AstNodeCompoundList,
   AstNodeConditionalCommand,
+  AstNodeCoproc,
   AstNodeFor,
   AstNodeFunction,
   AstNodeIf,
@@ -461,19 +462,33 @@ export const astBuilder = (insertLOC?: boolean) => {
       return pipe;
     },
 
-    bangPipeLine: (pipe, count = 1) => {
+    // A pipeline of one command is unwrapped by now, so what is negated may be any command
+    bangPipeLine: (pipeline) => {
       // Two negations cancel out
-      if (count % 2 === 0) {
-        return pipe.commands.length === 1 ? pipe.commands[0] : pipe;
+      if (pipeline.bang) {
+        delete pipeline.bang;
+      } else {
+        pipeline.bang = true;
       }
 
-      const bang = true;
+      return pipeline;
+    },
 
-      if (pipe.commands.length === 1) {
-        return Object.assign(pipe.commands[0], { bang });
+    // `time time -p cmd` reports once, in POSIX's format if either asked for it
+    timedPipeLine: (pipeline, posix) => {
+      pipeline.time = { posix: posix || Boolean(pipeline.time?.posix) };
+
+      return pipeline;
+    },
+
+    coproc: (name, body, locStart) => {
+      const node: AstNodeCoproc = { type: 'Coproc', name: typeof name === 'string' ? name : name.text, body };
+
+      if (insertLOC) {
+        node.loc = setLocEnd(setLocStart({ start: {}, end: {} }, locStart), body.loc);
       }
 
-      return Object.assign(pipe, { bang });
+      return node;
     },
 
     pipeLine: (pipe) => {

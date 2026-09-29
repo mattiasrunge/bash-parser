@@ -20,7 +20,7 @@ const COMMAND_SEPARATORS = [
 ];
 
 /** Reserved words (still plain words at this phase) after which a command starts. */
-const COMMAND_STARTING_WORDS = new Set(['then', 'do', 'else', 'elif', 'if', 'while', 'until', '{', '!', 'time']);
+const COMMAND_STARTING_WORDS = new Set(['then', 'do', 'else', 'elif', 'if', 'while', 'until', '{', '!', 'time', 'coproc']);
 
 /** Operators whose right-hand side is one word, a pattern or a regular expression. */
 const PATTERN_OPERATORS = new Set(['=~', '==', '=', '!=']);

@@ -9,6 +9,7 @@ import type {
   AstNodeCommand,
   AstNodeCompoundList,
   AstNodeConditionalCommand,
+  AstNodeCoproc,
   AstNodeFor,
   AstNodeFunction,
   AstNodeIf,
@@ -126,9 +127,19 @@ export type AstBuilder = {
   ) => AstNodePipeline;
 
   bangPipeLine: (
-    pipe: AstNodePipeline,
-    count?: number,
-  ) => AstNode & { bang?: boolean };
+    pipeline: AstNode,
+  ) => AstNode;
+
+  timedPipeLine: (
+    pipeline: AstNode,
+    posix: boolean,
+  ) => AstNode;
+
+  coproc: (
+    name: string | AstNodeWord,
+    body: AstNode,
+    locStart?: AstSourceLocation,
+  ) => AstNodeCoproc;
 
   pipeLine: (
     pipe: AstNodePipeline,

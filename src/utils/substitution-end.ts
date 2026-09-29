@@ -9,7 +9,7 @@
  */
 
 /** Words after which the next word stands where a command starts. */
-const COMMAND_STARTERS = new Set(['then', 'do', 'else', 'elif', 'if', 'while', 'until', '{', '!', 'time']);
+const COMMAND_STARTERS = new Set(['then', 'do', 'else', 'elif', 'if', 'while', 'until', '{', '!', 'time', 'coproc']);
 
 type Case = { phase: 'subject' | 'patterns' | 'body' };
 

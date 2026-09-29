@@ -27,6 +27,18 @@ export type AstNode = {
    * the last node of the list whatever its type.
    */
   async?: boolean;
+  /**
+   * `! cmd` inverts the exit status. It sits on the base type for the same
+   * reason as `async`: a pipeline of one command is unwrapped, so the bang lands
+   * on whatever that command is — a group, a loop or a subshell as well.
+   */
+  bang?: boolean;
+  /**
+   * `time cmd`: the shell reports how long the pipeline took, in `TIMEFORMAT`,
+   * or in POSIX's fixed format after `time -p`. `time` on its own times an empty
+   * command. Like the bang it lands on the command a one-command pipeline unwraps to.
+   */
+  time?: { posix: boolean };
 };
 
 /**
@@ -49,6 +61,7 @@ export type AstNodeScript = AstNode & {
     | AstNodeIf
     | AstNodeWhile
     | AstNodeUntil
+    | AstNodeCoproc
   >;
 };
 
@@ -72,10 +85,8 @@ export type AstNodePipeline = AstNode & {
     | AstNodeIf
     | AstNodeWhile
     | AstNodeUntil
+    | AstNodeCoproc
   >;
-  /** `! a | b` — the bang is on the pipeline, and inverts its exit status. A
-   * single-command pipeline is unwrapped, so there the bang lands on the command. */
-  bang?: boolean;
 };
 
 /**
@@ -100,7 +111,19 @@ export type AstNodeCommand = AstNode & {
   name?: AstNodeWord;
   prefix?: Array<AstNodeAssignmentWord | AstNodeRedirect>;
   suffix?: Array<AstNodeWord | AstNodeRedirect>;
-  bang?: boolean;
+};
+
+/**
+ * `Coproc` runs a command in the background with two pipes to it, `coproc cat`
+ * or `coproc NAME { … }`: the shell reads the command's output from the file
+ * descriptor in `NAME[0]`, writes its input to the one in `NAME[1]`, and has its
+ * process id in `NAME_PID`. `name` is `COPROC` unless one was given, which bash
+ * takes only before a compound command.
+ */
+export type AstNodeCoproc = AstNode & {
+  type: 'Coproc';
+  name: string;
+  body: AstNode;
 };
 
 /**
@@ -135,6 +158,7 @@ export type AstNodeCompoundList = AstNode & {
     | AstNodeIf
     | AstNodeWhile
     | AstNodeUntil
+    | AstNodeCoproc
   >;
   redirections?: AstNodeRedirect[];
 };
