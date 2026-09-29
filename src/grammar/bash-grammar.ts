@@ -227,13 +227,16 @@ export default {
         '$$ = yy.caseList($case_item);',
       ],
     ],
+    // The last item, without `;;`. As in POSIX, a command list takes no
+    // linebreak after it: the list's own separator already takes the newline,
+    // and a second place for it was an ambiguity yacc had to guess at.
     case_item_ns: [
       [
         'pattern CLOSE_PAREN linebreak',
         '$$ = yy.caseItem($pattern, null, $pattern[0].loc, $CLOSE_PAREN.loc);',
       ],
       [
-        'pattern CLOSE_PAREN compound_list linebreak',
+        'pattern CLOSE_PAREN compound_list',
         '$$ = yy.caseItem($pattern, $compound_list, $pattern[0].loc, $compound_list.loc);',
       ],
       [
@@ -241,7 +244,7 @@ export default {
         '$$ = yy.caseItem($pattern, null, $OPEN_PAREN.loc, $CLOSE_PAREN.loc );',
       ],
       [
-        'OPEN_PAREN pattern CLOSE_PAREN compound_list linebreak',
+        'OPEN_PAREN pattern CLOSE_PAREN compound_list',
         '$$ = yy.caseItem($pattern, $compound_list, $OPEN_PAREN.loc, $compound_list.loc);',
       ],
     ],
