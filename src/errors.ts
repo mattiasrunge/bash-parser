@@ -23,6 +23,18 @@ export type ErrorLocation = {
 };
 
 /**
+ * What went wrong, as bash says it: a token that cannot stand there
+ * (`syntax error near unexpected token`), the input ending in the middle of a
+ * command (`unexpected end of file`), or before a quote or substitution closed
+ * (`unexpected EOF while looking for matching`, with the character that
+ * would have closed it).
+ */
+export type SyntaxErrorDetail =
+  | { kind: 'token'; token: string }
+  | { kind: 'eof' }
+  | { kind: 'unclosed'; closer: string };
+
+/**
  * A unified syntax error class for all bash-parser parsing errors.
  * Extends SyntaxError so existing catch blocks continue to work.
  */
@@ -37,6 +49,9 @@ export class BashSyntaxError extends SyntaxError {
 
   /** The original cause (for error chaining) */
   override readonly cause?: Error;
+
+  /** What went wrong, for a shell to say as bash does; the row is the location's. */
+  detail?: SyntaxErrorDetail;
 
   constructor(message: string, source?: string, location?: ErrorLocation, cause?: Error) {
     // Don't add location to message - let callers format it to avoid duplicates when re-throwing

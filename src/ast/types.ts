@@ -386,6 +386,12 @@ export type AstNodeRedirect = AstNode & {
 export type AstHereDocument = {
   body: string;
   quoted: boolean;
+  /**
+   * The input ended before the delimiter, with `unterminatedHereDocuments: 'end'`: bash takes the
+   * rest as the body and warns, `here-document at line <line> delimited by end-of-file (wanted
+   * `<delimiter>')`, on the input's last line, `endLine`.
+   */
+  unterminated?: { delimiter: string; line: number; endLine: number };
 };
 
 /**

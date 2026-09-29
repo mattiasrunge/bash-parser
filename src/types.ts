@@ -84,6 +84,20 @@ export type Options = Resolvers & {
    * If `true`, includes lines and columns information in the source file.
    */
   insertLOC?: boolean;
+
+  /**
+   * A here-document the input ends inside: `'error'` (the default) refuses it
+   * as unclosed, which is what an interactive shell wants, to ask for more;
+   * `'end'` takes the rest of the input as its body, as bash does running a
+   * script, and marks it `unterminated` for the shell to warn about.
+   */
+  unterminatedHereDocuments?: 'error' | 'end';
+
+  /**
+   * The text is the body of a `$( … )`, which ends where the `)` is: a here-document whose
+   * delimiter is the last line, `EOF)`, ends there, and bash warns about it as unterminated.
+   */
+  substitution?: boolean;
 };
 
 /**

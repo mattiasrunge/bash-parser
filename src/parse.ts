@@ -55,7 +55,7 @@ const attachHereDocuments = (node: unknown, docs: HereDocument[]): void => {
   if (record.type === 'Redirect' && typeof file?.heredoc === 'number') {
     const doc = docs[file.heredoc];
     delete file.heredoc;
-    if (doc) (record as AstNodeRedirect).heredoc = { body: doc.body, quoted: doc.quoted };
+    if (doc) (record as AstNodeRedirect).heredoc = { body: doc.body, quoted: doc.quoted, ...(doc.unterminated ? { unterminated: doc.unterminated } : {}) };
   }
   for (const value of Object.values(record)) attachHereDocuments(value, docs);
 };
@@ -85,14 +85,38 @@ const resolveArithmeticCommands = async (node: unknown): Promise<void> => {
   for (const value of Object.values(record)) await resolveArithmeticCommands(value);
 };
 
+/**
+ * A grammar error — one jison raised, with its hash — is about the token the lexer handed it
+ * last: the end of the input, or one bash names in `syntax error near unexpected token`.
+ */
+const grammarDetail = (error: BashSyntaxError, lexer: Lexer | undefined): BashSyntaxError => {
+  const last = lexer?.last.token;
+  const fromGrammar = Boolean((error as { hash?: unknown }).hash ?? (error.cause as { hash?: unknown } | undefined)?.hash);
+
+  if (error.detail || !last || !fromGrammar) return error;
+
+  error.detail = last.type === 'EOF' ? { kind: 'eof' } : { kind: 'token', token: /^NEWLINE/.test(last.type) ? 'newline' : last.text };
+
+  if (last.row !== undefined) {
+    const location = error.location ?? { start: {} };
+
+    location.start.row = last.row;
+    Object.assign(error, { location });
+  }
+
+  return error;
+};
+
 export const parse: Parse = async (sourceCode, options?) => {
+  let lexer: Lexer | undefined;
+
   try {
     options = options || {};
     options.mode = options.mode || 'bash';
 
     const mode = loadPlugin(options.mode);
     const parser = new grammar.Parser();
-    const lexer = new Lexer(mode, options);
+    lexer = new Lexer(mode, options);
     parser.lexer = lexer;
     parser.yy = astBuilder(options.insertLOC, sourceCode);
 
@@ -103,7 +127,7 @@ export const parse: Parse = async (sourceCode, options?) => {
   } catch (err) {
     // Already a BashSyntaxError - ensure full source and complete location are attached
     if (err instanceof BashSyntaxError) {
-      const syntaxErr = err as BashSyntaxError;
+      const syntaxErr = grammarDetail(err as BashSyntaxError, lexer);
       // Update source if missing or if it's a partial source (e.g., arithmetic expression)
       const needsSource = sourceCode && syntaxErr.source !== sourceCode;
       const hasCharOffset = syntaxErr.location?.start?.char !== undefined;
@@ -122,7 +146,10 @@ export const parse: Parse = async (sourceCode, options?) => {
           };
         }
 
-        throw new BashSyntaxError(syntaxErr.message, sourceCode, location, syntaxErr.cause);
+        const again = new BashSyntaxError(syntaxErr.message, sourceCode, location, syntaxErr.cause);
+
+        again.detail = syntaxErr.detail;
+        throw again;
       }
       throw syntaxErr;
     }
@@ -146,7 +173,7 @@ export const parse: Parse = async (sourceCode, options?) => {
       }
     }
 
-    throw new BashSyntaxError((err as Error).message, sourceCode, location, err as Error);
+    throw grammarDetail(new BashSyntaxError((err as Error).message, sourceCode, location, err as Error), lexer);
   }
 };
 

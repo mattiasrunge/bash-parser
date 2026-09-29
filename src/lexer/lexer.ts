@@ -12,10 +12,15 @@ export class Lexer implements LexerIf {
   /** The here-documents of the input being parsed, in order; the delimiters' `heredoc` indexes into it. */
   public hereDocuments: HereDocument[] = [];
   public yytext?: any;
+  /**
+   * The token handed to the parser last: the one a syntax error is about. A holder rather than a
+   * field, since jison lexes with `Object.create(lexer)`, and a field set there would stay there.
+   */
+  public readonly last: { token?: { type: string; text: string; row?: number } } = {};
   public yylineno: number = 0;
 
   constructor(mode: Mode, options: Options) {
-    const tokenizerPhase: LexerPhaseFn = tokenize(mode.reducers, mode.enums.operators, this.hereDocuments);
+    const tokenizerPhase: LexerPhaseFn = tokenize(mode.reducers, mode.enums.operators, this.hereDocuments, options.unterminatedHereDocuments, options.substitution);
 
     let previousPhases: LexerPhaseFn[] = [
       tokenizerPhase,
@@ -52,6 +57,8 @@ export class Lexer implements LexerIf {
 
     const tkType = tk.ctx.originalType;
     const text = tk.value;
+
+    this.last.token = { type: tkType ?? '', text: text ?? '', row: tk.loc?.start.row };
 
     this.yytext = { text, type: '' };
     if (tk.expansion) {
