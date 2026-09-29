@@ -34,6 +34,14 @@ Deno.test('array assignment', async (t) => {
     assertEquals(await assignmentText('a=(1\n2)'), `a=(1${SEP}2)`);
   });
 
+  await t.step('a subscript holding blanks is part of the word, as bash reads it', async () => {
+    assertEquals(await assignmentText('h[hello world]=x'), 'h[hello world]=x');
+    assertEquals(await assignmentText('h["k k"]+=v'), 'h[k k]+=v');
+    assertEquals(await assignmentText('h=([foo bar]=x y)'), `h=([foo bar]=x${SEP}y)`);
+    // Not an assignment, so the blank still splits: `a[b` and `c]`
+    assertEquals(await suffixWords('echo a[b c]'), ['a[b', 'c]']);
+  });
+
   await t.step('quotes are removed per element, so a quoted blank is kept', async () => {
     assertEquals(await assignmentText('a=(x "b c" \'d e\')'), `a=(x${SEP}b c${SEP}d e)`);
   });

@@ -33,6 +33,43 @@ function substringParts(text: string): [string, string | undefined] {
   return [text, undefined];
 }
 
+/**
+ * `${x/pattern/string}` after the first `/`: `/` again for every match, `#`
+ * or `%` to anchor at the start or the end, then the pattern up to the next
+ * `/` that is neither escaped, quoted nor inside a nested expansion, and the
+ * string after it — absent when there is no such `/`, which deletes the match.
+ */
+function patsubParts(text: string): { globally: boolean; anchor?: '#' | '%'; pattern: string; replacement?: string } {
+  const globally = text.startsWith('/');
+  const anchor = !globally && (text[0] === '#' || text[0] === '%') ? text[0] as '#' | '%' : undefined;
+  const rest = globally || anchor ? text.slice(1) : text;
+  let depth = 0;
+  let quote = '';
+
+  for (let i = 0; i < rest.length; i++) {
+    const c = rest[i];
+
+    if (quote === "'") {
+      if (c === "'") quote = '';
+    } else if (c === '\\') {
+      i++;
+    } else if (quote === '"') {
+      if (c === '"') quote = '';
+    } else if (c === "'" || c === '"') {
+      quote = c;
+    } else if (c === '$' && (rest[i + 1] === '{' || rest[i + 1] === '(')) {
+      depth++;
+      i++;
+    } else if ((c === '}' || c === ')') && depth > 0) {
+      depth--;
+    } else if (c === '/' && depth === 0) {
+      return { globally, anchor, pattern: rest.slice(0, i), replacement: rest.slice(i + 1) };
+    }
+  }
+
+  return { globally, anchor, pattern: rest, replacement: undefined };
+}
+
 const parameterOps: Record<string, ParameterOp> = {
   // POSIX implementation
 
@@ -208,12 +245,18 @@ const parameterOps: Record<string, ParameterOp> = {
   // Parameter is expanded and the longest match of pattern against its
   // value is replaced with string. If pattern begins with ‘/’, all matches
   // of pattern are replaced with string.
-  [`^(${name})\\/(\\/)?([^\\/])+\\/(.*)$`]: {
+  [`^(${name})\\/(.*)$`]: {
     op: 'stringReplace',
     parameter: (m) => m[1],
-    substitute: (m) => m[3],
-    replace: (m) => m[4],
-    globally: (m) => m[2] === '/',
+    globally: (m) => patsubParts(m[2]).globally,
+    anchor: (m) => patsubParts(m[2]).anchor,
+    // As written, and parsed as the words they are: the executor needs both,
+    // since what was quoted in the pattern matches itself
+    substitute: (m) => patsubParts(m[2]).pattern,
+    replace: (m) => patsubParts(m[2]).replacement,
+    pattern: (m) => patsubParts(m[2]).pattern,
+    replacement: (m) => patsubParts(m[2]).replacement,
+    expand: ['pattern', 'replacement'],
   },
 
   // This expansion modifies the case of alphabetic characters in parameter.

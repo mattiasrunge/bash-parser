@@ -4,6 +4,42 @@ import { ARRAY_ELEMENT_SEPARATOR, isAssignmentPrefix } from '../../../utils/assi
 /** `a=`, `a+=`, `a[0]=` — what has to precede a `(` for it to open an array literal */
 const opensArrayLiteral = (current: string) => isAssignmentPrefix(current) && current.endsWith('=');
 
+/**
+ * The subscript of an assignment, `a[hello world]=x`, when it holds blanks:
+ * bash reads it to the matching `]` as part of the word, so it is one word and
+ * not `a[hello` and `world]=x`. Given what follows the `[`; undefined unless
+ * the `]` is followed by `=` or `+=` on the same line — or the `[` starts an
+ * element of an array literal, `h=([foo bar]=x)`, which bash reads the same way.
+ */
+function blankSubscript(source: string[], element = false): string | undefined {
+  let depth = 1;
+  let quote = '';
+
+  for (let i = 0; i < source.length; i++) {
+    const c = source[i];
+
+    if (c === '\n') return undefined;
+
+    if (quote) {
+      if (c === quote) quote = '';
+      else if (c === '\\' && quote === '"') i++;
+    } else if (c === "'" || c === '"') {
+      quote = c;
+    } else if (c === '\\') {
+      i++;
+    } else if (c === '[') {
+      depth++;
+    } else if (c === ']' && --depth === 0) {
+      const inner = source.slice(0, i).join('');
+      const assigns = element || source[i + 1] === '=' || (source[i + 1] === '+' && source[i + 2] === '=');
+
+      return assigns && /\s/.test(inner) ? inner : undefined;
+    }
+  }
+
+  return undefined;
+}
+
 const start: Reducer = (state, source, reducers) => {
   const char = source && source.shift();
 
@@ -49,6 +85,18 @@ const start: Reducer = (state, source, reducers) => {
     };
   }
 
+  if (!state.escaping && !state.arrayAssignment && char === '[' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(state.current)) {
+    const subscript = blankSubscript(source);
+
+    if (subscript !== undefined) {
+      let next = state.appendChar(char);
+
+      for (const c of source.splice(0, subscript.length + 1)) next = next.appendChar(c).advanceLoc(c);
+
+      return { nextReduction: reducers.start, nextState: next };
+    }
+  }
+
   if (!state.escaping && !state.arrayAssignment && char === '(' && /[?*+@!]$/.test(state.current) && !opensArrayLiteral(state.current)) {
     return {
       nextReduction: reducers.start,
@@ -64,6 +112,19 @@ const start: Reducer = (state, source, reducers) => {
   }
 
   if (!state.escaping && state.arrayAssignment) {
+    // `[foo bar]=x` starting an element is one element
+    if (char === '[' && (state.current.endsWith(ARRAY_ELEMENT_SEPARATOR) || state.current.endsWith('('))) {
+      const subscript = blankSubscript(source, true);
+
+      if (subscript !== undefined) {
+        let next = state.appendChar(char);
+
+        for (const c of source.splice(0, subscript.length + 1)) next = next.appendChar(c).advanceLoc(c);
+
+        return { nextReduction: reducers.start, nextState: next };
+      }
+    }
+
     // A comment where an element could start runs to the end of the line
     if (char === '#' && (state.current.endsWith(ARRAY_ELEMENT_SEPARATOR) || state.current.endsWith('('))) {
       return {
