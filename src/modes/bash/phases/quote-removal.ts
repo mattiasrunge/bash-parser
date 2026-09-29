@@ -117,6 +117,16 @@ const quoteRemoval: LexerPhase = () =>
         if (token.protectedRanges && token.protectedRanges.length > 0) {
           return token.setValue(unquoteWithProtectedRanges(token.value!, token.protectedRanges));
         }
+
+        // `a['k k']=v`: the subscript keeps its quotes, for the executor to expand as a key or an index
+        const parts = token.is('ASSIGNMENT_WORD') ? parseAssignmentWord(token.value!) : null;
+
+        if (parts?.subscript !== undefined) {
+          const head = token.value!.slice(0, parts.name.length + parts.subscript.length + 2);
+
+          return token.setValue(head + unquote(token.value!.slice(head.length)));
+        }
+
         return token.setValue(unquote(token.value!));
       }
     }

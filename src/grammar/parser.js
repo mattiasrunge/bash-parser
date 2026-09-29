@@ -159,10 +159,10 @@ case 32:
 this.$ = yy.coproc($$[$0-2], yy.addRedirections($$[$0-1], $$[$0]), $$[$0-3].loc);
 break;
 case 43:
-this.$ = yy.arithmeticCommand($$[$0-1], $$[$0-2].loc, $$[$0].loc);
+this.$ = yy.arithmeticCommand($$[$0-1], $$[$0-2], $$[$0]);
 break;
 case 44:
-this.$ = yy.arithmeticCommand([], $$[$0-1].loc, $$[$0].loc);
+this.$ = yy.arithmeticCommand([], $$[$0-1], $$[$0]);
 break;
 case 45: case 48: case 128: case 150:
 this.$ = [$$[$0]];

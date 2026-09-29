@@ -94,7 +94,7 @@ export const parse: Parse = async (sourceCode, options?) => {
     const parser = new grammar.Parser();
     const lexer = new Lexer(mode, options);
     parser.lexer = lexer;
-    parser.yy = astBuilder(options.insertLOC);
+    parser.yy = astBuilder(options.insertLOC, sourceCode);
 
     const ast = await parser.parse(sourceCode);
     attachHereDocuments(ast, lexer.hereDocuments);

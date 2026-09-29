@@ -247,7 +247,7 @@ function parseConditionalWords(words: AstNodeWord[]): AstConditionalExpression {
   return parseOr();
 }
 
-export const astBuilder = (insertLOC?: boolean) => {
+export const astBuilder = (insertLOC?: boolean, source?: string) => {
   const builder: AstBuilder = {
     caseItem: (pattern, body, locStart, locEnd, terminator) => {
       const node: AstNodeCaseItem = { type: 'CaseItem', pattern, body };
@@ -373,13 +373,17 @@ export const astBuilder = (insertLOC?: boolean) => {
       return node;
     },
 
-    arithmeticCommand: (words, locStart, locEnd) => {
-      // Join word texts to form the arithmetic expression
-      const expression = words.map((w) => w.text).join(' ');
+    arithmeticCommand: (words, open, close) => {
+      const locStart = open.loc!;
+      const locEnd = close.loc!;
+      // The text between the parentheses as written, quotes, blanks and all, which is what bash
+      // expands and evaluates; the words, quotes removed, where there is no source to take it from
+      const body = source !== undefined && open.span && close.span ? source.slice(open.span[1] + 1, close.span[0]) : undefined;
+      const expression = body ?? words.map((w) => w.text).join(' ');
 
       // Absolute positions in the arithmetic AST start where the body does: its word's own location,
       // or — without locations — after "(( ", the usual spacing.
-      const sourceOffset = words[0]?.loc?.start?.char ?? (locStart?.start?.char !== undefined ? locStart.start.char + 3 : undefined);
+      const sourceOffset = body !== undefined ? open.span![1] + 1 : words[0]?.loc?.start?.char ?? (locStart?.start?.char !== undefined ? locStart.start.char + 3 : undefined);
 
       // Absent when the text is not arithmetic as written; the executor parses it after expansion
       const arithmeticAST = tryParseArithmetic(expression, { sourceOffset });

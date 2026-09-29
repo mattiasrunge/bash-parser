@@ -144,12 +144,12 @@ export default {
     arithmetic_command: [
       [
         'DOUBLE_OPEN_PAREN arithmetic_word_list DOUBLE_CLOSE_PAREN',
-        '$$ = yy.arithmeticCommand($arithmetic_word_list, $DOUBLE_OPEN_PAREN.loc, $DOUBLE_CLOSE_PAREN.loc);',
+        '$$ = yy.arithmeticCommand($arithmetic_word_list, $DOUBLE_OPEN_PAREN, $DOUBLE_CLOSE_PAREN);',
       ],
       // `(( ))`: an empty expression, which is 0 and so fails
       [
         'DOUBLE_OPEN_PAREN DOUBLE_CLOSE_PAREN',
-        '$$ = yy.arithmeticCommand([], $DOUBLE_OPEN_PAREN.loc, $DOUBLE_CLOSE_PAREN.loc);',
+        '$$ = yy.arithmeticCommand([], $DOUBLE_OPEN_PAREN, $DOUBLE_CLOSE_PAREN);',
       ],
     ],
     arithmetic_word_list: [

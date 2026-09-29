@@ -38,6 +38,9 @@ export type Separator = {
  * An object containing methods to build the final AST. This object is mixed into the Jison grammar, and any of its methods can be called directly from the grammar EBNF source.
  */
 
+/** The `((` or `))` of an arithmetic command: its location, and where it is in the source (`span`, first and last character). */
+export type ParenToken = { loc?: AstSourceLocation; span?: [number, number] };
+
 export type AstBuilder = {
   caseItem: (
     pattern: AstNodeWord[],
@@ -106,8 +109,8 @@ export type AstBuilder = {
 
   arithmeticCommand: (
     words: AstNodeWord[],
-    locStart: AstSourceLocation,
-    locEnd: AstSourceLocation,
+    open: ParenToken,
+    close: ParenToken,
   ) => AstNodeArithmeticCommand;
 
   conditionalCommand: (

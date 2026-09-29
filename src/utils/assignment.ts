@@ -14,8 +14,6 @@
 // character a value may have, `a=($'x\x1fy')`
 export const ARRAY_ELEMENT_SEPARATOR = '\uFDD1';
 
-const ASSIGNMENT_RE = /^([a-zA-Z_][a-zA-Z0-9_]*)(?:\[([^\]]*)\])?(\+?)=/;
-
 /**
  * The pieces of an assignment word.
  */
@@ -35,28 +33,123 @@ export type AssignmentParts = {
 };
 
 /**
+ * Where the subscript that opens at `open` closes, or -1: bash's skipsubscript,
+ * which counts brackets and steps over what is quoted, escaped or substituted,
+ * so that `a[']']=1` and `a["x]"]=1` have one subscript each.
+ */
+export const subscriptEnd = (text: string, open: number): number => {
+  let depth = 0;
+
+  for (let i = open; i < text.length; i++) {
+    const char = text[i];
+
+    if (char === '\\') {
+      i++;
+    } else if (char === "'") {
+      i = text.indexOf("'", i + 1);
+    } else if (char === '"' || char === '`') {
+      i = closingQuote(text, i);
+    } else if (char === '$' && (text[i + 1] === '(' || text[i + 1] === '{')) {
+      i = closingBracket(text, i + 1);
+    } else if (char === '[') {
+      depth++;
+    } else if (char === ']' && --depth === 0) {
+      return i;
+    }
+
+    if (i === -1) return -1;
+  }
+
+  return -1;
+};
+
+const closingQuote = (text: string, open: number): number => {
+  for (let i = open + 1; i < text.length; i++) {
+    if (text[i] === '\\') i++;
+    else if (text[i] === text[open]) return i;
+  }
+
+  return -1;
+};
+
+const closingBracket = (text: string, open: number): number => {
+  const [opener, closer] = text[open] === '(' ? ['(', ')'] : ['{', '}'];
+  let depth = 0;
+
+  for (let i = open; i < text.length; i++) {
+    const char = text[i];
+
+    if (char === '\\') {
+      i++;
+    } else if (char === "'") {
+      i = text.indexOf("'", i + 1);
+    } else if (char === '"' || char === '`') {
+      i = closingQuote(text, i);
+    } else if (char === opener) {
+      depth++;
+    } else if (char === closer && --depth === 0) {
+      return i;
+    }
+
+    if (i === -1) return -1;
+  }
+
+  return -1;
+};
+
+/**
+ * The part of an assignment before its value, as bash's assignment() reads it:
+ * a name, a subscript up to its own `]`, `+` for appending, and the `=`.
+ */
+const assignmentHead = (text: string): { name: string; subscript?: string; append: boolean; end: number } | null => {
+  const name = /^[a-zA-Z_][a-zA-Z0-9_]*/.exec(text)?.[0];
+
+  if (!name) return null;
+
+  let at = name.length;
+  let subscript: string | undefined;
+
+  if (text[at] === '[') {
+    const close = subscriptEnd(text, at);
+
+    if (close === -1) return null;
+
+    subscript = text.slice(at + 1, close);
+    at = close + 1;
+  }
+
+  const append = text[at] === '+';
+
+  if (append) at++;
+  if (text[at] !== '=') return null;
+
+  return { name, subscript, append, end: at + 1 };
+};
+
+/**
  * True if the text starts like an assignment (`a=`, `a+=`, `a[0]=`, `a[0]+=`).
  */
-export const isAssignmentPrefix = (text: string): boolean => ASSIGNMENT_RE.test(text);
+export const isAssignmentPrefix = (text: string): boolean => assignmentHead(text) !== null;
 
 /**
  * Split an assignment word into its pieces, or return null if it is not one.
+ * The subscript is as written, quotes and all: expanding it is the executor's.
  */
 export const parseAssignmentWord = (text: string): AssignmentParts | null => {
-  const match = text.match(ASSIGNMENT_RE);
+  const head = assignmentHead(text);
 
-  if (!match) {
+  if (!head) {
     return null;
   }
 
-  const valueStart = match[0].length;
+  const valueStart = head.end;
   const value = text.slice(valueStart);
   const list = value.startsWith('(') && value.endsWith(')');
 
   return {
-    name: match[1],
-    subscript: match[2],
-    append: match[3] === '+',
+    name: head.name,
+    subscript: head.subscript,
+    append: head.append,
     value: list ? value.slice(1, -1) : value,
     valueStart: list ? valueStart + 1 : valueStart,
     list,

@@ -82,6 +82,12 @@ export class Lexer implements LexerIf {
       this.yytext.loc = tk.loc;
     }
 
+    // `((` and `))` say where they are whatever the options, so that the
+    // command between them keeps its text as written: bash reads it as a string
+    if ((tkType === 'DOUBLE_OPEN_PAREN' || tkType === 'DOUBLE_CLOSE_PAREN') && tk.loc?.start.char !== undefined) {
+      this.yytext.span = [tk.loc.start.char, tk.loc.end.char!];
+    }
+
     if (tk.loc) {
       this.yylineno = tk.loc.start.row! - 1;
     }

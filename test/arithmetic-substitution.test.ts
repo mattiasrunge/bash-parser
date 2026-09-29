@@ -264,7 +264,7 @@ Deno.test('arithmetic substitution', async (t) => {
 
     utils.checkResults(result.commands[0], {
       type: 'ArithmeticCommand',
-      expression: '2 + 3 == 5',
+      expression: ' 2 + 3 == 5 ',
       arithmeticAST: {
         type: 'BinaryExpression',
         operator: '==',

@@ -7,12 +7,12 @@ const first = async <T>(source: string): Promise<T> => (await bashParser(source)
 Deno.test('arithmetic command: shell operators inside (( )) belong to the expression', async (t) => {
   for (
     const [source, expression, operator] of [
-      ['(( i < 3 ))', 'i < 3', '<'],
+      ['(( i < 3 ))', ' i < 3 ', '<'],
       ['((i>3))', 'i>3', '>'],
-      ['(( a = b << 2 ))', 'a = b << 2', '='],
-      ['(( a && b ))', 'a && b', '&&'],
-      ['(( a | b ))', 'a | b', '|'],
-      ['(( x = $((1+2)) * (3) ))', 'x = $((1+2)) * (3)', '='],
+      ['(( a = b << 2 ))', ' a = b << 2 ', '='],
+      ['(( a && b ))', ' a && b ', '&&'],
+      ['(( a | b ))', ' a | b ', '|'],
+      ['(( x = $((1+2)) * (3) ))', ' x = $((1+2)) * (3) ', '='],
     ]
   ) {
     await t.step(source, async () => {
@@ -26,7 +26,13 @@ Deno.test('arithmetic command: shell operators inside (( )) belong to the expres
   await t.step('as a while condition', async () => {
     const node = await first<AstNodeWhile>('while (( i < 3 )); do i=$((i+1)); done');
     assertEquals(node.type, 'While');
-    assertEquals((node.clause.commands[0] as AstNodeArithmeticCommand).expression, 'i < 3');
+    assertEquals((node.clause.commands[0] as AstNodeArithmeticCommand).expression, ' i < 3 ');
+  });
+
+  // bash reads the body as a string and expands it later: a quoted subscript stays as written
+  await t.step('the expression is the text as written, quotes and blanks kept', async () => {
+    const node = await first<AstNodeArithmeticCommand>('((  \'a[$k]\'++  +  a["$j"] ))');
+    assertEquals(node.expression, '  \'a[$k]\'++  +  a["$j"] ');
   });
 
   await t.step('positions in the expression are absolute in the source', async () => {

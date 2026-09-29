@@ -34,9 +34,17 @@ Deno.test('array assignment', async (t) => {
     assertEquals(await assignmentText('a=(1\n2)'), `a=(1${SEP}2)`);
   });
 
+  await t.step("a subscript runs to its own ], quotes kept for the executor to expand: A[']']=1", async () => {
+    assertEquals(await assignmentText("A[']']=1"), "A[']']=1");
+    assertEquals(await assignmentText('A["x]"]="a b"'), 'A["x]"]=a b');
+    assertEquals(await assignmentText('A[\\]]=1'), 'A[\\]]=1');
+    assertEquals(await assignmentText('A[$(echo ])]=1'), 'A[$(echo ])]=1');
+    assertEquals(parseAssignmentWord("A[']']+=v")?.subscript, "']'");
+  });
+
   await t.step('a subscript holding blanks is part of the word, as bash reads it', async () => {
     assertEquals(await assignmentText('h[hello world]=x'), 'h[hello world]=x');
-    assertEquals(await assignmentText('h["k k"]+=v'), 'h[k k]+=v');
+    assertEquals(await assignmentText('h["k k"]+=v'), 'h["k k"]+=v');
     assertEquals(await assignmentText('h=([foo bar]=x y)'), `h=([foo bar]=x${SEP}y)`);
     // Not an assignment, so the blank still splits: `a[b` and `c]`
     assertEquals(await suffixWords('echo a[b c]'), ['a[b', 'c]']);
