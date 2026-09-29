@@ -6,6 +6,7 @@ import dollarSingleQuoting from './dollar-single-quoting.ts';
 import doubleQuoting from './double-quoting.ts';
 import end from './end.ts';
 import expansionArithmetic from './expansion-arithmetic.ts';
+import expansionBracketArithmetic from './expansion-bracket-arithmetic.ts';
 import expansionCommandOrArithmetic from './expansion-command-or-arithmetic.ts';
 import expansionCommandTick from './expansion-command-tick.ts';
 import expansionParameterExtended from './expansion-parameter-extended.ts';
@@ -27,6 +28,7 @@ const reducers: Reducers = {
   expansionCommandTick,
   start,
   expansionArithmetic,
+  expansionBracketArithmetic,
   expansionSpecialParameter,
   expansionParameter,
   expansionCommandOrArithmetic,

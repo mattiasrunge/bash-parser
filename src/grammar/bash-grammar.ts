@@ -237,20 +237,20 @@ export default {
       ],
       [
         'For DOUBLE_OPEN_PAREN arithmetic_word_list DOUBLE_CLOSE_PAREN linebreak do_group',
-        '$$ = yy.arithmeticForClause($arithmetic_word_list, $do_group, $For.loc);',
+        '$$ = yy.arithmeticForClause($arithmetic_word_list, $do_group, $For.loc, $DOUBLE_OPEN_PAREN, $DOUBLE_CLOSE_PAREN);',
       ],
       [
         'For DOUBLE_OPEN_PAREN arithmetic_word_list DOUBLE_CLOSE_PAREN SEPARATOR_OP linebreak do_group',
-        '$$ = yy.arithmeticForClause($arithmetic_word_list, $do_group, $For.loc);',
+        '$$ = yy.arithmeticForClause($arithmetic_word_list, $do_group, $For.loc, $DOUBLE_OPEN_PAREN, $DOUBLE_CLOSE_PAREN);',
       ],
       // bash also takes a { } group for the body: `for ((i=0; i<3; i++)) { echo $i; }`
       [
         'For DOUBLE_OPEN_PAREN arithmetic_word_list DOUBLE_CLOSE_PAREN linebreak brace_group',
-        '$$ = yy.arithmeticForClause($arithmetic_word_list, $brace_group, $For.loc);',
+        '$$ = yy.arithmeticForClause($arithmetic_word_list, $brace_group, $For.loc, $DOUBLE_OPEN_PAREN, $DOUBLE_CLOSE_PAREN);',
       ],
       [
         'For DOUBLE_OPEN_PAREN arithmetic_word_list DOUBLE_CLOSE_PAREN SEPARATOR_OP linebreak brace_group',
-        '$$ = yy.arithmeticForClause($arithmetic_word_list, $brace_group, $For.loc);',
+        '$$ = yy.arithmeticForClause($arithmetic_word_list, $brace_group, $For.loc, $DOUBLE_OPEN_PAREN, $DOUBLE_CLOSE_PAREN);',
       ],
     ],
     select_clause: [

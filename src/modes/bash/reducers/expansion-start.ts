@@ -7,6 +7,11 @@ const isSpecialParameter = (char: string) => {
 const expansionStart: Reducer = (state, source, reducers) => {
   const char = source && source.shift();
 
+  // A `$` the input ends on is a `$`, as in `echo $`
+  if (char === undefined) {
+    return state.previousReducer(state.setExpansion(state.expansion.slice(0, -1)), source, reducers);
+  }
+
   // ANSI-C quoting, `$'a\nb'` — but only outside double quotes, where bash
   // leaves it alone. The empty expansion the `$` opened is dropped: this is a
   // quoting form, not an expansion.
@@ -20,6 +25,14 @@ const expansionStart: Reducer = (state, source, reducers) => {
   if (char === '{') {
     return {
       nextReduction: reducers.expansionParameterExtended,
+      nextState: state.appendChar(char),
+    };
+  }
+
+  // `$[1 + 2]`, the old form of `$((1 + 2))`
+  if (char === '[') {
+    return {
+      nextReduction: reducers.expansionBracketArithmetic,
       nextState: state.appendChar(char),
     };
   }

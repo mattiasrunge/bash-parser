@@ -368,3 +368,16 @@ Deno.test('arithmetic substitution', async (t) => {
     utils.checkResults(arithmeticAST.right.type, 'CommandSubstitution');
   });
 });
+
+Deno.test('$[expr] is the old spelling of $((expr))', async () => {
+  const word = (await bashParser('echo x$[a[0] + 1]y')).commands[0] as unknown as { suffix: { text: string; expansion: { type: string; expression: string }[] }[] };
+
+  assertEquals(word.suffix[0].expansion[0].type, 'ArithmeticExpansion');
+  assertEquals(word.suffix[0].expansion[0].expression, 'a[0] + 1');
+});
+
+Deno.test('a $ the input ends on is a $', async () => {
+  const command = (await bashParser('echo $')).commands[0] as unknown as { suffix: { text: string }[] };
+
+  assertEquals(command.suffix[0].text, '$');
+});

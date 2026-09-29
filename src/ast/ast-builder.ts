@@ -533,11 +533,12 @@ export const astBuilder = (insertLOC?: boolean, source?: string) => {
       return node;
     },
 
-    arithmeticForClause: (words, doGroup, locStart) => {
-      // The tokenizer reads the whole `(( … ))` body as one word; its three parts are split at the
-      // `;` outside any parentheses, and an empty part is left out.
-      const body = words.map((w) => w.text).join(' ');
-      const bodyStart = words[0]?.loc?.start?.char;
+    arithmeticForClause: (words, doGroup, locStart, open, close) => {
+      // The body as written, as for `((`; its three parts are split at the `;` outside any
+      // parentheses, and an empty part is left out.
+      const raw = source !== undefined && open?.span && close?.span ? source.slice(open.span[1] + 1, close.span[0]) : undefined;
+      const body = raw ?? words.map((w) => w.text).join(' ');
+      const bodyStart = raw !== undefined ? open!.span![1] + 1 : words[0]?.loc?.start?.char;
       const parts: { text: string; offset: number }[] = [];
       let depth = 0;
       let from = 0;
@@ -555,9 +556,10 @@ export const astBuilder = (insertLOC?: boolean, source?: string) => {
       }
 
       const part = ({ text, offset }: { text: string; offset: number }): AstArithmeticForPart | undefined => {
-        const expression = text.trim();
-        if (expression === '') return undefined;
-        const lead = text.length - text.trimStart().length;
+        // bash shows a part from its first non-blank on, and keeps what follows it: `-- `
+        const expression = text.trimStart();
+        if (expression.trim() === '') return undefined;
+        const lead = text.length - expression.length;
         const sourceOffset = bodyStart !== undefined ? bodyStart + offset + lead : undefined;
         return { expression, arithmeticAST: tryParseArithmetic(expression, { sourceOffset }) };
       };

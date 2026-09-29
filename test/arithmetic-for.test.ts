@@ -52,9 +52,9 @@ Deno.test('for (( init; test; update ))', async (t) => {
     assertEquals(node.do.commands.length, 1);
   });
 
-  await t.step('spaced, with no separator before do', async () => {
+  await t.step('spaced, with no separator before do: each part as written, from its first non-blank', async () => {
     const node = await first<AstNodeArithmeticFor>('for (( i = 0 ; i < 3 ; i++ )) do echo; done');
-    assertEquals([node.init?.expression, node.test?.expression, node.update?.expression], ['i = 0', 'i < 3', 'i++']);
+    assertEquals([node.init?.expression, node.test?.expression, node.update?.expression], ['i = 0 ', 'i < 3 ', 'i++ ']);
   });
 
   await t.step('over several lines', async () => {

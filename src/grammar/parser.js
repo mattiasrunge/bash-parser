@@ -195,10 +195,10 @@ case 61:
 this.$ = yy.forClause($$[$0-4], $$[$0-2], $$[$0], $$[$0-5].loc);
 break;
 case 62: case 64:
-this.$ = yy.arithmeticForClause($$[$0-3], $$[$0], $$[$0-5].loc);
+this.$ = yy.arithmeticForClause($$[$0-3], $$[$0], $$[$0-5].loc, $$[$0-4], $$[$0-2]);
 break;
 case 63: case 65:
-this.$ = yy.arithmeticForClause($$[$0-4], $$[$0], $$[$0-6].loc);
+this.$ = yy.arithmeticForClause($$[$0-4], $$[$0], $$[$0-6].loc, $$[$0-5], $$[$0-3]);
 break;
 case 66:
 this.$ = yy.selectClause($$[$0-2], null, $$[$0], $$[$0-3].loc);

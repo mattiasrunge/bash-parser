@@ -169,6 +169,8 @@ export type AstBuilder = {
     words: AstNodeWord[],
     doGroup: AstNodeCompoundList,
     locStart: AstSourceLocation,
+    open?: ParenToken,
+    close?: ParenToken,
   ) => AstNodeArithmeticFor;
 
   forClauseDefault: (
