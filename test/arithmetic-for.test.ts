@@ -42,7 +42,7 @@ Deno.test('for (( init; test; update ))', async (t) => {
     const node = await first<AstNodeArithmeticFor>('for ((i=0;i<3;i++)); do echo $i; done');
     assertEquals(node.type, 'ArithmeticFor');
     assertEquals([node.init?.expression, node.test?.expression, node.update?.expression], ['i=0', 'i<3', 'i++']);
-    assertEquals(node.test?.arithmeticAST.type, 'BinaryExpression');
+    assertEquals(node.test?.arithmeticAST?.type, 'BinaryExpression');
     assertEquals(node.do.commands.length, 1);
   });
 

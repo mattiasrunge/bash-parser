@@ -6,7 +6,8 @@ import type { ParameterOp } from '../../../modes/types.ts';
 // well as on a scalar. The subscript stays part of the captured parameter;
 // splitting it off is the executor's job, since evaluating it needs the
 // variables.
-const name = '(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\\[[^\\]]*\\])?|[@*])';
+// A variable (an element too), $@ and $*, a positional parameter, or $? $$ $!
+const name = '(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\\[[^\\]]*\\])?|[@*]|[0-9]+|[?$!])';
 
 const parameterOps: Record<string, ParameterOp> = {
   // POSIX implementation
@@ -95,7 +96,8 @@ const parameterOps: Record<string, ParameterOp> = {
     expand: ['word'],
   },
 
-  [`^\\#(${name})$`]: {
+  // `${#1}`, `${#?}` too: the length of a positional or special parameter
+  [`^\\#(${name}|[#-])$`]: {
     op: 'stringLength',
     parameter: (m) => m[1],
   },
@@ -224,9 +226,11 @@ const parameterOps: Record<string, ParameterOp> = {
   // expansion is the resultant list.
   // The result of the expansion is subject to word splitting and pathname expansion as
   // described below.
-  [`^(${name})@([Q|E|P|A|a])$`]: {
+  [`^(${name})@([QEPAaUuLKk])$`]: {
     op: 'transformation',
     parameter: (m) => m[1],
+    // The operator's letter, as written
+    transform: (m) => m[2],
     kind: (m) => {
       switch (m[2]) {
         case 'Q':
@@ -239,6 +243,15 @@ const parameterOps: Record<string, ParameterOp> = {
           return 'assignment';
         case 'a':
           return 'flags';
+        case 'U':
+          return 'upper';
+        case 'u':
+          return 'upperFirst';
+        case 'L':
+          return 'lower';
+        case 'K':
+        case 'k':
+          return 'keys';
         default:
           return 'unknown';
       }
