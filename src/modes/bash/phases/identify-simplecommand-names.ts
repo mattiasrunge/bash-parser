@@ -11,9 +11,9 @@ const couldEndSimpleCommand = (scTk: TokenIf) => {
     scTk.is('NEWLINE') ||
     scTk.is('NEWLINE_LIST') ||
     scTk.value === ';' ||
-    scTk.is('PIPE') ||
+    scTk.is('PIPE') || scTk.is('PIPE_AND') ||
     scTk.is('OR_IF') ||
-    scTk.is('PIPE') ||
+    scTk.is('PIPE') || scTk.is('PIPE_AND') ||
     scTk.is('AND_IF')
   );
 };

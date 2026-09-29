@@ -4,7 +4,8 @@ import type { Expansion, TokenIf } from '../../../tokenizer/mod.ts';
 import map from '../../../utils/iterable/map.ts';
 
 const setCommandExpansion = async (xp: Expansion, token: TokenIf) => {
-  let command = xp.command!;
+  // `$()` closes before a character of it arrives: an empty command
+  let command = xp.command ?? '';
 
   if (token.value![xp.loc!.start - 1] === '`') {
     command = command.replace(/\\`/g, '`');

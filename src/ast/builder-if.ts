@@ -122,6 +122,7 @@ export type AstBuilder = {
   pipeSequenceAppend: (
     pipe: AstNodePipeline,
     command: AstNodeCommand,
+    stderrToo?: boolean,
   ) => AstNodePipeline;
 
   bangPipeLine: (

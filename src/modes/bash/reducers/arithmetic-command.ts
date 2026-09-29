@@ -18,6 +18,24 @@ export const closesArithmetic = (source: string[]): boolean => {
   return false;
 };
 
+/**
+ * Whether the text after `((` shows it opened two subshells: a lone `)` closes
+ * the first `(` before any `))`. Text that simply runs out does not — it may
+ * still become arithmetic, and is reported as unclosed arithmetic.
+ */
+export const opensSubshells = (source: string[]): boolean => {
+  let depth = 0;
+  for (let i = 0; i < source.length; i++) {
+    const char = source[i];
+    if (char === '(') depth++;
+    else if (char === ')') {
+      if (depth > 0) depth--;
+      else return source[i + 1] !== ')';
+    }
+  }
+  return false;
+};
+
 /** How many of the `(` in `text` are still open. */
 const openParens = (text: string): number => {
   let depth = 0;

@@ -11,8 +11,8 @@ const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<To
   // evaluate based on last token
   const startOfCommand = last.is('EMPTY') || last.is('SEPARATOR_OP') || last.is('OPEN_PAREN') ||
     last.is('CLOSE_PAREN') || last.is('NEWLINE') || last.is('NEWLINE_LIST') ||
-    last.is('DSEMI') || last.is('SEMI_AND') || last.is('DSEMI_AND') || last.value === ';' || last.is('PIPE') ||
-    last.is('OR_IF') || last.is('PIPE') || last.is('AND_IF');
+    last.is('DSEMI') || last.is('SEMI_AND') || last.is('DSEMI_AND') || last.value === ';' || last.is('PIPE') || last.is('PIPE_AND') ||
+    last.is('OR_IF') || last.is('PIPE') || last.is('PIPE_AND') || last.is('AND_IF');
 
   // What the last token became, not what it reads: in `t ! !` the first `!` is an argument
   const lastIsReservedWord = !(last.value === 'for') && !(last.value === 'select') && !(last.value === 'in') && !(last.value === 'case') &&

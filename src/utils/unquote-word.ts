@@ -90,7 +90,10 @@ const parseAnsiC = (text: string, start: number): { value: string; end: number }
         value += next;
         i += 2;
       } else {
-        value += String.fromCodePoint(Number.parseInt(hex, 16));
+        const code = Number.parseInt(hex, 16);
+
+        // Past the last code point is nothing, as in bash: `$'\Uffffffff'` is empty
+        value += code <= 0x10ffff ? String.fromCodePoint(code) : '';
         i += 2 + hex.length;
       }
     } else if (next >= '0' && next <= '7') {

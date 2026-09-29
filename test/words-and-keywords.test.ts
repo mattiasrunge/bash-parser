@@ -80,3 +80,34 @@ Deno.test('grammar bash allows beyond POSIX', async (t) => {
     assertEquals((await first('!')).bang, true);
   });
 });
+
+Deno.test('more of what bash accepts', async (t) => {
+  const parses = async (source: string) => (await bashParser(source)).commands[0] as any;
+
+  await t.step('an empty command substitution', async () => {
+    assertEquals((await parses('echo ab$()cd')).suffix[0].expansion[0].command, '');
+  });
+
+  await t.step('a code point past Unicode is nothing', async () => {
+    assertEquals((await parses("echo $'\\Uffffffff'x")).suffix[0].text, 'x');
+  });
+
+  await t.step('|& pipes stderr too', async () => {
+    const left = (await parses('a |& b')).commands[0];
+    assertEquals(left.suffix[0].op.text, '>&');
+    assertEquals(left.suffix[0].numberIo.text, '2');
+  });
+
+  await t.step('case with in on its own line, and esac as a pattern', async () => {
+    assertEquals((await parses('case "$w"\nin\n foo) ;;\nesac')).type, 'Case');
+    assertEquals((await parses('case esac in (esac) echo;; esac')).cases[0].pattern[0].text, 'esac');
+    assertEquals((await parses('case k in else|done|esac) :;; esac')).cases[0].pattern.length, 3);
+    assertEquals((await parses('case ni in esac')).type, 'Case');
+  });
+
+  await t.step('(( and $(( that are subshells', async () => {
+    assertEquals((await parses('((echo a; echo b); echo c)')).type, 'Subshell');
+    assertEquals((await parses('echo $((echo a);(echo b))')).suffix[0].expansion[0].type, 'CommandExpansion');
+    assertEquals((await parses('echo $(( (1+2)*3 ))')).suffix[0].expansion[0].type, 'ArithmeticExpansion');
+  });
+});

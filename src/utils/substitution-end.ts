@@ -26,8 +26,10 @@ export function substitutionEnd(text: string, from = 0): number {
   const cases: Case[] = [];
   // Here-documents whose bodies start after the current line
   const pendingDocs: { delimiter: string; strip: boolean }[] = [];
-  // Whether the next word stands where a command starts
+  // Whether the next word stands where a command starts, and whether it is
+  // a case pattern whatever it reads (after a pattern list's `(` or a `|`)
   let commandStart = true;
+  let patternNext = false;
 
   try {
     while (i < text.length) {
@@ -83,7 +85,9 @@ export function substitutionEnd(text: string, from = 0): number {
 
       if (c === '(') {
         // A case pattern may start with one of its own
-        if (!(topCase?.phase === 'patterns')) {
+        if (topCase?.phase === 'patterns') {
+          patternNext = true;
+        } else {
           depth++;
         }
 
@@ -103,6 +107,7 @@ export function substitutionEnd(text: string, from = 0): number {
           i += two === '&&' || two === '||' || two === ';;' ? 2 : 1;
         }
 
+        patternNext = topCase?.phase === 'patterns' && c === '|';
         commandStart = true;
         continue;
       }
@@ -138,9 +143,11 @@ export function substitutionEnd(text: string, from = 0): number {
         cases.push({ phase: 'subject' });
       } else if (topCase?.phase === 'subject' && word === 'in') {
         topCase.phase = 'patterns';
-      } else if (word === 'esac' && topCase && (topCase.phase === 'patterns' || commandStart)) {
+      } else if (word === 'esac' && topCase && !patternNext && (topCase.phase === 'patterns' || commandStart)) {
         cases.pop();
       }
+
+      patternNext = false;
 
       commandStart = commandStart && COMMAND_STARTERS.has(word);
     }

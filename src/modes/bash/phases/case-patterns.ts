@@ -33,6 +33,8 @@ const casePatterns: LexerPhase = () =>
     // The pattern being put together, and how deep in its parentheses it is
     let pattern: TokenIf | undefined;
     let depth = 0;
+    // After a pattern list's `(` or a `|`, the next word is a pattern whatever it reads: `(esac)`
+    let patternNext = false;
 
     for await (const token of tokens) {
       const frame = frames[frames.length - 1];
@@ -58,12 +60,20 @@ const casePatterns: LexerPhase = () =>
       } else if (frame?.state === 'subject' && (token.is('In') || token.is('LINEBREAK_IN'))) {
         frame.state = 'patterns';
       } else if (frame?.state === 'patterns') {
-        if (token.is('Esac')) {
+        // `esac` where a pattern list could start ends the case, even right after `in`
+        if ((token.is('Esac') || (token.is('WORD') && token.value === 'esac')) && !patternNext) {
           frames.pop();
+          yield token.is('Esac') ? token : token.setType('Esac');
+          continue;
         } else if (token.is('CLOSE_PAREN')) {
           frame.state = 'body';
-        } else if (!token.is('PIPE') && !token.is('OPEN_PAREN') && !token.is('NEWLINE') && !token.is('NEWLINE_LIST')) {
+        } else if (token.is('PIPE') || token.is('OPEN_PAREN')) {
+          patternNext = true;
+          yield token;
+          continue;
+        } else if (!token.is('NEWLINE') && !token.is('NEWLINE_LIST')) {
           pattern = asPattern(token);
+          patternNext = false;
           continue;
         }
       } else if (frame?.state === 'body') {

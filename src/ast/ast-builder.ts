@@ -8,6 +8,7 @@ import type {
   AstConditionalNegation,
   AstConditionalUnaryExpression,
   AstConditionalWord,
+  AstIoNumber,
   AstNode,
   AstNodeArithmeticCommand,
   AstNodeArithmeticFor,
@@ -433,7 +434,24 @@ export const astBuilder = (insertLOC?: boolean) => {
       return node;
     },
 
-    pipeSequenceAppend: (pipe, command) => {
+    pipeSequenceAppend: (pipe, command, stderrToo = false) => {
+      if (stderrToo) {
+        // `|&`: the command before it sends its stderr down the pipe as well, `2>&1`
+        const left = pipe.commands[pipe.commands.length - 1] as AstNodeCommand & { redirections?: AstNodeRedirect[] };
+        const redirect: AstNodeRedirect = {
+          type: 'Redirect',
+          op: { type: 'Greatand', text: '>&' } as unknown as AstNodeWord,
+          file: { type: 'Word', text: '1' } as AstNodeWord,
+          numberIo: { type: 'IoNumber', text: '2' } as unknown as AstIoNumber,
+        };
+
+        if (left.type === 'Command') {
+          left.suffix = [...(left.suffix ?? []), redirect];
+        } else {
+          left.redirections = [...(left.redirections ?? []), redirect];
+        }
+      }
+
       pipe.commands.push(command);
 
       if (insertLOC) {

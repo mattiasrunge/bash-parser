@@ -1,6 +1,7 @@
 import { mkToken, type Reducer } from '../../../tokenizer/mod.ts';
 import last from '../../../utils/last.ts';
 import { substitutionEnd } from '../../../utils/substitution-end.ts';
+import { opensSubshells } from './arithmetic-command.ts';
 
 // How many characters of a `$(` body remain before its closing `)`, as the
 // substitution scanner found them on the body's first character
@@ -47,7 +48,9 @@ const expansionCommandOrArithmetic: Reducer = (state, source, reducers) => {
   const quoteState = getQuoteState(xp!);
   const escaping = isEscaping(xp!);
 
-  if (char === '(' && state.current.slice(-2) === '$(' && !xp!.command) {
+  // `$((` is arithmetic only when it closes as arithmetic; `$((echo a); (echo b))`
+  // is a command substitution that starts with a subshell
+  if (char === '(' && state.current.slice(-2) === '$(' && !xp!.command && !opensSubshells(source)) {
     return {
       nextReduction: reducers.expansionArithmetic,
       nextState: state.appendChar(char),

@@ -79,6 +79,11 @@ export default {
         'pipe_sequence PIPE linebreak command',
         '$$ = yy.pipeSequenceAppend($pipe_sequence, $command);',
       ],
+      // `a |& b` is `a 2>&1 | b`
+      [
+        'pipe_sequence PIPE_AND linebreak command',
+        '$$ = yy.pipeSequenceAppend($pipe_sequence, $command, true);',
+      ],
     ],
     command: [
       'simple_command',
@@ -255,6 +260,19 @@ export default {
       ],
       [
         'Case WORD linebreak in linebreak Esac',
+        '$$ = yy.caseClause($WORD, null, $Case.loc, $Esac.loc);',
+      ],
+      // `in` on a line of its own: the lexer joins the newline to it, as for `for`
+      [
+        'Case WORD LINEBREAK_IN linebreak case_list Esac',
+        '$$ = yy.caseClause($WORD, $case_list, $Case.loc, $Esac.loc);',
+      ],
+      [
+        'Case WORD LINEBREAK_IN linebreak case_list_ns Esac',
+        '$$ = yy.caseClause($WORD, $case_list_ns, $Case.loc, $Esac.loc);',
+      ],
+      [
+        'Case WORD LINEBREAK_IN linebreak Esac',
         '$$ = yy.caseClause($WORD, null, $Case.loc, $Esac.loc);',
       ],
     ],

@@ -10,6 +10,7 @@ const COMMAND_SEPARATORS = [
   'AND_IF',
   'OR_IF',
   'PIPE',
+  'PIPE_AND',
   'AND',
   'OPEN_PAREN',
   'CLOSE_PAREN',
