@@ -38,8 +38,12 @@ export const DEFAULT_IFS = ' \t\n';
  * expansion is quoted, so the splitter cannot derive those boundaries from IFS
  * or from the quoting. The caller substitutes this marker between the elements
  * and it always splits.
+ *
+ * A Unicode noncharacter, which no text holds and the placeholders cannot make:
+ * it was `\x00\x01\x00`, which a backslash, a \x01 and a backslash in a
+ * value became once each backslash was a `\x00BS\x00`.
  */
-export const FIELD_MARKER = '\x00\x01\x00';
+export const FIELD_MARKER = '\uFDD0';
 
 /** A character of IFS that is whitespace: runs of it collapse into one delimiter. */
 const IFS_WHITESPACE_PLACEHOLDER = '\x00IW\x00';

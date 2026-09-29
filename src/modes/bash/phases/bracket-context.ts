@@ -31,15 +31,45 @@ const CONDITIONAL_WORDS = ['AND_IF', 'OR_IF', 'LESS', 'GREAT', 'OPEN_PAREN', 'CL
 const startsCommand = (previous: TokenIf | undefined) =>
   !previous || COMMAND_SEPARATORS.some((type) => previous.is(type)) || (previous.is('TOKEN') && COMMAND_STARTING_WORDS.has(previous.value));
 
+/** How many of a text's parentheses are open at its end, quoted and escaped ones left out. */
+const parenDepth = (text: string): number => {
+  let depth = 0;
+  let quote: string | undefined;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+
+    if (quote) {
+      if (c === quote) quote = undefined;
+      else if (c === '\\' && quote === '"') i++;
+    } else if (c === '\\') {
+      i++;
+    } else if (c === '"' || c === "'") {
+      quote = c;
+    } else if (c === '(') {
+      depth++;
+    } else if (c === ')') {
+      depth = Math.max(0, depth - 1);
+    }
+  }
+
+  return depth;
+};
+
 /** `b` begins where `a` ends: nothing, not even a blank, between them. */
 const touching = (a: TokenIf, b: TokenIf) => a.loc?.end?.char !== undefined && b.loc?.start?.char === a.loc.end.char + 1;
 
-/** One word from two that touch, the second's expansions moved to where it now starts. */
+/**
+ * One word from two, the second's expansions moved to where it now starts.
+ * Blanks between them — inside a regular expression's parentheses, `(one
+ * two)` — are part of it.
+ */
 const join = (a: TokenIf, b: TokenIf): TokenIf => {
   const offset = b.loc!.start!.char! - a.loc!.start!.char!;
   const moved = (b.expansion ?? []).map((xp) => ({ ...xp, loc: xp.loc && { start: xp.loc.start! + offset, end: xp.loc.end! + offset } }));
+  const gap = Math.max(0, b.loc!.start!.char! - a.loc!.end!.char! - 1);
 
-  return mkToken('WORD', a.value + b.value, {
+  return mkToken('WORD', a.value + ' '.repeat(gap) + b.value, {
     loc: { start: a.loc!.start, end: b.loc!.end },
     expansion: [...(a.expansion ?? []), ...moved],
     ctx: { ...a.ctx, pattern: true },
@@ -75,11 +105,9 @@ const bracketContext: LexerPhase = () =>
 
         // A piece that touches the pattern so far is more of it — but a `)` only
         // when it closes a `(` of the pattern's own: `[[ ( $a = t) ]]`
-        if (pattern && !closes && touching(pattern, token) && (depth > 0 || !token.is('CLOSE_PAREN'))) {
-          if (token.is('OPEN_PAREN')) depth++;
-          if (token.is('CLOSE_PAREN')) depth--;
-
+        if (pattern && !closes && (touching(pattern, token) || depth > 0) && (depth > 0 || !token.is('CLOSE_PAREN'))) {
           pattern = join(pattern, token);
+          depth = parenDepth(pattern.value);
           continue;
         }
 
@@ -94,6 +122,7 @@ const bracketContext: LexerPhase = () =>
           inConditional = false;
         } else if (patternNext && !token.is('NEWLINE') && !token.is('NEWLINE_LIST')) {
           pattern = mkToken('WORD', token.value, { loc: token.loc, expansion: token.expansion, ctx: { ...token.ctx, pattern: true } });
+          depth = parenDepth(pattern.value);
           patternNext = false;
           previous = pattern;
           continue;

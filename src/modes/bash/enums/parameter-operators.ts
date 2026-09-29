@@ -9,6 +9,30 @@ import type { ParameterOp } from '../../../modes/types.ts';
 // A variable (an element too), $@ and $*, a positional parameter, or $? $$ $!
 const name = '(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\\[[^\\]]*\\])?|[@*]|[0-9]+|[?$!])';
 
+/**
+ * `offset:length` of a substring expansion, split at the `:` between them —
+ * not at one that belongs to a `?` in the offset, `${x:1 ? 4 : 2:1}`, nor one
+ * inside parentheses or a nested expansion, `${x:${y:-0}}`.
+ */
+function substringParts(text: string): [string, string | undefined] {
+  let questions = 0;
+  let depth = 0;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+
+    if (c === '(' || c === '{') depth++;
+    else if (c === ')' || c === '}') depth--;
+    else if (c === '?' && depth === 0) questions++;
+    else if (c === ':' && depth === 0) {
+      if (questions > 0) questions--;
+      else return [text.slice(0, i), text.slice(i + 1)];
+    }
+  }
+
+  return [text, undefined];
+}
+
 const parameterOps: Record<string, ParameterOp> = {
   // POSIX implementation
 
@@ -146,13 +170,16 @@ const parameterOps: Record<string, ParameterOp> = {
   // of parameter starting at the character specified by offset.
   // Both are arithmetic expressions, `${x:i:n}`, as written; `offset` and
   // `length` are their values when they are plain numbers
-  [`^(${name}):([^:]*)(?::([^:]*))?$`]: {
+  [`^(${name}):(.*)$`]: {
     op: 'substring',
     parameter: (m) => m[1],
-    offset: (m) => parseInt(m[2], 10),
-    length: (m) => m[3] === undefined ? undefined : parseInt(m[3], 10),
-    offsetExpression: (m) => m[2],
-    lengthExpression: (m) => m[3],
+    offset: (m) => parseInt(substringParts(m[2])[0], 10),
+    length: (m) => {
+      const length = substringParts(m[2])[1];
+      return length === undefined ? undefined : parseInt(length, 10);
+    },
+    offsetExpression: (m) => substringParts(m[2])[0],
+    lengthExpression: (m) => substringParts(m[2])[1],
   },
 
   // Expands to the names of variables whose names begin with prefix,

@@ -10,7 +10,9 @@
  * the same thing as field splitting: with `IFS=:` the literal `a=(x y)` is still
  * two elements, while `a=($V)` with V=`x:y` is also two.
  */
-export const ARRAY_ELEMENT_SEPARATOR = '\x1F';
+// A Unicode noncharacter, which no text holds: `\x1F`, which this was, is a
+// character a value may have, `a=($'x\x1fy')`
+export const ARRAY_ELEMENT_SEPARATOR = '\uFDD1';
 
 const ASSIGNMENT_RE = /^([a-zA-Z_][a-zA-Z0-9_]*)(?:\[([^\]]*)\])?(\+?)=/;
 

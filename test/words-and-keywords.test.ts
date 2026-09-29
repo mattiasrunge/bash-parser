@@ -1,5 +1,6 @@
 import { assertEquals } from '@std/assert';
 import bashParser from '../src/parse.ts';
+import { ARRAY_ELEMENT_SEPARATOR } from '../src/utils/assignment.ts';
 
 const words = async (source: string) => (((await bashParser(source)).commands[0] as any).suffix as { text: string }[]).map((w) => w.text);
 
@@ -125,7 +126,7 @@ Deno.test('comments in arrays, any for name, joined here-document lines, backsla
 
   await t.step('a comment inside an array literal', async () => {
     const word = (await first('x=(\n a # one\n b # two\n)')).prefix[0];
-    assertEquals(word.text, 'x=(a\x1fb)');
+    assertEquals(word.text, `x=(a${ARRAY_ELEMENT_SEPARATOR}b)`);
   });
 
   await t.step('for 1 in parses; the executor rejects the name', async () => {
