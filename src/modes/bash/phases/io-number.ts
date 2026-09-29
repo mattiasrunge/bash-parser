@@ -29,6 +29,17 @@ const isAdjacent = (tk: TokenIf, next: TokenIf): boolean => {
   return end.row === start.row && end.char + 1 === start.char;
 };
 
+/** Here-strings and `<<-` take a descriptor as well as the file operators do. */
+const HERE_OPERATORS = ['TLESS', 'DLESSDASH'];
+
+/**
+ * `{name}` before a redirection is bash's: the shell opens a descriptor of its
+ * own choosing, 10 or above, and puts its number in `name` — or, for `{name}>&-`,
+ * closes the one `name` holds. The word stands where the number would, as the
+ * redirection's IO_NUMBER; the executor tells the two apart.
+ */
+const NAMED_DESCRIPTOR = /^\{[A-Za-z_][A-Za-z0-9_]*(\[[^\]]*\])?\}$/;
+
 const ioNumber: LexerPhase = (ctx) => {
   return compose<TokenIf>(
     map(async (tk: TokenIf, _idx, iterable) => {
@@ -36,9 +47,9 @@ const ioNumber: LexerPhase = (ctx) => {
       const next = it.ahead(1);
 
       if (
-        tk && tk.is('WORD') && tk.value!.match(/^[0-9]+$/) &&
-        ctx.enums.IOFileOperators.some((op) => next!.type === op) &&
-        isAdjacent(tk, next!)
+        tk && tk.is('WORD') && (/^[0-9]+$/.test(tk.value!) || NAMED_DESCRIPTOR.test(tk.value!)) && next &&
+        [...ctx.enums.IOFileOperators, ...HERE_OPERATORS].some((op) => next.type === op) &&
+        isAdjacent(tk, next)
       ) {
         return tk.setType('IO_NUMBER');
       }

@@ -54,7 +54,13 @@ const setCommandExpansion = async (xp: Expansion, token: TokenIf, options: Optio
   let commandAST;
 
   try {
-    commandAST = await bashParser(command, { unterminatedHereDocuments: options.unterminatedHereDocuments, substitution: true });
+    // bash parses a substitution as it reads it, so an alias expands in it as it would outside
+    commandAST = await bashParser(command, {
+      unterminatedHereDocuments: options.unterminatedHereDocuments,
+      resolveAlias: options.resolveAlias,
+      posix: options.posix,
+      substitution: true,
+    });
   } catch (err) {
     throw substitutionError(err, xp, token);
   }

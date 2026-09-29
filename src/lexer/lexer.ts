@@ -20,7 +20,14 @@ export class Lexer implements LexerIf {
   public yylineno: number = 0;
 
   constructor(mode: Mode, options: Options) {
-    const tokenizerPhase: LexerPhaseFn = tokenize(mode.reducers, mode.enums.operators, this.hereDocuments, options.unterminatedHereDocuments, options.substitution);
+    const tokenizerPhase: LexerPhaseFn = tokenize(
+      mode.reducers,
+      mode.enums.operators,
+      this.hereDocuments,
+      options.unterminatedHereDocuments,
+      options.substitution,
+      options.posix,
+    );
 
     let previousPhases: LexerPhaseFn[] = [
       tokenizerPhase,

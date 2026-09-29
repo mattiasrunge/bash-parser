@@ -63,6 +63,8 @@ export interface ReducerStateIf {
   arrayAssignment: boolean;
   /** Inside an extended pattern's parentheses, `+(a|b)`: how deep */
   extglobDepth: number;
+  /** Reading as bash does in POSIX mode */
+  posix: boolean;
 
   setLoc(loc: ReducerLocation): this;
   setEscaping(escaping: boolean): this;

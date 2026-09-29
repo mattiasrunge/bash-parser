@@ -8,6 +8,7 @@ class State implements ReducerStateIf {
   escaping = false;
   arrayAssignment = false;
   extglobDepth = 0;
+  posix = false;
   expansion: Expansion[] = [];
   previousReducer: Reducer;
   loc: ReducerLocation;
@@ -221,8 +222,11 @@ export const tokenize = (
   hereDocuments: HereDocument[] = [],
   unterminated: 'error' | 'end' = 'error',
   substitution = false,
+  posix = false,
 ) => (async function* (src: string): AsyncIterable<TokenIf> {
   let state = new State(r, operators);
+
+  state.posix = posix;
 
   let reduction: Reducer | null = r.start;
 

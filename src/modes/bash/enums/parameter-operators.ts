@@ -6,8 +6,11 @@ import type { ParameterOp } from '../../../modes/types.ts';
 // well as on a scalar. The subscript stays part of the captured parameter;
 // splitting it off is the executor's job, since evaluating it needs the
 // variables.
+// A subscript runs to its own `]`, past one that is quoted or escaped or
+// closes a nested one, as bash's skipsubscript finds it: `${m['a]b']}`, `${a[b[1]]}`
+const subscript = String.raw`\[(?:[^\]\['"\\]|\\.|'[^']*'|"(?:[^"\\]|\\.)*"|\[[^\]]*\])*\]`;
 // A variable (an element too), $@ and $*, a positional parameter, or $? $$ $!
-const name = '(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\\[[^\\]]*\\])?|[@*]|[0-9]+|[?$!])';
+const name = `(?:[a-zA-Z_][a-zA-Z0-9_]*(?:${subscript})?|[@*]|[0-9]+|[?$!])`;
 
 /**
  * `offset:length` of a substring expansion, split at the `:` between them —

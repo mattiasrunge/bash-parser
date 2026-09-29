@@ -166,9 +166,9 @@ class Incomplete extends Error {}
  * starts at `from` (just after `\${`), or -1 when the text ends first. Quotes
  * and nested expansions are stepped over: `\${x:-"}"}`, `\${x:-$(echo })}`.
  */
-export function parameterExpansionEnd(text: string, from = 0): number {
+export function parameterExpansionEnd(text: string, from = 0, posixDoubleQuoted = false): number {
   try {
-    return braceEnd(text, from);
+    return braceEnd(text, from, posixDoubleQuoted);
   } catch (err) {
     if (err instanceof Incomplete) return -1;
     throw err;
@@ -261,16 +261,43 @@ function ansiEnd(text: string, i: number): number {
   throw new Incomplete();
 }
 
+/** What may follow the name in `${name…}`: an operator's characters. */
+const OPERATOR_CHARS = '#%^,~:-=?+/';
+
 /**
  * The `}` closing a `${` whose text starts at `i`: the first one not quoted
  * and not closing a nested expansion — bash does not pair plain braces, so
  * `${x:-a { b } c}` ends after `b `.
+ *
+ * `posixDoubleQuoted`: the expansion stands inside double quotes in POSIX
+ * mode, where a `'` quotes only in the pattern of `#`, `%`, `/`, `^` and `,`
+ * — `"${x+'}"` ends at the first `}`. Bash's parse_matched_pair follows the
+ * operator the same way (its dolbrace_state).
  */
-function braceEnd(text: string, i: number): number {
+function braceEnd(text: string, i: number, posixDoubleQuoted = false): number {
+  const start = i;
+  let state: 'param' | 'op' | 'word' | 'pattern' = 'param';
+
   while (i < text.length) {
     const c = text[i];
 
     if (c === '}') return i;
+
+    if (posixDoubleQuoted) {
+      if (state === 'param' && i > start && '%#^,/'.includes(c)) state = 'pattern';
+      else if (state === 'param' && OPERATOR_CHARS.includes(c)) state = 'op';
+      else if (state === 'op' && !OPERATOR_CHARS.includes(c)) state = 'word';
+
+      if (c === "'" && state !== 'pattern') {
+        i++;
+        continue;
+      }
+
+      if (c === '$' && text[i + 1] === '{') {
+        i = braceEnd(text, i + 2, true) + 1;
+        continue;
+      }
+    }
 
     if (c === '\\' || c === "'" || c === '"' || c === '`' || c === '$') {
       i = stepOver(text, i);

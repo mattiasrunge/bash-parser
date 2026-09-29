@@ -165,6 +165,8 @@ const parseChunk = (chunks: string[], idx: number, comments = true): SingleParse
 
         if (c === DOUBLE_QUOTE || c === BACKSLASH || c === '$' || c === '`') {
           result.value += c;
+        } else if (c === '\n') {
+          // A line continued: the backslash and the newline are both gone
         } else {
           // Any other backslash is literal inside double quotes: bash prints
           // `a\nb` for "a\nb", and only $'…' gives an escape its C meaning

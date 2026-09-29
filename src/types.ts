@@ -98,6 +98,12 @@ export type Options = Resolvers & {
    * delimiter is the last line, `EOF)`, ends there, and bash warns about it as unterminated.
    */
   substitution?: boolean;
+
+  /**
+   * Read as bash reads in POSIX mode (`set -o posix`): inside a double-quoted `${…}` a `'` is a
+   * plain character, not a quote, except in the pattern of `#`, `%`, `/`, `^` and `,`.
+   */
+  posix?: boolean;
 };
 
 /**

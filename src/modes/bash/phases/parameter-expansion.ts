@@ -28,12 +28,13 @@ const handleParameter = async (obj: ParameterOp, match: RegExpMatchArray) => {
   if (ret.expand) {
     for (const prop of ret.expand as string[]) {
       const source = (ret[prop] ?? '') as string;
-      const ast = await bashParser(source, { mode: 'word-expansion' });
+      const ast = await bashParser(source, { mode: 'word-expansion' }).catch(() => undefined);
 
       // An empty word parses to no command at all — `${x:-}` and `${x:?}` are
       // written that way on purpose, so the word is simply absent rather than
-      // something to read a name off.
-      (ret as any)[prop] = (ast.commands[0] as AstNodeCommand | undefined)?.name;
+      // something to read a name off. One that is no word on its own, the `'`
+      // of `"${x+'}"` in POSIX mode, is what it is written as.
+      (ret as any)[prop] = ast ? (ast.commands[0] as AstNodeCommand | undefined)?.name : { type: 'Word', text: source };
       // As written, quotes and all: a word without expansions comes out of
       // parsing with its quotes removed, and whether it was quoted still matters
       (ret as any)[`${prop}Source`] = ret[prop] === undefined ? undefined : source;
@@ -49,7 +50,9 @@ const expandParameter = async (xp: Expansion, enums: Enums): Promise<Expansion> 
   const parameter = xp.parameter;
 
   for (const pair of Object.entries(enums.parameterOperators)) {
-    const re = new RegExp(pair[0]);
+    // A word may run over lines, `${x+a
+    // b}`: `.` takes newlines too
+    const re = new RegExp(pair[0], 's');
     const match = parameter!.match(re);
 
     if (match) {
