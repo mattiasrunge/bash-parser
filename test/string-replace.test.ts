@@ -12,7 +12,7 @@ Deno.test('string replace parameter expansion', async (t) => {
         type: 'ParameterExpansion',
         parameter: 'var',
         op: 'stringReplace',
-        substitute: 'o',
+        substitute: 'foo',
         replace: 'bar',
         globally: true,
       }],
@@ -29,7 +29,7 @@ Deno.test('string replace parameter expansion', async (t) => {
         type: 'ParameterExpansion',
         parameter: 'var',
         op: 'stringReplace',
-        substitute: 'o',
+        substitute: 'foo',
         replace: 'bar',
         globally: false,
       }],
@@ -66,6 +66,32 @@ Deno.test('string replace parameter expansion', async (t) => {
         globally: true,
       }],
     }]);
+  });
+
+  await t.step('an escaped / belongs to the pattern', async () => {
+    const result = await bashParser('echo ${var//\\//^}');
+
+    utils.checkResults((result as any).commands[0].suffix, [{
+      type: 'Word',
+      text: '${var//\\//^}',
+      expansion: [{
+        type: 'ParameterExpansion',
+        parameter: 'var',
+        op: 'stringReplace',
+        substitute: '\\/',
+        replace: '^',
+        globally: true,
+      }],
+    }]);
+  });
+
+  await t.step('# and % anchor the pattern; without a second / there is no replacement', async () => {
+    const anchored = await bashParser('echo ${var/#ab/X} ${var/%c}');
+    const [start, end] = (anchored as any).commands[0].suffix;
+
+    utils.checkResults(start.expansion, [{ op: 'stringReplace', anchor: '#', substitute: 'ab', replace: 'X', globally: false }]);
+    utils.checkResults(end.expansion, [{ op: 'stringReplace', anchor: '%', substitute: 'c', globally: false }]);
+    if (end.expansion[0].replace !== undefined) throw new Error('a pattern alone has no replacement');
   });
 
   await t.step('in assignment context', async () => {
