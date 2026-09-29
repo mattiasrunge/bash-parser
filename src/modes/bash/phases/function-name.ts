@@ -8,6 +8,12 @@ const functionName: LexerPhase = () => {
   return compose<TokenIf>(
     map(async (tk: TokenIf, _idx, iterable) => {
       const it = iterable as LookaheadIterable<TokenIf>;
+
+      // `function name`: whatever word follows the keyword is the name
+      if ((tk.is('WORD') || tk.is('ASSIGNMENT_WORD')) && it.behind(1)?.is('Function')) {
+        return tk.setType('NAME');
+      }
+
       // apply only on valitd positions
       // (start of simple commands)
       // if token can form the name of a function,

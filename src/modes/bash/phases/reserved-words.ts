@@ -22,6 +22,9 @@ const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<To
   const thirdInFor = twoAgo.value === 'for' && tk.is('TOKEN') &&
     (tk.value!.toLowerCase() === 'in' || tk.value!.toLowerCase() === 'do');
 
+  // `function name { … }`: the body's `{` follows the name directly
+  const braceAfterFunction = tk.value === '{' && twoAgo.value === 'function';
+
   // `if [[ x ]] then`: `]]` ends the command, and bash needs no separator after it either
   const afterConditional = last.is('DOUBLE_CLOSE_BRACKET');
 
@@ -29,7 +32,8 @@ const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<To
   const doAfterArithmetic = last.value === '))' && tk.is('TOKEN') && tk.value === 'do';
 
   // console.log({tk, startOfCommand, lastIsReservedWord, thirdInFor, thirdInCase, twoAgo})
-  return tk.value === '}' || startOfCommand || lastIsReservedWord || thirdInFor || thirdInCase || doAfterArithmetic || afterConditional;
+  // `}` too closes a group only where a command could start: `echo }` is an argument
+  return startOfCommand || lastIsReservedWord || thirdInFor || thirdInCase || doAfterArithmetic || afterConditional || braceAfterFunction;
 };
 
 const reservedWords: LexerPhase = (ctx) => {

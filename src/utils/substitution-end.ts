@@ -154,6 +154,20 @@ export function substitutionEnd(text: string, from = 0): number {
 
 class Incomplete extends Error {}
 
+/**
+ * The index in `text` of the `}` that closes a parameter expansion whose text
+ * starts at `from` (just after `\${`), or -1 when the text ends first. Quotes
+ * and nested expansions are stepped over: `\${x:-"}"}`, `\${x:-$(echo })}`.
+ */
+export function parameterExpansionEnd(text: string, from = 0): number {
+  try {
+    return braceEnd(text, from);
+  } catch (err) {
+    if (err instanceof Incomplete) return -1;
+    throw err;
+  }
+}
+
 /** The end of the word starting at `i`: past quotes, escapes and expansions, up to a blank or an operator. */
 function wordEnd(text: string, i: number): number {
   while (i < text.length && !isMeta(text[i])) {
@@ -240,15 +254,16 @@ function ansiEnd(text: string, i: number): number {
   throw new Incomplete();
 }
 
-/** The `}` closing a `${` whose text starts at `i`. */
+/**
+ * The `}` closing a `${` whose text starts at `i`: the first one not quoted
+ * and not closing a nested expansion — bash does not pair plain braces, so
+ * `${x:-a { b } c}` ends after `b `.
+ */
 function braceEnd(text: string, i: number): number {
-  let depth = 1;
-
   while (i < text.length) {
     const c = text[i];
 
-    if (c === '}' && --depth === 0) return i;
-    if (c === '{') depth++;
+    if (c === '}') return i;
 
     if (c === '\\' || c === "'" || c === '"' || c === '`' || c === '$') {
       i = stepOver(text, i);

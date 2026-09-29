@@ -15,6 +15,7 @@ const reservedWords = {
   '{': 'Lbrace',
   '}': 'Rbrace',
   '!': 'Bang',
+  'function': 'Function',
 };
 
 export default reservedWords;

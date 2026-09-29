@@ -314,6 +314,20 @@ export default {
         'fname OPEN_PAREN CLOSE_PAREN linebreak function_body',
         '$$ = yy.functionDefinition($fname, $function_body);',
       ],
+      // bash's other form: `function name { … }`, the parentheses optional
+      [
+        'Function fname OPEN_PAREN CLOSE_PAREN linebreak function_body',
+        '$$ = yy.functionDefinition($fname, $function_body);',
+      ],
+      // Without them the body is a { } group: a ( there would be the () of the other form
+      [
+        'Function fname linebreak brace_group',
+        '$$ = yy.functionDefinition($fname, [$brace_group, null]);',
+      ],
+      [
+        'Function fname linebreak brace_group redirect_list',
+        '$$ = yy.functionDefinition($fname, [$brace_group, $redirect_list]);',
+      ],
     ],
     function_body: [
       [
