@@ -4,6 +4,7 @@ import type { Mode } from '../modes/types.ts';
 import { type HereDocument, type TokenIf, tokenize, type Tokenizer } from '../tokenizer/mod.ts';
 import type { Options } from '../types.ts';
 import compose from '../utils/iterable/compose.ts';
+import { writtenText } from '../utils/written.ts';
 
 export class Lexer implements LexerIf {
   private tokenizer: Tokenizer;
@@ -82,6 +83,11 @@ export class Lexer implements LexerIf {
 
     if (tk.joined) {
       this.yytext.joined = tk.joined;
+    }
+
+    // Out of sight of the AST's words: read only by `[[ ]]`, for an arithmetic operand
+    if (tk.ctx.written !== undefined) {
+      writtenText.set(this.yytext, tk.ctx.written);
     }
 
     if (tk.ctx.heredoc !== undefined) {

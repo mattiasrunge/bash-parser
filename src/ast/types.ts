@@ -249,6 +249,8 @@ export type AstConditionalNegation = AstNode & {
 export type AstConditionalWord = AstNode & {
   type: 'ConditionalWord';
   text: string;
+  /** The word as written, quotes and all, when that is not `text` */
+  written?: string;
   expansion?: Array<
     | AstArithmeticExpansion
     | AstCommandExpansion

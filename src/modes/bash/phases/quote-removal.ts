@@ -127,7 +127,12 @@ const quoteRemoval: LexerPhase = () =>
           return token.setValue(head + unquote(token.value!.slice(head.length)));
         }
 
-        return token.setValue(unquote(token.value!));
+        const unquoted = unquote(token.value!);
+
+        // As written as well, for `[[ m['$(cmd)'] -eq 1 ]]` to evaluate
+        if (unquoted !== token.value) token.ctx.written = token.value;
+
+        return token.setValue(unquoted);
       }
     }
 

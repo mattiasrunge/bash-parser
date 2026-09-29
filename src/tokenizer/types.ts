@@ -14,6 +14,8 @@ export type TokenContext = {
    * what was quoted, which matches literally.
    */
   pattern?: boolean;
+  /** A word as written, when quote removal changed it */
+  written?: string;
 };
 
 export type TokenPosition = {

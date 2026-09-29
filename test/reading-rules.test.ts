@@ -82,3 +82,11 @@ Deno.test('{name} before a redirection is where its descriptor goes', async () =
 Deno.test('a backslash and a newline inside double quotes are both removed', async () => {
   assertEquals(await words('echo "b\\\nar"'), [['echo', 'bar']]);
 });
+
+Deno.test('a [[ ]] word keeps how it was written, out of sight of other words', async () => {
+  const ast = await parse("[[ m['$(cmd)'] -eq 1 ]]; echo 'a b'");
+  const [cond, echo] = ast.commands as Loose[];
+
+  assertEquals(cond.conditionAST.left, { type: 'ConditionalWord', text: 'm[$(cmd)]', written: "m['$(cmd)']" });
+  assertEquals(echo.suffix[0], { type: 'Word', text: 'a b' });
+});

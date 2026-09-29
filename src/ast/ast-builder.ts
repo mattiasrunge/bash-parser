@@ -34,6 +34,7 @@ import type {
 } from '../ast/types.ts';
 import { BashSyntaxError } from '../errors.ts';
 import last from '../utils/last.ts';
+import { writtenText } from '../utils/written.ts';
 
 const isAsyncSeparator = (separator: Separator) => {
   return separator.text.indexOf('&') !== -1;
@@ -240,6 +241,12 @@ function parseConditionalWords(words: AstNodeWord[]): AstConditionalExpression {
     };
     if (word.expansion && word.expansion.length > 0) {
       node.expansion = word.expansion;
+    }
+    // Quotes and all, when quote removal changed it: an arithmetic operand is
+    // expanded from this, `m['$(cmd)']` being the key `$(cmd)`
+    const written = writtenText.get(word);
+    if (written !== undefined && written !== word.text) {
+      node.written = written;
     }
     return node;
   }
