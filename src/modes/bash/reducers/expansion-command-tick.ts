@@ -37,12 +37,21 @@ const expansionCommandTick: Reducer = (state, source, reducers) => {
     };
   }
 
-  // Between backticks a backslash quotes only $, ` and \; before anything else
-  // it is itself, and part of the command: `echo "(\")"` keeps its \"
-  if (!state.escaping && char === '\\' && '$`\\'.includes(source[0] ?? '')) {
+  // Between backticks a backslash quotes only $, ` and \, and joins a line to
+  // the next; before anything else it is itself, and part of the command:
+  // `echo "(\")"` keeps its \"
+  if (!state.escaping && char === '\\' && '$`\\\n'.includes(source[0] ?? '')) {
     return {
       nextReduction: reducers.expansionCommandTick,
       nextState: state.appendChar(char).setEscaping(true),
+    };
+  }
+
+  // A backslash-newline is a line continuation: gone from the command altogether
+  if (state.escaping && char === '\n') {
+    return {
+      nextReduction: reducers.expansionCommandTick,
+      nextState: state.setEscaping(false).appendChar(char),
     };
   }
 

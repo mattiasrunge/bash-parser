@@ -140,5 +140,6 @@ Deno.test('comments in arrays, any for name, joined here-document lines, backsla
   await t.step('between backticks a backslash quotes only $ ` and \\', async () => {
     assertEquals((await first('echo `echo "(\\")"`')).suffix[0].expansion[0].command, 'echo "(\\")"');
     assertEquals((await first('echo `echo \\$x`')).suffix[0].expansion[0].command, 'echo $x');
+    assertEquals((await first('echo `echo foo\\\nbar`')).suffix[0].expansion[0].command, 'echo foobar');
   });
 });
