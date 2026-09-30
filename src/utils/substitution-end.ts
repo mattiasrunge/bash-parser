@@ -348,3 +348,17 @@ function hereDocumentEnd(text: string, i: number, delimiter: string, strip: bool
 
   throw new Incomplete();
 }
+
+/**
+ * Where a scan of the source ahead ends, reading only as much of it as it
+ * takes: the scanners answer -1 when the text ends first, so a short stretch
+ * is tried first and a longer one only then. Joining all the rest of a large
+ * script for every `${` and `$(` in it made parsing it quadratic.
+ */
+export function scanAhead(first: string, source: string[], scan: (text: string) => number): number {
+  for (let size = 256;; size *= 4) {
+    const end = scan(first + source.slice(0, size).join(''));
+
+    if (end !== -1 || size >= source.length) return end;
+  }
+}

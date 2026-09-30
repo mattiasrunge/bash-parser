@@ -1,6 +1,6 @@
 import { mkToken, type Reducer } from '../../../tokenizer/mod.ts';
 import last from '../../../utils/last.ts';
-import { substitutionEnd } from '../../../utils/substitution-end.ts';
+import { scanAhead, substitutionEnd } from '../../../utils/substitution-end.ts';
 import { opensSubshells } from './arithmetic-command.ts';
 
 // How many characters of a `$(` body remain before its closing `)`, as the
@@ -60,7 +60,7 @@ const expansionCommandOrArithmetic: Reducer = (state, source, reducers) => {
   // The first character of the body: find where it ends, as bash would, once.
   // Until then the characters are the command's, whatever they are.
   if (char !== undefined && xp && !remainingMap.has(xp) && !quoteState && !getNestingDepth(xp) && !xp.command) {
-    const end = substitutionEnd(char + source.join(''));
+    const end = scanAhead(char, source, (text) => substitutionEnd(text));
 
     if (end !== -1) {
       remainingMap.set(xp, end);

@@ -2,11 +2,11 @@ import { astBuilder } from './ast/mod.ts';
 import { BashSyntaxError, type ErrorLocation } from './errors.ts';
 import { grammar } from './grammar/mod.ts';
 import type { Mode, ModePlugin } from './modes/types.ts';
-import type { Parse } from './types.ts';
+import type { Options, Parse } from './types.ts';
 import { positionFromOffset } from './utils/location.ts';
 import { Lexer } from './lexer/mod.ts';
 import type { HereDocument } from './tokenizer/mod.ts';
-import type { AstNodeArithmeticCommand, AstNodeArithmeticFor, AstNodeRedirect } from './ast/types.ts';
+import type { AstNodeArithmeticCommand, AstNodeArithmeticFor, AstNodeRedirect, AstNodeScript } from './ast/types.ts';
 import { resolveCommandSubstitutions } from './modes/bash/phases/arithmetic-expansion.ts';
 import modeBash from './modes/bash/mod.ts';
 import modeWordExpansion from './modes/word-expansion/mod.ts';
@@ -107,7 +107,51 @@ const grammarDetail = (error: BashSyntaxError, lexer: Lexer | undefined): BashSy
   return error;
 };
 
+/**
+ * Parses already made, by source and options: the executor parses the same
+ * small texts over and over as a script runs — a subscript, a here-document's
+ * body, `$i` in `[[ $i -eq 1 ]]` on every pass of a loop — and a parse costs
+ * some 70µs where a copy of its result costs 5µs. Only calls whose options are
+ * plain values are cached; a resolver may answer differently each time.
+ */
+const cache = new Map<string, AstNodeScript>();
+const CACHE_SIZE = 1000;
+
+/** The key a parse is cached under, or undefined when its options cannot be one. */
+function cacheKey(sourceCode: string, options?: Options): string | undefined {
+  // A script is parsed once; copying it into the cache only cost time
+  if (sourceCode.length > 1000) return undefined;
+
+  const entries = Object.entries(options ?? {}).filter(([, value]) => value !== undefined);
+
+  if (entries.some(([, value]) => typeof value === 'function' || (typeof value === 'object' && value !== null))) return undefined;
+
+  return JSON.stringify([sourceCode, entries.sort(([a], [b]) => a < b ? -1 : 1)]);
+}
+
 export const parse: Parse = async (sourceCode, options?) => {
+  const key = cacheKey(sourceCode, options);
+  const cached = key === undefined ? undefined : cache.get(key);
+
+  // A copy each time: whoever gets it may change it
+  if (cached) return structuredClone(cached);
+
+  const ast = await parseSource(sourceCode, options);
+
+  if (key !== undefined) {
+    try {
+      // The oldest goes first once it is full
+      if (cache.size >= CACHE_SIZE) cache.delete(cache.keys().next().value!);
+      cache.set(key, structuredClone(ast));
+    } catch {
+      // Not a plain tree: parsed again next time
+    }
+  }
+
+  return ast;
+};
+
+const parseSource: Parse = async (sourceCode, options?) => {
   let lexer: Lexer | undefined;
 
   try {

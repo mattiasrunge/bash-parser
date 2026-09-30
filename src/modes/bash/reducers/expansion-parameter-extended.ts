@@ -1,6 +1,6 @@
 import { mkToken, type Reducer } from '../../../tokenizer/mod.ts';
 import last from '../../../utils/last.ts';
-import { parameterExpansionEnd } from '../../../utils/substitution-end.ts';
+import { parameterExpansionEnd, scanAhead } from '../../../utils/substitution-end.ts';
 
 // How many characters of a `${` body remain before its closing `}`, found on the body's first character
 const remainingMap = new WeakMap<object, number>();
@@ -15,7 +15,8 @@ const expansionParameterExtended: Reducer = (state, source, reducers) => {
   // and nested expansions, once — `${HOME-"}"}`, `${x:-$(echo })}`
   if (char !== undefined && xp && xp.parameter === undefined && !remainingMap.has(xp)) {
     // In POSIX mode a `'` does not quote inside a double-quoted one, bar in a pattern
-    const end = parameterExpansionEnd(char + source.join(''), 0, state.posix && state.previousReducer === reducers.doubleQuoting);
+    const posixQuoted = state.posix && state.previousReducer === reducers.doubleQuoting;
+    const end = scanAhead(char, source, (text) => parameterExpansionEnd(text, 0, posixQuoted));
 
     // None: the text ends inside it, a quote in it left open — `"${x:-"a}"` —
     // and it takes the rest, to be told unclosed as bash tells it

@@ -30,10 +30,19 @@ const toSpaceCase = (str: string) => {
   }).trim();
 };
 
+/** The few token types there are, each converted once: this ran for every token */
+const pascalCases = new Map<string, string>();
+
 const toPascalCase = (str: string): string => {
-  const result = toSpaceCase(str).replace(/(?:^|\s)(\w)/g, (_, letter) => {
-    return letter.toUpperCase();
-  });
+  let result = pascalCases.get(str);
+
+  if (result === undefined) {
+    result = toSpaceCase(str).replace(/(?:^|\s)(\w)/g, (_, letter) => {
+      return letter.toUpperCase();
+    });
+
+    if (pascalCases.size < 1000) pascalCases.set(str, result);
+  }
 
   return result;
 };
