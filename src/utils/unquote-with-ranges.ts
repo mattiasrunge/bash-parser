@@ -322,6 +322,43 @@ const protectMetacharacters = (text: string): string => {
   return escaped;
 };
 
+/** Stands in an empty pair of quotes until fields are split, so that `${sp}""` keeps an empty field. A noncharacter. */
+const QUOTED_NULL = '\uFDD5';
+
+/**
+ * Put QUOTED_NULL inside each empty pair of quotes: `""`, `''`, and `"$e"`
+ * once `$e` is gone. Quote removal leaves nothing of them, and field
+ * splitting would drop the field they make, as bash keeps it.
+ */
+const markQuotedNulls = (text: string): string => {
+  let out = '';
+  let quote = '';
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+
+    if (quote) {
+      if (c === '\\' && quote === '"' && i + 1 < text.length) {
+        out += c + text[++i];
+        continue;
+      }
+
+      if (c === quote) quote = '';
+      out += c;
+    } else if (c === '\\' && i + 1 < text.length) {
+      out += c + text[++i];
+    } else if ((c === '"' || c === "'") && text[i + 1] === c) {
+      out += c + QUOTED_NULL + c;
+      i++;
+    } else {
+      if (c === '"' || c === "'") quote = c;
+      out += c;
+    }
+  }
+
+  return out;
+};
+
 export const unquoteWordWithProtectedRanges = (text: string, protectedRanges: ProtectedRange[], ifs: string = DEFAULT_IFS): ParseResult => {
   if (!protectedRanges || protectedRanges.length === 0) {
     const result = unquoteWord(protectMetacharacters(text), { comments: false });
@@ -345,13 +382,13 @@ export const unquoteWordWithProtectedRanges = (text: string, protectedRanges: Pr
 
   // Run normal unquoteWord. Comments are off: this is one word, already
   // delimited, and a `#` in it is data — `echo a#$V` used to expand to `a`.
-  const result = unquoteWord(protectMetacharacters(escaped), { comments: false });
+  const result = unquoteWord(protectMetacharacters(markQuotedNulls(escaped)), { comments: false });
 
   const values: string[] = [];
   for (const value of result.values) {
     for (const field of splitFields(value)) {
       // A marked boundary splits whatever the quoting was, so it is applied last
-      values.push(...field.split(FIELD_MARKER).map(restorePlaceholders));
+      values.push(...field.split(FIELD_MARKER).map((part) => restorePlaceholders(part).replaceAll(QUOTED_NULL, '')));
     }
   }
 

@@ -169,6 +169,8 @@ export type AstNodeCompoundList = AstNode & {
 export type AstNodeSubshell = AstNode & {
   type: 'Subshell';
   list: AstNodeCompoundList;
+  /** `( … ) 2>&1`: in place for the whole subshell */
+  redirections?: AstNodeRedirect[];
 };
 
 /**
