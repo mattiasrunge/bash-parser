@@ -343,6 +343,10 @@ const markQuotedNulls = (text: string): string => {
         continue;
       }
 
+      // An empty element of "$@": between the quote and a boundary, or two boundaries
+      const empty = (c === FIELD_MARKER || c === quote) && (out.endsWith(FIELD_MARKER) || (c === FIELD_MARKER && out.endsWith(quote)));
+
+      if (empty) out += QUOTED_NULL;
       if (c === quote) quote = '';
       out += c;
     } else if (c === '\\' && i + 1 < text.length) {
@@ -386,9 +390,20 @@ export const unquoteWordWithProtectedRanges = (text: string, protectedRanges: Pr
 
   const values: string[] = [];
   for (const value of result.values) {
-    for (const field of splitFields(value)) {
+    // IFS whitespace beside a boundary is part of it: `${a[@]}` of "1\n" and
+    // "2\n" is two fields, with no empty one between them
+    const bounded = value.split(FIELD_MARKER).map((part, i, parts) => {
+      let trimmed = part;
+
+      if (i > 0) { while (trimmed.startsWith(IFS_WHITESPACE_PLACEHOLDER)) trimmed = trimmed.slice(IFS_WHITESPACE_PLACEHOLDER.length); }
+      if (i < parts.length - 1) { while (trimmed.endsWith(IFS_WHITESPACE_PLACEHOLDER)) trimmed = trimmed.slice(0, -IFS_WHITESPACE_PLACEHOLDER.length); }
+
+      return trimmed;
+    }).join(FIELD_MARKER);
+
+    for (const field of splitFields(bounded)) {
       // A marked boundary splits whatever the quoting was, so it is applied last
-      values.push(...field.split(FIELD_MARKER).map((part) => restorePlaceholders(part).replaceAll(QUOTED_NULL, '')));
+      values.push(...field.split(FIELD_MARKER).map((piece) => restorePlaceholders(piece).replaceAll(QUOTED_NULL, '')));
     }
   }
 

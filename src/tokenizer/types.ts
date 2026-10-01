@@ -138,7 +138,7 @@ export type Expansion = {
   pattern?: string;
   /** Set while reducing `<(cmd)` / `>(cmd)`, which reads like a command substitution */
   direction?: 'in' | 'out';
-  type?: 'ParameterExpansion' | 'CommandExpansion' | 'ArithmeticExpansion' | 'PathExpansion' | 'ProcessSubstitution';
+  type?: 'ParameterExpansion' | 'CommandExpansion' | 'ArithmeticExpansion' | 'PathExpansion' | 'ProcessSubstitution' | 'TildeExpansion';
   resolved?: boolean;
   loc?: ExpansionLocation;
 };

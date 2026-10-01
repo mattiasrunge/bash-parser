@@ -10,7 +10,8 @@ import map from '../../../utils/iterable/map.ts';
  */
 const overlapsWithExpansion = (glob: GlobPattern, expansions: Expansion[]): boolean => {
   for (const xp of expansions) {
-    if (!xp.loc) continue;
+    // A tilde prefix is the start of a path a glob goes on from: `~/*.txt`
+    if (!xp.loc || xp.type === 'TildeExpansion') continue;
     // Check if glob is entirely inside or overlaps with existing expansion
     if (glob.start >= xp.loc.start && glob.start < xp.loc.end) {
       return true;

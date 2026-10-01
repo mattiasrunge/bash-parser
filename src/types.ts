@@ -37,6 +37,14 @@ export type Resolvers = {
   resolveHomeUser?: (username: string | null) => Promise<string>;
 
   /**
+   * Leave tilde prefixes for the caller to expand when it runs the word, as a
+   * shell has to, since `HOME` may change before then: each one is a
+   * `TildeExpansion` among the word's expansions, its `value` the text after
+   * the `~` (`''`, `user`, `+`, `-`, `+2`). Ignored when `resolveHomeUser` is given.
+   */
+  deferTildeExpansion?: boolean;
+
+  /**
    * A callback to resolve parameter expansion. If specified, the parser calls it whenever it needs to resolve a parameter expansion. It should return the result of the expansion. If the option is not specified, the parser won't try to resolve any parameter expansion.
    *
    * @param parameter - The name of the parameter to resolve.

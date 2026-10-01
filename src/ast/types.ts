@@ -259,6 +259,7 @@ export type AstConditionalWord = AstNode & {
     | AstProcessSubstitution
     | AstParameterExpansion
     | AstPathExpansion
+    | AstTildeExpansion
   >;
 };
 
@@ -410,6 +411,7 @@ export type AstNodeWord = AstNode & {
     | AstProcessSubstitution
     | AstParameterExpansion
     | AstPathExpansion
+    | AstTildeExpansion
   >;
 };
 
@@ -425,6 +427,7 @@ export type AstNodeAssignmentWord = AstNode & {
     | AstProcessSubstitution
     | AstParameterExpansion
     | AstPathExpansion
+    | AstTildeExpansion
   >;
 };
 
@@ -504,6 +507,19 @@ export type AstPathExpansion = {
   loc: ExpansionLocation;
 
   pattern: string;
+};
+
+/**
+ * A `TildeExpansion` is a tilde prefix left for the caller to expand when it
+ * runs the word (the `deferTildeExpansion` option): `value` is what follows
+ * the `~` — `''`, a user name, `+`, `-`, or a directory stack index.
+ */
+export type AstTildeExpansion = {
+  type: 'TildeExpansion';
+  resolved?: boolean;
+  loc: ExpansionLocation;
+
+  value: string;
 };
 
 /**

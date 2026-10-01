@@ -82,6 +82,13 @@ const parseAnsiC = (text: string, start: number): { value: string; end: number }
     if (next in ANSI_C_ESCAPES) {
       value += ANSI_C_ESCAPES[next];
       i += 2;
+    } else if (next === 'x' && text.charAt(i + 2) === '{') {
+      // `\x{41}`: as many hex digits as there are, a `}` if one follows, the low byte
+      const hex = text.slice(i + 3).match(/^[0-9A-Fa-f]*/)![0];
+      const close = text.charAt(i + 3 + hex.length) === '}' ? 1 : 0;
+
+      value += escapedByte(hex === '' ? 0 : Number.parseInt(hex.slice(-2), 16));
+      i += 3 + hex.length + close;
     } else if (next === 'x' || next === 'u' || next === 'U') {
       const digits = next === 'x' ? 2 : next === 'u' ? 4 : 8;
       const hex = text.slice(i + 2, i + 2 + digits).match(/^[0-9A-Fa-f]+/)?.[0] ?? '';
@@ -107,7 +114,10 @@ const parseAnsiC = (text: string, start: number): { value: string; end: number }
     }
   }
 
-  return { value: decodeEscapedBytes(value), end: i };
+  // A NUL ends the string, as a C string ends, though the quotes go on: `$'ab\0cd'` is `ab`
+  const nul = value.indexOf('\0');
+
+  return { value: decodeEscapedBytes(nul === -1 ? value : value.slice(0, nul)), end: i };
 };
 
 /**
