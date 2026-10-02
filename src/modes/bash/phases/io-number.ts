@@ -40,6 +40,9 @@ const HERE_OPERATORS = ['TLESS', 'DLESSDASH'];
  */
 const NAMED_DESCRIPTOR = /^\{[A-Za-z_][A-Za-z0-9_]*(\[[^\]]*\])?\}$/;
 
+/** Digits that are a descriptor: bash's need to fit an int, `1111111111111111111111<f` is a command's name. */
+const isDescriptor = (text: string): boolean => /^[0-9]+$/.test(text) && Number(text) <= 2147483647;
+
 const ioNumber: LexerPhase = (ctx) => {
   return compose<TokenIf>(
     map(async (tk: TokenIf, _idx, iterable) => {
@@ -47,7 +50,7 @@ const ioNumber: LexerPhase = (ctx) => {
       const next = it.ahead(1);
 
       if (
-        tk && tk.is('WORD') && (/^[0-9]+$/.test(tk.value!) || NAMED_DESCRIPTOR.test(tk.value!)) && next &&
+        tk && tk.is('WORD') && (isDescriptor(tk.value!) || NAMED_DESCRIPTOR.test(tk.value!)) && next &&
         [...ctx.enums.IOFileOperators, ...HERE_OPERATORS].some((op) => next.type === op) &&
         isAdjacent(tk, next)
       ) {

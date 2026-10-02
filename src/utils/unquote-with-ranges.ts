@@ -260,12 +260,13 @@ const splitFields = (value: string): string[] => {
   }
 
   // The markers are multi-character, so they are reduced to one character each
-  // before splitting — the algorithm is the same, on a two-character IFS
+  // before splitting — the algorithm is the same, on a two-character IFS.
+  // Noncharacters, which no value holds: `\x02` and `\x03` may be in one
   const marked = value
-    .split(IFS_WHITESPACE_PLACEHOLDER).join('\x02')
-    .split(IFS_DELIMITER_PLACEHOLDER).join('\x03');
+    .split(IFS_WHITESPACE_PLACEHOLDER).join('\uFDDA')
+    .split(IFS_DELIMITER_PLACEHOLDER).join('\uFDDB');
 
-  return splitByIfs(marked, '\x02\x03', '\x02');
+  return splitByIfs(marked, '\uFDDA\uFDDB', '\uFDDA');
 };
 
 /**
@@ -319,7 +320,33 @@ const protectMetacharacters = (text: string): string => {
     escaped = escaped.split(char).join(placeholder);
   }
 
-  return escaped;
+  // Unquoted blanks still in the text are the word's own — inside an extended
+  // pattern's parentheses, `a@([ ])b` — and split it no more than quotes would
+  let out = '';
+  let quote = '';
+
+  for (let i = 0; i < escaped.length; i++) {
+    const c = escaped[i];
+
+    if (quote === "'") {
+      if (c === "'") quote = '';
+    } else if (c === '\\') {
+      out += c + (escaped[i + 1] ?? '');
+      i++;
+      continue;
+    } else if (quote === '"') {
+      if (c === '"') quote = '';
+    } else if (c === '"' || c === "'") {
+      quote = c;
+    } else if (c === ' ' || c === '\t' || c === '\n') {
+      out += literalWhitespace(c);
+      continue;
+    }
+
+    out += c;
+  }
+
+  return out;
 };
 
 /** Stands in an empty pair of quotes until fields are split, so that `${sp}""` keeps an empty field. A noncharacter. */

@@ -33,8 +33,10 @@ const handleParameter = async (obj: ParameterOp, match: RegExpMatchArray) => {
       // An empty word parses to no command at all — `${x:-}` and `${x:?}` are
       // written that way on purpose, so the word is simply absent rather than
       // something to read a name off. One that is no word on its own, the `'`
-      // of `"${x+'}"` in POSIX mode, is what it is written as.
-      (ret as any)[prop] = ast ? (ast.commands[0] as AstNodeCommand | undefined)?.name : { type: 'Word', text: source };
+      // of `"${x+'}"` in POSIX mode, is what it is written as, and so is a
+      // newline, which ends a command rather than being one: `${x//<newline>/-}`
+      const name = (ast?.commands[0] as AstNodeCommand | undefined)?.name;
+      (ret as any)[prop] = ast && (name || !/^\s+$/.test(source)) ? name : { type: 'Word', text: source };
       // As written, quotes and all: a word without expansions comes out of
       // parsing with its quotes removed, and whether it was quoted still matters
       (ret as any)[`${prop}Source`] = ret[prop] === undefined ? undefined : source;

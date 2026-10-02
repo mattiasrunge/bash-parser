@@ -9,8 +9,8 @@ import type { ParameterOp } from '../../../modes/types.ts';
 // A subscript runs to its own `]`, past one that is quoted or escaped or
 // closes a nested one, as bash's skipsubscript finds it: `${m['a]b']}`, `${a[b[1]]}`
 const subscript = String.raw`\[(?:[^\]\['"\\]|\\.|'[^']*'|"(?:[^"\\]|\\.)*"|\[[^\]]*\])*\]`;
-// A variable (an element too), $@ and $*, a positional parameter, or $? $$ $!
-const name = `(?:[a-zA-Z_][a-zA-Z0-9_]*(?:${subscript})?|[@*]|[0-9]+|[?$!])`;
+// A variable (an element too), $@ and $*, a positional parameter, or $? $$ $! $-
+const name = `(?:[a-zA-Z_][a-zA-Z0-9_]*(?:${subscript})?|[@*]|[0-9]+|[?$!-])`;
 
 /**
  * `offset:length` of a substring expansion, split at the `:` between them —
@@ -49,7 +49,8 @@ function patsubParts(text: string): { globally: boolean; anchor?: '#' | '%'; pat
   let depth = 0;
   let quote = '';
 
-  for (let i = 0; i < rest.length; i++) {
+  // `${a///a/}`: a pattern that starts with `/` keeps it, as bash skips it looking for the end
+  for (let i = globally && rest[0] === '/' ? 1 : 0; i < rest.length; i++) {
     const c = rest[i];
 
     if (quote === "'") {
@@ -74,6 +75,14 @@ function patsubParts(text: string): { globally: boolean; anchor?: '#' | '%'; pat
 }
 
 const parameterOps: Record<string, ParameterOp> = {
+  // `${!#}`, the last positional parameter: an indirection through $#, not `$!`
+  // with a `#` pattern after it
+  [`^!(#.*)$`]: {
+    op: 'indirection',
+    word: (m) => m[1],
+    parameter: () => undefined,
+  },
+
   // POSIX implementation
 
   [`^(${name}):\\-(.*)$`]: {
@@ -280,8 +289,11 @@ const parameterOps: Record<string, ParameterOp> = {
     op: 'caseChange',
     parameter: (m) => m[1],
     pattern: (m) => m[3] || '?',
+    // The pattern parsed as the word it is too, for its expansions and quotes: `${S^"$v"[aeiou]}`
+    patternWord: (m) => m[3] || '?',
     case: (m) => m[2][0] === ',' ? 'lower' : 'upper',
     globally: (m) => m[2].length === 2,
+    expand: ['patternWord'],
   },
 
   // The expansion is either a transformation of the value of parameter or information about

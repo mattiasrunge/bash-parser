@@ -7,9 +7,10 @@ import { braceExpand, braceExpandMapped } from '../../../utils/brace-expansion.t
 /**
  * A word's expansions, moved to where their text went in one of the words
  * brace expansion made of it; one whose text is not there, whole and in order,
- * is not in that word.
+ * is not in that word. A `$name` that the braces gave more of a name to is
+ * that longer name, as bash expands the braces first: `$var{x,y}` is `$varx $vary`.
  */
-const moveExpansions = (expansions: Expansion[] | undefined, map: number[]): Expansion[] => {
+const moveExpansions = (expansions: Expansion[] | undefined, map: number[], original: string, text: string): Expansion[] => {
   const moved: Expansion[] = [];
 
   for (const xp of expansions ?? []) {
@@ -19,7 +20,14 @@ const moveExpansions = (expansions: Expansion[] | undefined, map: number[]): Exp
     const length = xp.loc.end! - xp.loc.start!;
 
     if (start !== -1 && map[start + length] === xp.loc.end && map.slice(start, start + length + 1).every((index, k) => index === xp.loc!.start! + k)) {
-      moved.push({ ...xp, loc: { start, end: start + length } });
+      // The location's end is its last character
+      let end = start + length;
+
+      if (xp.type === 'ParameterExpansion' && /^\$[A-Za-z_]\w*$/.test(original.slice(xp.loc.start!, xp.loc.end! + 1))) {
+        while (end + 1 < text.length && /\w/.test(text[end + 1])) end++;
+      }
+
+      moved.push(end === start + length ? { ...xp, loc: { start, end } } : { ...xp, parameter: text.slice(start + 1, end + 1), loc: { start, end } });
     }
   }
 
@@ -50,7 +58,7 @@ const braceExpansion: LexerPhase = () =>
 
         if (words.length !== 1 || words[0].text !== token.value) {
           for (const word of words) {
-            yield token.setValue(word.text).setExpansion(moveExpansions(token.expansion, word.map));
+            yield token.setValue(word.text).setExpansion(moveExpansions(token.expansion, word.map, token.value!, word.text));
           }
 
           continue;

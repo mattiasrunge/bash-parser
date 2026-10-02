@@ -559,7 +559,12 @@ export const astBuilder = (insertLOC?: boolean, source?: string) => {
         }
       }
       if (parts.length !== 3) {
-        throw new SyntaxError(`for (( … )) takes three expressions separated by ';', got "${body}"`);
+        const location = bodyStart !== undefined ? { start: { char: bodyStart } } : undefined;
+        const error = new BashSyntaxError(`for (( … )) takes three expressions separated by ';', got "${body}"`, source, location);
+
+        // bash: `arithmetic expression required` for too few, `;' unexpected` for too many
+        error.detail = { kind: 'arithmeticFor', problem: parts.length < 3 ? 'arithmetic expression required' : "`;' unexpected", text: `((${body}))` };
+        throw error;
       }
 
       const part = ({ text, offset }: { text: string; offset: number }): AstArithmeticForPart | undefined => {

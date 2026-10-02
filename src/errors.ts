@@ -27,12 +27,14 @@ export type ErrorLocation = {
  * (`syntax error near unexpected token`), the input ending in the middle of a
  * command (`unexpected end of file`), or before a quote or substitution closed
  * (`unexpected EOF while looking for matching`, with the character that
- * would have closed it).
+ * would have closed it), or a `for (( … ))` without its three expressions.
  */
 export type SyntaxErrorDetail =
   | { kind: 'token'; token: string }
   | { kind: 'eof' }
-  | { kind: 'unclosed'; closer: string };
+  | { kind: 'unclosed'; closer: string }
+  /** `for (( … ))` with other than three expressions: what is wrong, then the `(( … ))` as written */
+  | { kind: 'arithmeticFor'; problem: string; text: string };
 
 /**
  * A unified syntax error class for all bash-parser parsing errors.
@@ -52,6 +54,13 @@ export class BashSyntaxError extends SyntaxError {
 
   /** What went wrong, for a shell to say as bash does; the row is the location's. */
   detail?: SyntaxErrorDetail;
+
+  /**
+   * Here-documents the input ended inside of, which bash warns about before it
+   * says the error: the delimiter wanted, the line the document began on and the
+   * one it ended on.
+   */
+  unterminatedHereDocuments?: { delimiter: string; line: number; endLine: number }[];
 
   constructor(message: string, source?: string, location?: ErrorLocation, cause?: Error) {
     // Don't add location to message - let callers format it to avoid duplicates when re-throwing

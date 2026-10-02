@@ -46,6 +46,21 @@ const start: Reducer = (state, source, reducers) => {
     };
   }
 
+  // `${u:-<(cmd)}`: a process substitution, as in any word
+  if (!state.escaping && (char === '<' || char === '>') && source[0] === '(') {
+    source.shift();
+
+    return {
+      nextReduction: reducers.expansionCommandOrArithmetic,
+      nextState: state
+        .appendEmptyExpansion()
+        .replaceLastExpansion({ direction: char === '<' ? 'in' : 'out' })
+        .appendChar(char)
+        .appendChar('(')
+        .advanceLoc('('),
+    };
+  }
+
   if (!state.escaping && char === '`') {
     return {
       nextReduction: reducers.expansionCommandTick,

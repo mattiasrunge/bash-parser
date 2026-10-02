@@ -43,8 +43,11 @@ const pathExpansionDetect: LexerPhase = () =>
         return token;
       }
 
-      // Scan for glob patterns with locations
-      const globPatterns = scanGlobPatterns(text);
+      // Scan for glob patterns with locations; a bracket expression with quotes
+      // inside it, `[[:"alpha":]]`, is in no unquoted stretch, and the word —
+      // one with nothing in it to expand — is the pattern whole
+      const scanned = scanGlobPatterns(text);
+      const globPatterns = scanned.length > 0 || /[$`]/.test(text) ? scanned : [{ pattern: text, start: 0, end: text.length - 1 }];
 
       if (globPatterns.length === 0) {
         return token;

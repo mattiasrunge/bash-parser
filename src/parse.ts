@@ -169,6 +169,13 @@ const parseSource: Parse = async (sourceCode, options?) => {
     await resolveArithmeticCommands(ast);
     return ast;
   } catch (err) {
+    // A here-document the input ended inside of is warned about before the error
+    const unterminated = (lexer?.hereDocuments ?? []).flatMap((doc) => doc?.unterminated ? [doc.unterminated] : []);
+    const withDocuments = (error: BashSyntaxError) => {
+      if (unterminated.length > 0) error.unterminatedHereDocuments = unterminated;
+      return error;
+    };
+
     // Already a BashSyntaxError - ensure full source and complete location are attached
     if (err instanceof BashSyntaxError) {
       const syntaxErr = grammarDetail(err as BashSyntaxError, lexer);
@@ -193,9 +200,9 @@ const parseSource: Parse = async (sourceCode, options?) => {
         const again = new BashSyntaxError(syntaxErr.message, sourceCode, location, syntaxErr.cause);
 
         again.detail = syntaxErr.detail;
-        throw again;
+        throw withDocuments(again);
       }
-      throw syntaxErr;
+      throw withDocuments(syntaxErr);
     }
 
     // Extract location from jison parser error hash if available
@@ -217,7 +224,7 @@ const parseSource: Parse = async (sourceCode, options?) => {
       }
     }
 
-    throw grammarDetail(new BashSyntaxError((err as Error).message, sourceCode, location, err as Error), lexer);
+    throw withDocuments(grammarDetail(new BashSyntaxError((err as Error).message, sourceCode, location, err as Error), lexer));
   }
 };
 

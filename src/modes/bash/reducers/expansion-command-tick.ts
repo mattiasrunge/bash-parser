@@ -39,8 +39,11 @@ const expansionCommandTick: Reducer = (state, source, reducers) => {
 
   // Between backticks a backslash quotes only $, ` and \, and joins a line to
   // the next; before anything else it is itself, and part of the command:
-  // `echo "(\")"` keeps its \"
-  if (!state.escaping && char === '\\' && '$`\\\n'.includes(source[0] ?? '')) {
+  // `echo "(\")"` keeps its \". Inside double quotes it quotes a `"` as well:
+  // "`echo \"a\"`" runs `echo "a"`
+  const quoted = state.previousReducer === reducers.doubleQuoting;
+
+  if (!state.escaping && char === '\\' && ('$`\\\n'.includes(source[0] ?? '') || (quoted && source[0] === '"'))) {
     return {
       nextReduction: reducers.expansionCommandTick,
       nextState: state.appendChar(char).setEscaping(true),
