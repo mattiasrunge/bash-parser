@@ -46,17 +46,30 @@ const handleParameter = async (obj: ParameterOp, match: RegExpMatchArray) => {
   return ret;
 };
 
+/** Stands for `#` while the operators are matched: an identifier no script writes. */
+const POUND = '__bash_parser_pound__';
+
 const expandParameter = async (xp: Expansion, enums: Enums): Promise<Expansion> => {
-  const parameter = xp.parameter;
+  let parameter = xp.parameter!;
+  // `${#-x}`, `${#:-x}`, `${#%2}` are $# with an operator; `${#x}`, `${#-}`,
+  // `${##}` alone are a length, as bash reads them
+  // `${#foo%}` stays the bad substitution it is: an operator has to follow the `#`
+  const pound = parameter.length > 2 && parameter[0] === '#' && ':-=?+%#/^,@'.includes(parameter[1]) &&
+    !/^#(?:[a-zA-Z_][a-zA-Z0-9_]*(?:\[.*\])?|[0-9]+|[@*?$!#-])$/s.test(parameter);
+
+  if (pound) parameter = POUND + parameter.slice(1);
 
   for (const pair of Object.entries(enums.parameterOperators)) {
     // A word may run over lines, `${x+a
     // b}`: `.` takes newlines too
     const re = new RegExp(pair[0], 's');
-    const match = parameter!.match(re);
+    const match = parameter.match(re);
 
     if (match) {
       const opProps = await handleParameter(pair[1], match);
+
+      if (pound && opProps.parameter === POUND) opProps.parameter = '#';
+
       const mergedObject = Object.assign({}, xp, opProps);
 
       return deepCopy(mergedObject);
