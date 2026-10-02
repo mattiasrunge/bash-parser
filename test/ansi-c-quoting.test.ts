@@ -1,6 +1,7 @@
 import { assertEquals } from '@std/assert';
 import { parse } from '../mod.ts';
 import unquoteWord from '../src/utils/unquote-word.ts';
+import { unquoteAssignmentWithProtectedRanges } from '../src/utils/unquote-with-ranges.ts';
 
 /** Quote removal as the parser runs it */
 const unquote = (text: string) => unquoteWord(text).values;
@@ -23,6 +24,14 @@ Deno.test("ANSI-C quoting $'…'", async (t) => {
     assertEquals(unquote("$'\\x41'"), ['A']);
     assertEquals(unquote("$'\\u00e5'"), ['å']);
     assertEquals(unquote("$'\\101'"), ['A']);
+  });
+
+  await t.step('decodes control characters, \\cX', () => {
+    assertEquals(unquote("$'\\cA\\cr\\c?\\c[x'"), ['\x01\x12\x7f\x1bx']);
+  });
+
+  await t.step('is decoded in an assignment that expands something too', () => {
+    assertEquals(unquoteAssignmentWithProtectedRanges("$HOME$'\\tb'", [{ start: 0, end: 5 }]), '$HOME\tb');
   });
 
   await t.step('keeps an unknown escape as a backslash', () => {

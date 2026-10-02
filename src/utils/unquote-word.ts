@@ -64,7 +64,7 @@ const ANSI_C_ESCAPES: Record<string, string> = {
  * @param start - Index of the opening quote
  * @returns The decoded text and the index of the closing quote
  */
-const parseAnsiC = (text: string, start: number): { value: string; end: number } => {
+export const parseAnsiC = (text: string, start: number): { value: string; end: number } => {
   let value = '';
   let i = start + 1;
 
@@ -82,6 +82,12 @@ const parseAnsiC = (text: string, start: number): { value: string; end: number }
     if (next in ANSI_C_ESCAPES) {
       value += ANSI_C_ESCAPES[next];
       i += 2;
+    } else if (next === 'c' && i + 2 < text.length && text.charAt(i + 2) !== "'") {
+      // `\cx`: control-x, `\c?` DEL; `\c\\` is control-backslash
+      const target = text.charAt(i + 2);
+
+      value += target === '?' ? '\x7f' : String.fromCharCode(target.toUpperCase().charCodeAt(0) & 0x1f);
+      i += target === '\\' && text.charAt(i + 3) === '\\' ? 4 : 3;
     } else if (next === 'x' && text.charAt(i + 2) === '{') {
       // `\x{41}`: as many hex digits as there are, a `}` if one follows, the low byte
       const hex = text.slice(i + 3).match(/^[0-9A-Fa-f]*/)![0];

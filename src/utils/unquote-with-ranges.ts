@@ -1,5 +1,5 @@
 import type { ProtectedRange } from '../tokenizer/types.ts';
-import unquoteWord, { type ParseResult, unquoteSingleWord } from './unquote-word.ts';
+import unquoteWord, { parseAnsiC, type ParseResult, unquoteSingleWord } from './unquote-word.ts';
 
 // Placeholder characters that are unlikely to appear in shell input
 // Used to temporarily escape quotes in protected ranges
@@ -473,6 +473,16 @@ const removeQuotes = (text: string): string => {
       } else {
         result += c;
       }
+    } else if (c === '$' && text[i + 1] === "'") {
+      // `x=$HOME$'\tb'`: an ANSI-C string is decoded here too
+      const ansi = parseAnsiC(text, i + 1);
+
+      result += ansi.value;
+      i = ansi.end;
+    } else if (c === '$' && text[i + 1] === '"') {
+      // `$"…"` untranslated is `"…"`
+      inDouble = true;
+      i++;
     } else if (c === "'") {
       inSingle = true;
     } else if (c === '"') {
