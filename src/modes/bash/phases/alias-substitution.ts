@@ -45,8 +45,11 @@ const expandAlias = (preAliasLexer: LexerPhaseFn, resolveAlias: Resolvers['resol
       return;
     }
 
-    for (const newToken of tokens) {
-      if (newToken.is('EOF')) continue;
+    for (const read of tokens) {
+      if (read.is('EOF')) continue;
+
+      // What an alias gives stands where its name stood in the script: its line is the command's
+      const newToken = token.loc ? read.clone({ loc: token.loc }) : read;
 
       const check = commandName(newToken) || (checkNext && newToken.is('WORD'));
 

@@ -61,6 +61,13 @@ export class Lexer implements LexerIf {
     const iterator = this.tokens![Symbol.asyncIterator]();
     const item = await iterator.next();
 
+    // Asked again past the end — a `case` left open makes the parser look once
+    // more for what could follow it — it is still the end
+    if (item.done || !item.value) {
+      this.yytext = { text: '', type: '' };
+      return 'EOF';
+    }
+
     const tk: TokenIf = item.value;
 
     const tkType = tk.ctx.originalType;

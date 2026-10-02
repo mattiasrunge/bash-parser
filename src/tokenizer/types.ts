@@ -44,6 +44,8 @@ export type TokenFields = {
 
 export type TokenIf = TokenFields & {
   is(type: string): boolean;
+  /** A copy with `fields` replaced */
+  clone(fields: Partial<TokenIf>): TokenIf;
   appendValue(chunk: string): TokenIf;
   setType(type: string): TokenIf;
   setValue(value: string): TokenIf;
