@@ -598,6 +598,14 @@ export default {
         'CLOBBER filename',
         '$$ =yy.ioRedirect($1, $filename);',
       ],
+      [
+        'AND_GREAT filename',
+        '$$ =yy.ioRedirect($1, $filename);',
+      ],
+      [
+        'AND_DGREAT filename',
+        '$$ =yy.ioRedirect($1, $filename);',
+      ],
     ],
     filename: [
       'WORD',

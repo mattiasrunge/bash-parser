@@ -7,6 +7,8 @@ const ioFileOperators = [
   'GREAT',
   'LESSGREAT',
   'CLOBBER',
+  'AND_GREAT',
+  'AND_DGREAT',
 ];
 
 export default ioFileOperators;

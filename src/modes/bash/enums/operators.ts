@@ -21,6 +21,9 @@ const operators = {
   '<>': 'LESSGREAT',
   '<<-': 'DLESSDASH',
   '>|': 'CLOBBER',
+  // bash's own: stdout and stderr both to the file, `cmd &> log`, `cmd &>> log`
+  '&>': 'AND_GREAT',
+  '&>>': 'AND_DGREAT',
   ';': 'SEMICOLON',
 };
 
