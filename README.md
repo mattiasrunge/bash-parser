@@ -5,11 +5,10 @@ Parses bash source code to produce an AST.
 ## Table of Contents
 
 - [About This Fork](#about-this-fork)
-- [Objectives](#objectives)
-- [Non-Objectives](#non-objectives)
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Bash conformance](#bash-conformance)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
@@ -21,37 +20,39 @@ This project is a fork of the original [bash-parser](https://github.com/vorpaljs
 
 ### Objectives
 
+- Parse what bash parses, the way bash parses it
 - Minimize dependencies where feasible
 - Migrate the codebase to TypeScript
 - Ensure compatibility with [Deno](https://deno.com/) instead of [Node.js](https://nodejs.org/)
 - Update the API to support asynchronous resolvers
-- Perform code cleanup and refactoring
 - Distribute releases via [JSR](https://jsr.io/)
 
 ### Non-Objectives
 
 - No guarantee of compatibility with the original project
-- No guarantee of full `bash` compatibility, though contributions are welcome
 - Maintain only a `bash` parser to simplify the project, without separate `posix` and `bash` parsers
 
 ## Features
 
-- Parses bash source code to produce an AST
+- Parses bash 5.2 syntax: compound commands, functions, `case` with `;&` and `;;&`, `select`, `[[ ]]`, `(( ))`, `for (( ;; ))`,
+  `time`, `coproc`, arrays and associative arrays, here-documents and here-strings, process substitution, `{fd}` redirections
+- Words keep their expansions: parameter expansion with every operator and `@` transform, command substitution (`$( )` and
+  backticks), arithmetic expansion (`$(( ))` and `$[ ]`), brace expansion, `$'…'` ANSI-C quoting and extended glob patterns
+- Arithmetic expressions parsed into their own AST (`parseArithmetic`)
+- Aliases expanded where bash expands them, through a resolver
+- Syntax errors as bash reports them: the unexpected token, an unexpected end of file, or the quote that never closed
 - Supports asynchronous resolvers
-- Compatible with Deno
 
 ## Installation
 
 ```bash
-deno add @ein/bash-parser
-# or
-jsr add @ein/bash-parser
+deno add jsr:@ein/bash-parser
 ```
 
 ## Usage
 
 ```ts
-import parse from '@ein/bash-parser';
+import { parse } from '@ein/bash-parser';
 
 const ast = await parse('echo ciao');
 ```
@@ -64,16 +65,8 @@ const ast = await parse('echo ciao');
   commands: [
     {
       type: "Command",
-      name: {
-        text: "echo",
-        type: "Word"
-      },
-      suffix: [
-        {
-          text: "ciao",
-          type: "Word"
-        }
-      ]
+      name: { text: "echo", type: "Word" },
+      suffix: [{ text: "ciao", type: "Word" }]
     }
   ]
 }
@@ -81,147 +74,73 @@ const ast = await parse('echo ciao');
 
 ### Options
 
-You can pass an options object to the `parse` function to customize its behavior.
+`parse(source, options)` takes an options object. All of it is optional; the full descriptions are in
+[`types.ts`](./src/types.ts).
+
+| Option                      | What it does                                                                                                  |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `insertLOC`                 | Add line, column and offset information to every node                                                         |
+| `resolveAlias`              | Expand aliases where a command name stands; returns the alias's text, or `undefined`                          |
+| `deferTildeExpansion`       | Leave `~` prefixes as `TildeExpansion` nodes for the caller to expand when it runs the word                   |
+| `unterminatedHereDocuments` | `'error'` (default) refuses input ending inside a here-document; `'end'` takes the rest as its body           |
+| `substitution`              | The text is the body of a `$( … )`, as bash reads one                                                         |
+| `posix`                     | Read as bash does after `set -o posix`                                                                        |
+| `resolve*`, `execCommand`   | Resolve expansions while parsing, for a caller that wants words expanded rather than kept as they are written |
+
+A shell runs the AST itself and expands words as it runs them, so it passes `resolveAlias`, `deferTildeExpansion` and
+none of the other resolvers.
+
+### Syntax errors
+
+A syntax error throws a `BashSyntaxError`. Its `location` is where the error is, and its `detail` says what bash would:
 
 ```ts
-export type Options = {
-  /**
-   * Which mode to use for the parsing. The mode specifies the tokenizer, lexer phases, grammar, and AST builder to use. Default is `bash`.
-   */
-  mode?: string;
+import { BashSyntaxError, parse } from '@ein/bash-parser';
 
-  /**
-   * If `true`, includes lines and columns information in the source file.
-   */
-  insertLOC?: boolean;
-
-  /**
-   * A callback to resolve shell alias. If specified, the parser calls it whenever it needs to resolve an alias. It should return the resolved code if the alias exists, otherwise `null`. If the option is not specified, the parser won't try to resolve any alias.
-   *
-   * @param name - The name of the alias to resolve.
-   * @returns The resolved code if the alias exists, otherwise `null`.
-   */
-  resolveAlias?: (name: string) => Promise<string | undefined>;
-
-  /**
-   * A callback to resolve environment variables. If specified, the parser calls it whenever it needs to resolve an environment variable. It should return the value if the variable is defined, otherwise `null`. If the option is not specified, the parser won't try to resolve any environment variable.
-   *
-   * @param name - The name of the environment variable to resolve.
-   * @returns The value if the variable is defined, otherwise `null`.
-   */
-  resolveEnv?: (name: string) => Promise<string | null>;
-
-  /**
-   * A callback to resolve path globbing. If specified, the parser calls it whenever it needs to resolve path globbing. It should return the expanded path. If the option is not specified, the parser won't try to resolve any path globbing.
-   *
-   * @param text - The text to resolve.
-   * @returns The expanded path.
-   */
-  resolvePath?: (text: string) => Promise<string>;
-
-  /**
-   * A callback to resolve users' home directories. If specified, the parser calls it whenever it needs to resolve a tilde expansion. If the option is not specified, the parser won't try to resolve any tilde expansion. When the callback is called with a null value for `username`, the callback should return the current user's home directory.
-   *
-   * @param username - The username whose home directory to resolve, or `null` for the current user.
-   * @returns The home directory of the specified user, or the current user's home directory if `username` is `null`.
-   */
-  resolveHomeUser?: (username: string | null) => Promise<string>;
-
-  /**
-   * A callback to resolve parameter expansion. If specified, the parser calls it whenever it needs to resolve a parameter expansion. It should return the result of the expansion. If the option is not specified, the parser won't try to resolve any parameter expansion.
-   *
-   * @param parameter - The name of the parameter to resolve.
-   * @returns The result of the parameter expansion.
-   */
-  resolveParameter?: (parameter: string) => Promise<string>;
-
-  /**
-   * A callback to execute a `simple_command`. If specified, the parser calls it whenever it needs to resolve a command substitution. It receives as argument the AST of a `simple_command` node, and shall return the output of the command. If the option is not specified, the parser won't try to resolve any command substitution.
-   *
-   * @param command - The name of the command.
-   * @param cmdAST - The AST of the simple command to execute.
-   * @returns The output of the command.
-   */
-  execCommand?: (command: string, scriptAST: AstNodeScript) => Promise<string>;
-
-  /**
-   * A callback to execute an `ArithmeticExpansion`. If specified, the parser calls it whenever it needs to resolve an arithmetic substitution. It receives as argument the AST of an `ArithmeticExpansion` node, and shall return the result of the calculation. If the option is not specified, the parser won't try to resolve any arithmetic expansion substitution.
-   *
-   * @param expression - The arithmetic expression to evaluate.
-   * @param arithmeticAST - The AST of the arithmetic expression to evaluate.
-   * @returns The result of the calculation.
-   */
-  runArithmeticExpression?: (expression: string, arithmeticAST: AstNode) => Promise<string>;
-};
+try {
+  await parse('if true; then');
+} catch (e) {
+  if (e instanceof BashSyntaxError) {
+    e.detail; // { kind: 'eof' }  — 'token', 'eof', 'unclosed' or 'arithmeticFor'
+    e.getFormattedMessage();
+  }
+}
 ```
 
-Example usage with options:
+## Bash conformance
 
-```ts
-import parse from '@ein/bash-parser';
+The parser is tested against GNU bash 5.2's own test suite, together with
+[bash-executor](https://github.com/mattiasrunge/bash-executor), which runs what it parses. Its
+[conformance report](https://github.com/mattiasrunge/bash-executor/blob/master/conformance/REPORT.md) is the current state,
+and [the conformance README](https://github.com/mattiasrunge/bash-executor/blob/master/conformance/README.md) explains how
+it is measured.
 
-const options = {
-  mode: 'bash',
-  insertLOC: true,
-  resolveEnv: (name) => process.env[name] || null,
-};
+462 of the suite's 471 test files parse. The other nine hold deliberate syntax errors, which bash reports and then
+continues past, or one of the constructs below. Two commands that bash accepts are still rejected:
 
-const ast = await parse('echo $HOME', options);
-```
+- An alias whose value starts a comment that continues past the alias: `alias long_comment='# for x in '`.
+- A here-document started inside `$( … )` whose body follows the `)`: `echo $(cat << EOF)`, then the body lines.
+
+Unlike bash, the parser takes a whole script at once, so a syntax error anywhere in it rejects all of it. bash reads
+and runs one command at a time, and runs the commands before the error. A shell that needs bash's behaviour parses
+one complete command at a time, as bash-executor does.
 
 ## Documentation
 
 ### AST
 
-The Abstract Syntax Tree (AST) types represent the hierarchical structure of the source code. Each node in the AST corresponds to a specific language construct.
-
-All the types are described in [`types.ts`](./src/ast/types.ts).`
+The AST types are described in [`types.ts`](./src/ast/types.ts). Each node corresponds to a language construct: a
+`Script` holds commands, a `Command` has a `name`, a `prefix` of assignments and redirections and a `suffix` of words and
+redirections, and a `Word` keeps its `text` and the `expansion`s inside it, with where each one starts and ends.
 
 ### How the parser works
 
-#### Lexer (Tokenizer)
-
-The lexer, also known as the tokenizer, is responsible for converting the raw source code into a sequence of tokens. Tokens are the smallest units of meaning, such as keywords, operators, identifiers, and literals.
-
-##### Process:
-
-- The `tokenize` function takes a set of reducers and returns a generator function that processes the source code.
-- It iterates through the source code character by character, applying reducers to generate tokens.
-- The state is updated and tokens are emitted as they are identified.
-
-#### Parser
-
-The parser takes the sequence of tokens produced by the lexer and organizes them into a structured format called an Abstract Syntax Tree (AST). The AST represents the hierarchical structure of the source code.
-
-##### Process:
-
-- The `astBuilder` function creates an AST builder object with methods to construct various AST nodes.
-- These methods are used to build different parts of the AST, such as commands, loops, conditionals, etc.
-- The AST nodes include location information to map back to the original source code.
-
-#### AST Builder
-
-The AST builder is a utility that helps in constructing the AST nodes. It provides methods to create different types of nodes and set their properties, including source location information.
-
-##### Process:
-
-- The AST builder methods are used by the parser to create nodes for different language constructs.
-- Each method takes relevant information (e.g., patterns, body, location) and returns an AST node.
-
-### Flow
-
-1. **Tokenization:** The lexer (`tokenize` function) processes the source code and generates tokens.
-2. **Parsing:** The parser consumes these tokens and uses the AST builder to construct the AST.
-3. **AST Building:** The AST builder methods are called by the parser to create nodes for different constructs, organizing the tokens into a hierarchical structure.
-
-#### Example Flow
-
-**Source Code:** `let x = 5;`
-
-1. **Lexer:** Converts to tokens: `LET`, `IDENTIFIER(x)`, `EQUALS`, `NUMBER(5)`, `SEMICOLON`
-2. **Parser:** Consumes tokens and uses AST builder to create nodes:
-   - `VariableDeclaration` node with child nodes for `Identifier` and `Literal`
-3. **AST Builder:** Methods like `variableDeclaration`, `identifier`, and `literal` are called to create and link nodes.
+1. **Tokenizer** ([`src/tokenizer`](./src/tokenizer), with bash's reducers in [`src/modes/bash/reducers`](./src/modes/bash/reducers)):
+   reads the source character by character into tokens: words, operators, newlines, here-document bodies.
+2. **Lexer phases** ([`src/modes/bash/phases`](./src/modes/bash/phases)): classify tokens by where they stand (reserved words,
+   assignments, names), expand aliases, and find each word's expansions.
+3. **Grammar** ([`src/grammar`](./src/grammar)): an LALR parser, generated by `deno task build-parser` from the bash
+   grammar, builds the AST from the tokens through the AST builder.
 
 ## Contributing
 
@@ -234,6 +153,3 @@ This project is licensed under the MIT License. See the [`LICENSE`](./LICENCE) f
 ## Contact
 
 For questions or support, please open an issue on the [GitHub repository](https://github.com/mattiasrunge/bash-parser/issues).
-
-```
-```
