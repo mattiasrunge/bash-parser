@@ -302,7 +302,7 @@ const parameterOps: Record<string, ParameterOp> = {
   // Q - The expansion is a string that is the value of parameter quoted in a format that can
   // 	be reused as input.
   // E - The expansion is a string that is the value of parameter with backslash escape
-  // 	sequences expanded as with the $'…' quoting mechansim.
+  // 	sequences expanded as with the $'…' quoting mechanism.
   // P - The expansion is a string that is the result of expanding the value of parameter
   // 	as if it were a prompt string (see Controlling the Prompt).
   // A - The expansion is a string in the form of an assignment statement or declare command

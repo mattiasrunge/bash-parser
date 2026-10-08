@@ -5,8 +5,6 @@ import { closesArithmetic } from './arithmetic-command.ts';
 const operator: Reducer = (state, source, reducers) => {
   const char = source && source.shift();
 
-  // console.log('isOperator ', {state,char})
-
   if (char === undefined) {
     if (state.isOperator()) {
       return {
@@ -27,7 +25,6 @@ const operator: Reducer = (state, source, reducers) => {
 
   let tokens: TokenIf[] = [];
   if (state.isOperator()) {
-    // console.log('isOperator ', state.current)
     const arithmetic = state.current === '((' && closesArithmetic([char].concat(source));
     tokens = state.operatorTokens();
 

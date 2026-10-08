@@ -52,21 +52,21 @@ const AccumulateSeparators = {
 };
 
 /*
-resolve a conflict in grammar by
-tokenize the former rule:
+ resolve a conflict in grammar by joining a separator_op and the
+ separators after it into one separator_op token, so that the POSIX rules
 
-separator_op     : '&'
-         | ';'
-         ;
-separator       : separator_op
-         | separator_op NEWLINE_LIST
-         | NEWLINE_LIST
+ separator_op     : '&'
+          | ';'
+          ;
+ separator       : separator_op
+          | separator_op NEWLINE_LIST
+          | NEWLINE_LIST
 
-with a new separator_op token, the rule became:
+ are, in this grammar:
 
-separator : separator_op
-         | NEWLINE_LIST
-*/
+ separator : separator_op
+          | NEWLINE_LIST
+ */
 const separator: LexerPhase = () =>
   compose<TokenIf>(
     filterNonNull,

@@ -38,7 +38,6 @@ const isValidReservedWordPosition = (tk: TokenIf, iterable: LookaheadIterable<To
   // …and none after `((…))` either: `if ((x)) then`, `for ((…)) {`
   const doAfterArithmetic = last.value === '))' && tk.is('TOKEN');
 
-  // console.log({tk, startOfCommand, lastIsReservedWord, thirdInFor, thirdInCase, twoAgo})
   // `}` too closes a group only where a command could start: `echo }` is an argument
   return startOfCommand || lastIsReservedWord || thirdInFor || thirdInCase || doAfterArithmetic || afterConditional || braceAfterFunction ||
     afterCoprocName || afterTimeOptions;
@@ -82,7 +81,6 @@ const reservedWords: LexerPhase = (ctx) => {
       return tk.setType('WORD');
     }
 
-    // other tokens are amitted as-is
     return tk;
   }
 };

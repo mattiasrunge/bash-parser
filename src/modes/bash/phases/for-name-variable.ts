@@ -10,9 +10,6 @@ const forNameVariable: LexerPhase = () => {
       const it = iterable as LookaheadIterable<TokenIf>;
       const lastToken = it.behind(1) || { is: () => false };
 
-      // if last token is For and current token form a valid name
-      // type of token is changed from WORD to NAME
-
       // Any word, valid name or not: bash takes `for 1 in` apart only when it runs
       if ((lastToken.is('For') || lastToken.is('Select')) && tk.is('WORD')) {
         return tk.setType('NAME');

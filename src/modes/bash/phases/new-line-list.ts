@@ -17,11 +17,10 @@ const SkipRepeatedNewLines = {
   },
 };
 
-/* resolve a conflict in grammar by tokenize multiple NEWLINEs as a
-newline_list token (it was a rule in POSIX grammar) */
+/* resolve a conflict in grammar by tokenizing multiple NEWLINEs as a
+ newline_list token (a rule in the POSIX grammar) */
 const newLineList: LexerPhase = () =>
   compose<TokenIf>(
-    // filterNonNull,
     map(
       applyVisitor(SkipRepeatedNewLines),
     ),

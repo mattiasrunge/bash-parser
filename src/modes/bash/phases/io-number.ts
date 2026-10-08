@@ -6,17 +6,12 @@ import map from '../../../utils/iterable/map.ts';
 
 /**
  * An IO_NUMBER is "a string of digits delimited by '<' or '>' with no
- * intervening blank" (POSIX 2.10.1). The blank is the whole point: `2>file`
- * redirects fd 2, while `seq 2 >file` passes 2 to seq and redirects stdout.
- *
- * Without the adjacency check any digits-only word before a redirect became an
- * fd number, so the argument was consumed and never reached the command —
- * `seq 20 > /f` failed with "seq: missing operand" and `tail -n 20 > /f`
- * silently fell back to the default 10 lines.
+ * intervening blank" (POSIX 2.10.1): `2>file` redirects fd 2, while
+ * `seq 2 >file` passes 2 to seq and redirects stdout.
  *
  * `loc.end` is inclusive, so adjacent tokens satisfy `end.char + 1 === start.char`.
- * When either location is missing there is nothing to compare, and the old
- * unconditional promotion is kept so a plain `2>&1` cannot regress.
+ * When either location is missing there is nothing to compare, and the digits
+ * count as adjacent, so that `2>&1` stays a redirection.
  */
 const isAdjacent = (tk: TokenIf, next: TokenIf): boolean => {
   const end = tk.loc?.end;

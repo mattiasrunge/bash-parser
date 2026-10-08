@@ -70,7 +70,6 @@ const setCommandExpansion = async (xp: Expansion, token: TokenIf, options: Optio
 
   shiftHereDocuments(commandAST, firstRow - 1);
 
-  // console.log(JSON.stringify({command, commandAST}, null, 4))
   return Object.assign({}, xp, { command, commandAST });
 };
 

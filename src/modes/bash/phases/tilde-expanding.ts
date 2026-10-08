@@ -18,7 +18,6 @@ const replace = async (text: string, resolveHomeUser: Options['resolveHomeUser']
     result = text.replace(regex, resolved + '/');
   }
 
-  // console.log({result, replaced})
   if (!replaced) {
     const regex = /^~(.*)$/;
     const match = text.match(regex);

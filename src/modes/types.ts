@@ -8,13 +8,6 @@ export type Enums = {
   reservedWords: Record<string, string>;
 };
 
-/**
- * A mode could optionally inherit an existing one. It specifies the mode to inherit in its
- * `inherits` property. If it does, the `init` function will receive as argument the inherited mode. In this way, the child mode could use the parent mode features.
- *
- * The `init` function must return a `Mode` object.
- */
-
 export type Mode = {
   enums: Enums;
 

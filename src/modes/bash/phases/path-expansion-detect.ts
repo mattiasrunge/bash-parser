@@ -38,7 +38,6 @@ const pathExpansionDetect: LexerPhase = () =>
     if (token.is('WORD')) {
       const text = token.value!;
 
-      // Quick check first
       if (!hasUnquotedGlob(text)) {
         return token;
       }
@@ -55,14 +54,12 @@ const pathExpansionDetect: LexerPhase = () =>
 
       const existingExpansions = token.expansion || [];
 
-      // Filter out globs that overlap with existing expansions
       const filteredPatterns = globPatterns.filter((g) => !overlapsWithExpansion(g, existingExpansions));
 
       if (filteredPatterns.length === 0) {
         return token;
       }
 
-      // Create PathExpansion entries
       const pathExpansions: Expansion[] = filteredPatterns.map((g) => ({
         type: 'PathExpansion' as const,
         pattern: g.pattern,

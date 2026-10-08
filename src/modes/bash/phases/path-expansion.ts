@@ -9,7 +9,6 @@ const hasPathExpansion = (token: TokenIf): boolean => {
 const pathExpansion: LexerPhase = (ctx) =>
   map(async (token: TokenIf) => {
     if (token.is('WORD') && typeof ctx.resolvers.resolvePath === 'function') {
-      // Only resolve if there's a PathExpansion in the token
       if (!hasPathExpansion(token)) {
         return token;
       }
@@ -27,7 +26,6 @@ const pathExpansion: LexerPhase = (ctx) =>
     }
 
     if (token.is('ASSIGNMENT_WORD') && typeof ctx.resolvers.resolvePath === 'function') {
-      // Only resolve if there's a PathExpansion in the token
       if (!hasPathExpansion(token)) {
         return token;
       }

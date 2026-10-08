@@ -67,10 +67,6 @@ const start: Reducer = (state, source, reducers) => {
     };
   }
 
-  // An array literal is one word: `(` after an assignment prefix opens it, and
-  // until the matching `)` neither blanks nor operators end the word. Blanks
-  // become element separators, everything else (quotes, expansions) is reduced
-  // by the ordinary rules below.
   // An extended pattern is part of its word, parentheses, bars and all:
   // `echo *.@(c|h)`, `echo a*!(x)`. Bash reads these only with extglob on;
   // without it they could not parse at all, so they are always read.
@@ -104,6 +100,10 @@ const start: Reducer = (state, source, reducers) => {
     };
   }
 
+  // An array literal is one word: `(` after an assignment prefix opens it, and
+  // until the matching `)` neither blanks nor operators end the word. Blanks
+  // become element separators, everything else (quotes, expansions) is reduced
+  // by the ordinary rules below.
   if (!state.escaping && !state.arrayAssignment && char === '(' && opensArrayLiteral(state.current)) {
     return {
       nextReduction: reducers.start,

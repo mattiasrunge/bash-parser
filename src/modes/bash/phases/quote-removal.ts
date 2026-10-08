@@ -6,14 +6,13 @@ import { sliceRanges } from '../../../utils/unquote-with-ranges.ts';
 import { unquoteSingleWord } from '../../../utils/unquote-word.ts';
 
 // The token is one word by the time it gets here: the tokenizer split the line
-// and took the comments out. Parsing it as a command line again split it a
-// second time and kept only the first field — which is how `${x:?must be set}`
-// came back as "must" — and read a `#` in it as the start of a comment, which
-// emptied `echo red=#fff` altogether.
+// and took the comments out. It is unquoted as that one word, not parsed as a
+// command line again, so `${x:?must be set}` keeps all its words and the `#`
+// of `echo red=#fff` is no comment.
 const unquote = (text: string) => unquoteSingleWord(text);
 
-// Placeholder characters that are unlikely to appear in shell input
-// Used to temporarily escape quotes in protected ranges
+// Stand-ins for the quotes in protected ranges while the rest is unquoted:
+// characters shell input does not have
 const DOUBLE_QUOTE_PLACEHOLDER = '\x00DQ\x00';
 const SINGLE_QUOTE_PLACEHOLDER = '\x00SQ\x00';
 const BACKSLASH_PLACEHOLDER = '\x00BS\x00';
@@ -46,7 +45,6 @@ const unquoteWithProtectedRanges = (text: string, protectedRanges: ProtectedRang
     escaped = escaped.slice(0, range.start) + escapedContent + escaped.slice(range.end);
   }
 
-  // Run normal unquote
   const unquoted = unquote(escaped);
 
   // Restore placeholders to actual characters

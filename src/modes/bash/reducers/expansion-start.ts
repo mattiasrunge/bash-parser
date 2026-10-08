@@ -29,7 +29,7 @@ const expansionStart: Reducer = (state, source, reducers) => {
     };
   }
 
-  // `$[1 + 2]`, the old form of `$((1 + 2))`
+  // `$[1 + 2]`, bash's deprecated form of `$((1 + 2))`
   if (char === '[') {
     return {
       nextReduction: reducers.expansionBracketArithmetic,

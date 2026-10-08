@@ -139,10 +139,8 @@ const expansionCommandOrArithmetic: Reducer = (state, source, reducers) => {
   // Handle entering/exiting single quotes (not affected by escaping)
   if (char === "'" && !escaping) {
     if (!quoteState) {
-      // Enter single quotes
       setQuoteState(xp!, { type: 'single', startChar: state.loc.current?.char ?? 0 });
     } else if (quoteState.type === 'single') {
-      // Exit single quotes
       setQuoteState(xp!, undefined);
     }
     // If in double quotes, single quote is literal
@@ -156,10 +154,8 @@ const expansionCommandOrArithmetic: Reducer = (state, source, reducers) => {
   // Handle entering/exiting double quotes
   if (char === '"' && !escaping) {
     if (!quoteState) {
-      // Enter double quotes
       setQuoteState(xp!, { type: 'double', startChar: state.loc.current?.char ?? 0 });
     } else if (quoteState.type === 'double') {
-      // Exit double quotes
       setQuoteState(xp!, undefined);
     }
     // If in single quotes, double quote is literal

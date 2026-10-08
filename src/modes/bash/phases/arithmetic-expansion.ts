@@ -18,8 +18,8 @@ function parseArithmeticAST(xp: Expansion, tokenLoc?: TokenLocation) {
 
 /**
  * Walk an arithmetic AST and parse what the shell must run or expand in it: a `$(…)` becomes its
- * script, a `${…}` its word. Used for `$(( ))` here, and for `(( ))` and `for (( ))` after the
- * whole input is parsed (`parse.ts`), whose grammar actions cannot wait for a parse.
+ * script, a `${…}` its word. Used for `$(( ))` here, and for `(( ))` and `for (( ))` once the
+ * whole input is parsed, since the grammar's actions cannot wait for a parse.
  */
 export async function resolveCommandSubstitutions<T extends AstArithmeticExpression | undefined>(node: T): Promise<T>;
 export async function resolveCommandSubstitutions(node: AstArithmeticExpression | undefined): Promise<AstArithmeticExpression | undefined> {
@@ -82,7 +82,6 @@ const arithmeticExpansion: LexerPhase = () =>
           token.expansion.map(async (xp: Expansion) => {
             if (xp.type === 'ArithmeticExpansion') {
               const arithmeticAST = parseArithmeticAST(xp, token.loc);
-              // Resolve any command substitutions in the arithmetic AST
               const resolvedAST = await resolveCommandSubstitutions(arithmeticAST);
               return Object.assign({}, xp, { arithmeticAST: resolvedAST });
             }

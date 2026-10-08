@@ -14,20 +14,7 @@ const functionName: LexerPhase = () => {
         return tk.setType('NAME');
       }
 
-      // apply only on valitd positions
-      // (start of simple commands)
-      // if token can form the name of a function,
-      // type of token is changed from WORD to NAME
-
-      /* console.log(
-            tk._.maybeStartOfSimpleCommand,
-            tk.is('WORD'),
-            iterable.ahead(1) &&
-                iterable.ahead(1).is('OPEN_PAREN'),
-            iterable.ahead(2) &&
-                iterable.ahead(2).is('CLOSE_PAREN')
-        );*/
-
+      // `name ( )` where a simple command starts is a function's name
       if (
         tk.ctx?.maybeStartOfSimpleCommand &&
         tk.is('WORD') &&

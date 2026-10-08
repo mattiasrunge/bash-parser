@@ -5,7 +5,7 @@ import last from '../../../utils/last.ts';
 const depthMap = new WeakMap<object, number>();
 
 /**
- * `$[expr]`, bash's old spelling of `$((expr))`: the expression runs to the
+ * `$[expr]`, bash's deprecated spelling of `$((expr))`: the expression runs to the
  * `]` that closes the one after the `$`, and is an arithmetic expansion.
  */
 const expansionBracketArithmetic: Reducer = (state, source) => {
