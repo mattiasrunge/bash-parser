@@ -2,7 +2,7 @@ import { assertEquals } from '@std/assert';
 import operatorTokens from '../src/modes/bash/phases/operator-tokens.ts';
 import { mkToken } from '../src/tokenizer/token.ts';
 import operators from '../src/modes/bash/enums/operators.ts';
-import toArray from '../src/utils/iterable/to-array.ts';
+import { toArray } from './_utils.ts';
 
 async function* asyncIterable<T>(items: T[]): AsyncIterable<T> {
   for (const item of items) {

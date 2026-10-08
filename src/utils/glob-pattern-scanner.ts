@@ -112,14 +112,12 @@ export function scanGlobPatterns(text: string): GlobPattern[] {
     }
 
     if (currentQuote && c === currentQuote) {
-      // Exiting quoted section
       currentQuote = null;
       continue;
     }
 
     // Only process unquoted characters
     if (!currentQuote) {
-      // Start new segment if not already in one
       if (segmentStart === null) {
         segmentStart = i;
       }

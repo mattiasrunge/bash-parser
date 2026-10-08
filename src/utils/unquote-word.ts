@@ -26,21 +26,6 @@ const SINGLE_QUOTE = "'";
 const DOUBLE_QUOTE = '"';
 const BACKSLASH = '\\';
 
-/**
- * Hand-written scanner/parser for Bash quoting rules:
- *
- *  1. inside single quotes, all characters are printed literally.
- *  2. inside double quotes, all characters are printed literally
- *     except variables prefixed by '$' and backslashes followed by
- *     '"', '\\', '$' or '`' — any other backslash is literal, so "a\\nb"
- *     is a backslash and an n, as in bash. $'…' is the form that gives
- *     escape sequences their C meaning, and it is decoded here.
- *  3. outside of any quotes, backslashes are treated as escape
- *     characters and not printed (unless they are themselves escaped)
- *  4. quote context can switch mid-token if there is no whitespace
- *     between the two quote contexts (e.g. all'one'"token" parses as
- *     "allonetoken")
- */
 const ANSI_C_ESCAPES: Record<string, string> = {
   a: '\x07',
   b: '\b',
@@ -130,7 +115,7 @@ export const parseAnsiC = (text: string, start: number): { value: string; end: n
  * An escape's byte: 0x80 and up stands as U+DC80 to U+DCFF until the string is
  * done, and a run of them that is UTF-8 becomes the text it spells, `$'\303\251'`
  * being é — bash deals in bytes. What is not UTF-8 stays those stand-ins, for a
- * host to write as the bytes (bash-executor's `encodeShellText`).
+ * host to write as the bytes.
  */
 const escapedByte = (value: number): string => {
   const byte = value & 0xff;
@@ -147,6 +132,21 @@ const decodeEscapedBytes = (text: string): string =>
     }
   });
 
+/**
+ * Hand-written scanner/parser for Bash quoting rules:
+ *
+ *  1. inside single quotes, all characters are printed literally.
+ *  2. inside double quotes, all characters are printed literally
+ *     except variables prefixed by '$' and backslashes followed by
+ *     '"', '\\', '$' or '`' — any other backslash is literal, so "a\\nb"
+ *     is a backslash and an n, as in bash. $'…' is the form that gives
+ *     escape sequences their C meaning, and it is decoded here.
+ *  3. outside of any quotes, backslashes are treated as escape
+ *     characters and not printed (unless they are themselves escaped)
+ *  4. quote context can switch mid-token if there is no whitespace
+ *     between the two quote contexts (e.g. all'one'"token" parses as
+ *     "allonetoken")
+ */
 const parseChunk = (chunks: string[], idx: number, comments = true): SingleParseResult => {
   const chunk = chunks[idx];
   const result: SingleParseResult = { value: '' };

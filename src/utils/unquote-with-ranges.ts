@@ -1,8 +1,8 @@
 import type { ProtectedRange } from '../tokenizer/types.ts';
-import unquoteWord, { parseAnsiC, type ParseResult, unquoteSingleWord } from './unquote-word.ts';
+import unquoteWord, { parseAnsiC, type ParseResult } from './unquote-word.ts';
 
-// Placeholder characters that are unlikely to appear in shell input
-// Used to temporarily escape quotes in protected ranges
+// Stand-ins for the quotes and backslashes in protected ranges while the rest is
+// unquoted: characters shell input does not have
 const DOUBLE_QUOTE_PLACEHOLDER = '\x00DQ\x00';
 const SINGLE_QUOTE_PLACEHOLDER = '\x00SQ\x00';
 const BACKSLASH_PLACEHOLDER = '\x00BS\x00';
@@ -12,7 +12,7 @@ const BACKSLASH_PLACEHOLDER = '\x00BS\x00';
  *
  * unquoteWord's chunker treats these as word terminators and drops them (that is what
  * makes `a > b` three tokens), which is right for command syntax and wrong for anything
- * that came out of an expansion: `A='x>y'; echo $A` printed `x y` instead of `x>y`.
+ * that came out of an expansion: `A='x>y'; echo $A` prints `x>y`, not `x y`.
  * Operators are recognised when the input is tokenized, not again on the result of an
  * expansion, so protected content has to survive that pass intact.
  *
@@ -39,9 +39,7 @@ export const DEFAULT_IFS = ' \t\n';
  * or from the quoting. The caller substitutes this marker between the elements
  * and it always splits.
  *
- * A Unicode noncharacter, which no text holds and the placeholders cannot make:
- * it was `\x00\x01\x00`, which a backslash, a \x01 and a backslash in a
- * value became once each backslash was a `\x00BS\x00`.
+ * A Unicode noncharacter, which no text holds and the placeholders cannot make.
  */
 export const FIELD_MARKER = '\uFDD0';
 
@@ -270,44 +268,6 @@ const splitFields = (value: string): string[] => {
 };
 
 /**
- * Unquote a string, removing bash quote characters.
- */
-export const unquote = (text: string): string => unquoteSingleWord(text);
-
-/**
- * Unquote text while preserving protected ranges (content from expansions).
- * Returns a single string (first word only if there's word splitting).
- *
- * @param text - The text to unquote
- * @param protectedRanges - Ranges that should not have quote removal applied
- * @returns The unquoted text with protected ranges preserved (first word only)
- */
-export const unquoteWithProtectedRanges = (text: string, protectedRanges: ProtectedRange[]): string => {
-  const result = unquoteWordWithProtectedRanges(text, protectedRanges);
-  if (result.values.length === 0) {
-    return text;
-  }
-  return result.values[0];
-};
-
-/**
- * Unquote text while preserving protected ranges (content from expansions).
- * Returns all words (preserves word splitting behavior).
- *
- * This follows POSIX shell semantics where quote removal only applies to
- * characters that were part of the original command syntax, not characters
- * that resulted from parameter/command/arithmetic expansion.
- *
- * Strategy: temporarily replace quote characters in protected ranges with
- * placeholders, run normal unquoteWord, then restore the placeholders.
- * Word splitting still occurs on whitespace.
- *
- * @param text - The text to unquote
- * @param protectedRanges - Ranges that should not have quote removal applied
- * @param ifs - The field separators to split expansion output on, defaults to space/tab/newline
- * @returns ParseResult with unquoted values, preserving protected range content
- */
-/**
  * The shell's operator characters as placeholders. The text is one word,
  * already delimited, and unquoteWord reads it as a command line: an unquoted
  * `(`, `|` or `)` — which only an extended pattern has, `*.@(c|h)` — would
@@ -390,6 +350,23 @@ const markQuotedNulls = (text: string): string => {
   return out;
 };
 
+/**
+ * Unquote text while preserving protected ranges (content from expansions).
+ * Returns all words (preserves word splitting behavior).
+ *
+ * This follows POSIX shell semantics where quote removal only applies to
+ * characters that were part of the original command syntax, not characters
+ * that resulted from parameter/command/arithmetic expansion.
+ *
+ * Strategy: temporarily replace quote characters in protected ranges with
+ * placeholders, run normal unquoteWord, then restore the placeholders.
+ * Word splitting still occurs on whitespace.
+ *
+ * @param text - The text to unquote
+ * @param protectedRanges - Ranges that should not have quote removal applied
+ * @param ifs - The field separators to split expansion output on, defaults to space/tab/newline
+ * @returns ParseResult with unquoted values, preserving protected range content
+ */
 export const unquoteWordWithProtectedRanges = (text: string, protectedRanges: ProtectedRange[], ifs: string = DEFAULT_IFS): ParseResult => {
   if (!protectedRanges || protectedRanges.length === 0) {
     const result = unquoteWord(protectMetacharacters(text), { comments: false });
@@ -412,7 +389,7 @@ export const unquoteWordWithProtectedRanges = (text: string, protectedRanges: Pr
   }
 
   // Run normal unquoteWord. Comments are off: this is one word, already
-  // delimited, and a `#` in it is data — `echo a#$V` used to expand to `a`.
+  // delimited, and a `#` in it is data: `echo a#$V` keeps its `a#`.
   const result = unquoteWord(protectMetacharacters(markQuotedNulls(escaped)), { comments: false });
 
   const values: string[] = [];
@@ -519,5 +496,3 @@ export const unquoteAssignmentWithProtectedRanges = (
 
   return restorePlaceholders(removeQuotes(escaped));
 };
-
-export default unquoteWithProtectedRanges;

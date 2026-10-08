@@ -1,7 +1,7 @@
 import { assert, assertEquals, assertThrows } from '@std/assert';
-import fromArray from '../src/utils/iterable/from-array.ts';
 import isIterable from '../src/utils/iterable/is.ts';
 import iterableLookahead from '../src/utils/iterable/lookahead.ts';
+import { fromArray } from './_utils.ts';
 
 Deno.test('iterable-lookahead', async (t) => {
   const expected1 = [{

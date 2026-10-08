@@ -30,7 +30,7 @@ const toSpaceCase = (str: string) => {
   }).trim();
 };
 
-/** The few token types there are, each converted once: this ran for every token */
+/** The few token types there are, each converted once: this runs for every token */
 const pascalCases = new Map<string, string>();
 
 const toPascalCase = (str: string): string => {

@@ -9,8 +9,6 @@ export const mkloc2 = function mkloc(startLine: number, startColumn: number, end
 };
 
 export const checkResults = (actual: any, expected: any) => {
-  //console.log(JSON.stringify(actual, null, 4));
-
   if (
     actual !== null &&
     expected !== null &&
@@ -21,6 +19,24 @@ export const checkResults = (actual: any, expected: any) => {
   } else {
     assertEquals(actual, expected);
   }
+};
+
+/** The items of an array, as an async iterable. */
+export const fromArray = async function* <T>(array: T[]): AsyncIterableIterator<T> {
+  for (const item of array) {
+    yield item;
+  }
+};
+
+/** The items of an async iterable, in an array. */
+export const toArray = async <T>(iterable: AsyncIterable<T>): Promise<T[]> => {
+  const arr: T[] = [];
+
+  for await (const item of iterable) {
+    arr.push(item);
+  }
+
+  return arr;
 };
 
 export default {

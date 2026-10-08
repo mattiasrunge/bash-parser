@@ -1,8 +1,7 @@
 import operators from '../src/modes/bash/enums/operators.ts';
 import reducers from '../src/modes/bash/reducers/mod.ts';
 import { tokenize as delimiterTokanize } from '../src/tokenizer/mod.ts';
-import toArray from '../src/utils/iterable/to-array.ts';
-import utils from './_utils.ts';
+import utils, { toArray } from './_utils.ts';
 
 const mkloc = ([startCol, startRow, startChar]: number[], [endCol, endRow, endChar]: number[]) => {
   return JSON.stringify({

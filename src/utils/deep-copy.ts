@@ -3,9 +3,8 @@
  *
  * Tokens and their locations and expansions are exactly that, and they are
  * copied on every phase of the lexer and once per input character in the
- * tokenizer. `structuredClone` does the same job through the serializer and
- * costs an order of magnitude more, which made it most of the time spent
- * parsing. Like `structuredClone`, this keeps own enumerable properties only
+ * tokenizer. `structuredClone` does the same job through the serializer, at
+ * many times the cost. Like `structuredClone`, this keeps own enumerable properties only
  * (undefined values included) and drops prototypes, so a class instance comes
  * back as a plain object.
  */

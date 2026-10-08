@@ -109,8 +109,8 @@ class State implements ReducerStateIf {
 
   advanceLoc(char: string) {
     // Runs once per character of input, so this is the parser's hot loop. The
-    // location is three flat position records; copying them by hand is ~20x
-    // cheaper than structuredClone, which was most of the cost of parsing.
+    // location is three flat position records, copied by hand: structuredClone
+    // costs many times more.
     const loc: ReducerLocation = {
       start: { ...this.loc.start },
       previous: { ...this.loc.current },
@@ -139,7 +139,6 @@ class State implements ReducerStateIf {
   tokenOrEmpty() {
     if (this.current !== '' && this.current !== '\n') {
       const expansion = (this.expansion || []).map((xp) => {
-        // console.log('aaa', {token: state.loc, xp: xp.loc});
         return Object.assign({}, xp, {
           loc: {
             start: xp.loc!.start! - this.loc.start!.char!,
@@ -156,9 +155,7 @@ class State implements ReducerStateIf {
         expansion,
       });
 
-      // The expansions went out with their word. Left behind, the next word to
-      // be emitted without a reset in between — the first one on the next line —
-      // took them too, and ran every `$(…)` of the line before a second time.
+      // The expansions went out with their word; the next one starts without them
       this.expansion = [];
 
       return [token];
@@ -238,10 +235,10 @@ export const tokenize = (
   // The last line a here-document's body took, for the warning about one the input ends in
   let lineNumber = 0;
 
-  /** One line of the source, taken out of it, without its newline; undefined at the end. */
   // Whether the line taken last ended the input without a newline
   let lastLineOpen = false;
 
+  /** One line of the source, taken out of it, without its newline; undefined at the end. */
   const takeLine = (): string | undefined => {
     if (source.length === 0) return undefined;
     lineNumber++;
