@@ -44,7 +44,6 @@ const enum Precedence {
   POSTFIX = 16,
 }
 
-// Map token types to their infix precedence
 function getInfixPrecedence(type: TokenType): Precedence {
   switch (type) {
     case 'COMMA':
@@ -101,7 +100,6 @@ function getInfixPrecedence(type: TokenType): Precedence {
   }
 }
 
-// Check if an operator is right-associative
 function isRightAssociative(type: TokenType): boolean {
   switch (type) {
     case 'STAR_STAR':
@@ -122,7 +120,6 @@ function isRightAssociative(type: TokenType): boolean {
   }
 }
 
-// Check if token is an assignment operator
 function isAssignmentOperator(type: TokenType): boolean {
   switch (type) {
     case 'EQUALS':
@@ -260,17 +257,14 @@ export class Parser {
       return this.parsePrefixUpdateExpression();
     }
 
-    // Parenthesized expression
     if (token.type === 'LPAREN') {
       return this.parseParenthesized();
     }
 
-    // Number literal
     if (token.type === 'NUMBER') {
       return this.parseNumber();
     }
 
-    // Identifier
     if (token.type === 'IDENTIFIER') {
       return this.parseIdentifier();
     }
@@ -308,7 +302,6 @@ export class Parser {
       return this.parseSequence(left, token);
     }
 
-    // Assignment operators
     if (isAssignmentOperator(token.type)) {
       return this.parseAssignment(left, token);
     }

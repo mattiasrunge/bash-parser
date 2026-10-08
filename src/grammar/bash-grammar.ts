@@ -333,7 +333,7 @@ export default {
     ],
     // The last item, without `;;`. As in POSIX, a command list takes no
     // linebreak after it: the list's own separator already takes the newline,
-    // and a second place for it was an ambiguity yacc had to guess at.
+    // and a second place for it would be an ambiguity yacc has to guess at.
     case_item_ns: [
       [
         'pattern CLOSE_PAREN linebreak',

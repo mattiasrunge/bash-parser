@@ -108,10 +108,8 @@ const grammarDetail = (error: BashSyntaxError, lexer: Lexer | undefined): BashSy
 };
 
 /**
- * Parses already made, by source and options: the executor parses the same
- * small texts over and over as a script runs — a subscript, a here-document's
- * body, `$i` in `[[ $i -eq 1 ]]` on every pass of a loop — and a parse costs
- * some 70µs where a copy of its result costs 5µs. Only calls whose options are
+ * Parses already made, by source and options: a caller may parse the same small texts over and
+ * over, and copying a result is much cheaper than parsing again. Only calls whose options are
  * plain values are cached; a resolver may answer differently each time.
  */
 const cache = new Map<string, AstNodeScript>();
@@ -119,7 +117,7 @@ const CACHE_SIZE = 1000;
 
 /** The key a parse is cached under, or undefined when its options cannot be one. */
 function cacheKey(sourceCode: string, options?: Options): string | undefined {
-  // A script is parsed once; copying it into the cache only cost time
+  // A script is parsed once; copying it into the cache only costs time
   if (sourceCode.length > 1000) return undefined;
 
   const entries = Object.entries(options ?? {}).filter(([, value]) => value !== undefined);

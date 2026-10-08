@@ -1,7 +1,7 @@
 import type { ExpansionLocation } from '../tokenizer/types.ts';
 
 /**
- * If the source is parsed specifing the `insertLOC` option, each node contins a `loc` property that contains the starting and ending lines and columns of the node, and the start and end index of the character in the source string.
+ * When the source is parsed with the `insertLOC` option, each node has a `loc` property with the starting and ending lines and columns of the node, and the start and end index of the character in the source string.
  */
 export type AstSourceLocation = {
   start: AstSourcePosition;
@@ -104,7 +104,7 @@ export type AstNodeLogicalExpression = AstNode & {
 /**
  * `Command` represents a builtin or external command to execute. It could optionally have a list of arguments, stream redirection operation and environment variable assignments.
  *
- * `name` properties is a Word that represents the name of the command to execute. It is optional because Command could represents bare assignment, e.g. `VARNAME = 42;`. In this case, the command node has no name.
+ * `name` is a Word with the name of the command to execute. It is optional because a Command can be a bare assignment, e.g. `VARNAME=42;`, which has no name.
  */
 export type AstNodeCommand = AstNode & {
   type: 'Command';
@@ -314,12 +314,11 @@ export type AstNodeArithmeticFor = AstNode & {
 /**
  * A `Case` statement. The conditional construct Case shall execute the CompoundList corresponding to the first one of several patterns that is matched by the `clause` Word.
  */
-
 export type AstNodeCase = AstNode & {
   type: 'Case';
   clause: AstNodeWord;
   cases?: AstNodeCaseItem[];
-  /** Redirections applied to the whole command, `while … done < file` */
+  /** Redirections applied to the whole command, `case … esac < file` */
   redirections?: AstNodeRedirect[];
 };
 
@@ -346,7 +345,7 @@ export type AstNodeIf = AstNode & {
   clause: AstNodeCompoundList;
   then: AstNodeCompoundList;
   else?: AstNodeCompoundList;
-  /** Redirections applied to the whole command, `while … done < file` */
+  /** Redirections applied to the whole command, `if … fi > file` */
   redirections?: AstNodeRedirect[];
 };
 
@@ -368,7 +367,7 @@ export type AstNodeUntil = AstNode & {
   type: 'Until';
   clause: AstNodeCompoundList;
   do: AstNodeCompoundList;
-  /** Redirections applied to the whole command, `while … done < file` */
+  /** Redirections applied to the whole command, `until … done < file` */
   redirections?: AstNodeRedirect[];
 };
 
@@ -434,7 +433,7 @@ export type AstNodeAssignmentWord = AstNode & {
 /**
  * A `ArithmeticExpansion` represent an arithmetic expansion operation to perform in the Word.
  *
- * The `loc.start` property contains the index of the character in the Word text where the substitution starts. The `loc.end` property contains the index where it the ends.
+ * The `loc.start` property contains the index of the character in the Word text where the substitution starts. The `loc.end` property contains the index where it ends.
  */
 export type AstArithmeticExpansion = {
   type: 'ArithmeticExpansion';
@@ -446,12 +445,6 @@ export type AstArithmeticExpansion = {
   arithmeticAST?: AstArithmeticExpression;
 };
 
-/** A `CommandExpansion` represent a command substitution operation to perform on the Word.
- *
- * The parsing of the command is done recursively using `bash-parser` itself.
- *
- * The `loc.start` property contains the index of the character in the Word text where the substitution starts. The `loc.end` property contains the index where it the ends.
- */
 /**
  * A `ProcessSubstitution` represents `<(cmd)` or `>(cmd)`. The command runs on
  * its own and the word expands to something the command can open: `direction`
@@ -467,6 +460,11 @@ export type AstProcessSubstitution = {
   commandAST: AstNodeScript;
 };
 
+/**
+ * A `CommandExpansion` represents a command substitution to perform on the Word; the command is parsed as a script of its own.
+ *
+ * The `loc.start` property contains the index of the character in the Word text where the substitution starts. The `loc.end` property contains the index where it ends.
+ */
 export type AstCommandExpansion = {
   type: 'CommandExpansion';
   resolved: boolean;
@@ -481,7 +479,7 @@ export type AstCommandExpansion = {
  *
  * The `op` and `Word` properties represents, in the case of special parameters, respectively the operator used and the right Word of the special parameter.
  *
- * The `loc.start` property contains the index of the character in the Word text where the substitution starts. The `loc.end` property contains the index where it the ends.
+ * The `loc.start` property contains the index of the character in the Word text where the substitution starts. The `loc.end` property contains the index where it ends.
  */
 export type AstParameterExpansion = {
   type: 'ParameterExpansion';

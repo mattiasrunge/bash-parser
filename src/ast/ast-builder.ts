@@ -409,10 +409,8 @@ export const astBuilder = (insertLOC?: boolean, source?: string) => {
     },
 
     conditionalCommand: (words, locStart, locEnd) => {
-      // Join word texts to form the expression string
       const expression = words.map((w: AstNodeWord) => w.text).join(' ');
 
-      // Parse the conditional expression
       let conditionAST;
       try {
         conditionAST = parseConditionalWords(words);

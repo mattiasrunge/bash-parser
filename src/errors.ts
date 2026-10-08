@@ -1,5 +1,5 @@
 /**
- * Unified error types for bash-parser syntax errors with location information.
+ * Syntax errors with where in the source they are.
  */
 
 /**
@@ -37,8 +37,7 @@ export type SyntaxErrorDetail =
   | { kind: 'arithmeticFor'; problem: string; text: string };
 
 /**
- * A unified syntax error class for all bash-parser parsing errors.
- * Extends SyntaxError so existing catch blocks continue to work.
+ * The syntax error of every parse. It is a `SyntaxError`, so a `catch` for one catches it too.
  */
 export class BashSyntaxError extends SyntaxError {
   override readonly name = 'BashSyntaxError';

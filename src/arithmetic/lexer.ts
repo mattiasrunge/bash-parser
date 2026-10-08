@@ -45,7 +45,6 @@ export class Lexer {
   private nextToken(): Token {
     const char = this.input[this.pos];
 
-    // Numbers
     if (this.isDigit(char)) {
       return this.readNumber();
     }
@@ -55,7 +54,6 @@ export class Lexer {
       return this.readIdentifier();
     }
 
-    // Operators and punctuation
     return this.readOperator();
   }
 
@@ -131,7 +129,6 @@ export class Lexer {
       this.pos++;
     }
 
-    // Read identifier characters
     while (this.pos < this.input.length && this.isIdentifierPart(this.input[this.pos])) {
       value += this.input[this.pos++];
     }

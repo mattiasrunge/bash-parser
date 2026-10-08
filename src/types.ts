@@ -5,10 +5,10 @@ import type { AstArithmeticExpression, AstNodeScript } from './ast/types.ts';
  */
 export type Resolvers = {
   /**
-   * A callback to resolve shell alias. If specified, the parser calls it whenever it needs to resolve an alias. It should return the resolved code if the alias exists, otherwise `null`. If the option is not specified, the parser won't try to resolve any alias.
+   * A callback to resolve shell alias. If specified, the parser calls it whenever it needs to resolve an alias. It should return the resolved code if the alias exists, otherwise `undefined`. If the option is not specified, the parser won't try to resolve any alias.
    *
    * @param name - The name of the alias to resolve.
-   * @returns The resolved code if the alias exists, otherwise `null`.
+   * @returns The resolved code if the alias exists, otherwise `undefined`.
    */
   resolveAlias?: (name: string) => Promise<string | undefined>;
 
@@ -53,21 +53,13 @@ export type Resolvers = {
   resolveParameter?: (parameter: string) => Promise<string>;
 
   /**
-   * A callback to execute a `simple_command`. If specified, the parser calls it whenever it needs to resolve a command substitution. It receives as argument the AST of a `simple_command` node, and shall return the output of the command. If the option is not specified, the parser won't try to resolve any command substitution.
+   * A callback to execute a command substitution. If specified, the parser calls it whenever it needs to resolve a command substitution. It receives the text of the command and its AST, and shall return the output of the command. If the option is not specified, the parser won't try to resolve any command substitution.
    *
-   * @param command - The name of the command.
-   * @param cmdAST - The AST of the simple command to execute.
+   * @param command - The text of the command.
+   * @param scriptAST - The AST of the command to execute.
    * @returns The output of the command.
    */
   execCommand?: (command: string, scriptAST: AstNodeScript) => Promise<string>;
-
-  /**
-   * A callback to execute a `complete_command in a new shell process. If specified, the parser calls it whenever it needs to resolve a subshell statement. It receives as argument the AST of a `complete_command` node.md#complete_command), and shall return the output of the command. If the option is not specified, the parser won't try to resolve any subshell statement.
-   *
-   * @param scriptAST - The AST of the complete command to execute.
-   * @returns The output of the command.
-   */
-  //execShellScript?: (scriptAST: object) => string;
 
   /**
    * A callback to execute an `ArithmeticExpansion`. If specified, the parser calls it whenever it needs to resolve an arithmetic substitution. It receives as argument the AST of an `ArithmeticExpansion` node, and shall return the result of the calculation. If the option is not specified, the parser won't try to resolve any arithmetic expansion substitution.
