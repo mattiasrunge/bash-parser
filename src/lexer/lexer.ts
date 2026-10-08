@@ -84,14 +84,6 @@ export class Lexer implements LexerIf {
       this.yytext.type = tk.type;
     }
 
-    if (tk.originalText) {
-      this.yytext.originalText = tk.originalText;
-    }
-
-    if (tk.joined) {
-      this.yytext.joined = tk.joined;
-    }
-
     // Out of sight of the AST's words: read only by `[[ ]]`, for an arithmetic operand
     if (tk.ctx.written !== undefined) {
       writtenText.set(this.yytext, tk.ctx.written);
@@ -99,10 +91,6 @@ export class Lexer implements LexerIf {
 
     if (tk.ctx.heredoc !== undefined) {
       this.yytext.heredoc = tk.ctx.heredoc;
-    }
-
-    if (tk.fieldIdx !== undefined) {
-      this.yytext.fieldIdx = tk.fieldIdx;
     }
 
     if (this.insertLOC && tk.loc) {

@@ -1,5 +1,5 @@
 import type { LexerPhase } from '../../../lexer/types.ts';
-import type { Expansion, ProtectedRange, TokenIf } from '../../../tokenizer/mod.ts';
+import type { ProtectedRange, TokenIf } from '../../../tokenizer/mod.ts';
 import { ARRAY_ELEMENT_SEPARATOR, parseAssignmentWord } from '../../../utils/assignment.ts';
 import map from '../../../utils/iterable/map.ts';
 import { sliceRanges } from '../../../utils/unquote-with-ranges.ts';
@@ -88,13 +88,7 @@ const unquoteArrayLiteral = (text: string, protectedRanges: ProtectedRange[]): s
   return `${text.slice(0, parts.valueStart)}${elements.join(ARRAY_ELEMENT_SEPARATOR)})`;
 };
 
-const unresolvedExpansions = (token: TokenIf) => {
-  if (!token.expansion) {
-    return false;
-  }
-
-  return token.expansion.some((xp: Expansion) => !xp.resolved);
-};
+const hasExpansions = (token: TokenIf) => (token.expansion?.length ?? 0) > 0;
 
 const quoteRemoval: LexerPhase = () =>
   map(async (token: TokenIf) => {
@@ -104,7 +98,7 @@ const quoteRemoval: LexerPhase = () =>
     }
 
     if (token.is('WORD') || token.is('ASSIGNMENT_WORD')) {
-      if (!unresolvedExpansions(token)) {
+      if (!hasExpansions(token)) {
         // Also for a WORD, so `declare -a x=(1 2)` reaches the builtin intact
         const literal = unquoteArrayLiteral(token.value!, token.protectedRanges ?? []);
 

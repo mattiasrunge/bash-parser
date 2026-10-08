@@ -63,7 +63,6 @@ const pathExpansionDetect: LexerPhase = () =>
       const pathExpansions: Expansion[] = filteredPatterns.map((g) => ({
         type: 'PathExpansion' as const,
         pattern: g.pattern,
-        resolved: false,
         loc: {
           start: g.start,
           end: g.end,
@@ -116,7 +115,6 @@ const pathExpansionDetect: LexerPhase = () =>
       const pathExpansions: Expansion[] = filteredPatterns.map((g) => ({
         type: 'PathExpansion' as const,
         pattern: g.pattern,
-        resolved: false,
         loc: {
           start: g.start + offset,
           end: g.end + offset,

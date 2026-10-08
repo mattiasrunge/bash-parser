@@ -77,18 +77,17 @@ const ast = await parse('echo ciao');
 `parse(source, options)` takes an options object. All of it is optional; the full descriptions are in
 [`types.ts`](./src/types.ts).
 
-| Option                      | What it does                                                                                                  |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `insertLOC`                 | Add line, column and offset information to every node                                                         |
-| `resolveAlias`              | Expand aliases where a command name stands; returns the alias's text, or `undefined`                          |
-| `deferTildeExpansion`       | Leave `~` prefixes as `TildeExpansion` nodes for the caller to expand when it runs the word                   |
-| `unterminatedHereDocuments` | `'error'` (default) refuses input ending inside a here-document; `'end'` takes the rest as its body           |
-| `substitution`              | The text is the body of a `$( … )`, as bash reads one                                                         |
-| `posix`                     | Read as bash does after `set -o posix`                                                                        |
-| `resolve*`, `execCommand`   | Resolve expansions while parsing, for a caller that wants words expanded rather than kept as they are written |
+| Option                      | What it does                                                                                        |
+| --------------------------- | --------------------------------------------------------------------------------------------------- |
+| `insertLOC`                 | Add line, column and offset information to every node                                               |
+| `resolveAlias`              | Expand aliases where a command name stands; returns the alias's text, or `undefined`                |
+| `deferTildeExpansion`       | Leave `~` prefixes as `TildeExpansion` nodes for the caller to expand when it runs the word         |
+| `unterminatedHereDocuments` | `'error'` (default) refuses input ending inside a here-document; `'end'` takes the rest as its body |
+| `substitution`              | The text is the body of a `$( … )`, as bash reads one                                               |
+| `posix`                     | Read as bash does after `set -o posix`                                                              |
 
-A shell runs the AST itself and expands words as it runs them, so it passes `resolveAlias`, `deferTildeExpansion` and
-none of the other resolvers.
+The parser expands nothing but aliases: every other expansion stays in its word, for the shell to make as it runs the
+word.
 
 ### Syntax errors
 

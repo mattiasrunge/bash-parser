@@ -32,7 +32,6 @@ esac
                     start: 0,
                   },
                   pattern: '*',
-                  resolved: false,
                   type: 'PathExpansion',
                 },
               ],

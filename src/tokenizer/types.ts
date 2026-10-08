@@ -36,9 +36,6 @@ export type TokenFields = {
 
   loc?: TokenLocation;
   expansion?: Expansion[];
-  joined?: string;
-  fieldIdx?: number;
-  originalText?: string;
   protectedRanges?: ProtectedRange[];
 };
 
@@ -49,8 +46,6 @@ export type TokenIf = TokenFields & {
   appendValue(chunk: string): TokenIf;
   setType(type: string): TokenIf;
   setValue(value: string): TokenIf;
-  alterValue(value: string): TokenIf;
-  alterValueWithRanges(value: string, protectedRanges: ProtectedRange[]): TokenIf;
   setExpansion(expansion: Expansion[]): TokenIf;
 };
 
@@ -141,7 +136,6 @@ export type Expansion = {
   /** Set while reducing `<(cmd)` / `>(cmd)`, which reads like a command substitution */
   direction?: 'in' | 'out';
   type?: 'ParameterExpansion' | 'CommandExpansion' | 'ArithmeticExpansion' | 'PathExpansion' | 'ProcessSubstitution' | 'TildeExpansion';
-  resolved?: boolean;
   loc?: ExpansionLocation;
 };
 

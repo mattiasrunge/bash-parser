@@ -20,7 +20,6 @@ export default {
                   {
                     type: 'PathExpansion',
                     pattern: '*',
-                    resolved: false,
                     loc: { start: 0, end: 1 },
                   },
                 ],

@@ -437,7 +437,6 @@ export type AstNodeAssignmentWord = AstNode & {
  */
 export type AstArithmeticExpansion = {
   type: 'ArithmeticExpansion';
-  resolved: boolean;
   loc: ExpansionLocation;
 
   expression: string;
@@ -452,7 +451,6 @@ export type AstArithmeticExpansion = {
  */
 export type AstProcessSubstitution = {
   type: 'ProcessSubstitution';
-  resolved: boolean;
   loc: ExpansionLocation;
 
   direction: 'in' | 'out';
@@ -467,7 +465,6 @@ export type AstProcessSubstitution = {
  */
 export type AstCommandExpansion = {
   type: 'CommandExpansion';
-  resolved: boolean;
   loc: ExpansionLocation;
 
   command: string;
@@ -483,7 +480,6 @@ export type AstCommandExpansion = {
  */
 export type AstParameterExpansion = {
   type: 'ParameterExpansion';
-  resolved: boolean;
   loc: ExpansionLocation;
 
   parameter: string;
@@ -501,7 +497,6 @@ export type AstParameterExpansion = {
  */
 export type AstPathExpansion = {
   type: 'PathExpansion';
-  resolved: boolean;
   loc: ExpansionLocation;
 
   pattern: string;
@@ -514,7 +509,6 @@ export type AstPathExpansion = {
  */
 export type AstTildeExpansion = {
   type: 'TildeExpansion';
-  resolved?: boolean;
   loc: ExpansionLocation;
 
   value: string;

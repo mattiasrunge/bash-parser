@@ -7,9 +7,6 @@ class Token implements TokenIf {
   value: string;
   loc?: TokenLocation;
   expansion?: Expansion[];
-  joined?: string;
-  fieldIdx?: number;
-  originalText?: string;
   protectedRanges?: ProtectedRange[];
 
   constructor(fields: Partial<Pick<TokenFields, 'ctx'>> & Omit<TokenFields, 'ctx'>) {
@@ -17,9 +14,6 @@ class Token implements TokenIf {
     this.value = fields.value;
     this.ctx = fields.ctx || {};
     this.loc = fields.loc;
-    this.joined = fields.joined;
-    this.fieldIdx = fields.fieldIdx;
-    this.originalText = fields.originalText;
     this.expansion = fields.expansion;
     this.expansion = (fields.expansion && fields.expansion.length) ? fields.expansion : undefined;
     this.protectedRanges = fields.protectedRanges;
@@ -46,21 +40,6 @@ class Token implements TokenIf {
 
   appendValue(chunk: string): TokenIf {
     return this.clone({ value: this.value + chunk });
-  }
-
-  alterValue(value: string) {
-    return this.clone({
-      value,
-      originalText: this.originalText || this.value,
-    });
-  }
-
-  alterValueWithRanges(value: string, protectedRanges: ProtectedRange[]) {
-    return this.clone({
-      value,
-      originalText: this.originalText || this.value,
-      protectedRanges: protectedRanges.length > 0 ? protectedRanges : undefined,
-    });
   }
 
   setExpansion(expansion: Expansion[]) {
