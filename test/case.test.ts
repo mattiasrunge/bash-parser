@@ -38,48 +38,4 @@ Deno.test('case', async (t) => {
     };
     utils.checkResults(result, expected);
   });
-
-  /*
-await t.step('parse case with compound list', async () => {
-    const result = await bashParser('case foo in * ) echo foo;echo bar;; esac');
-
-    const expected = {
-        type: 'Script',
-        commands: [{
-            type: 'LogicalExpression',
-            left: {
-                type: 'Pipeline',
-                commands: [{
-                    type: 'Case',
-                    clause: {
-                        text: 'foo'
-                    },
-                    cases: [{
-                        type: 'CaseItem',
-                        pattern: [{
-                            text: '*'
-                        }],
-                        body: {
-                            type: 'CompoundList',
-                            commands: [{
-                                type: 'LogicalExpression',
-                                left: {
-                                    type: 'Pipeline',
-                                    commands: [{
-                                        type: 'Command',
-                                        name: {text: 'echo'},
-                                        suffix: [{text: 'bar'}]
-                                    }]
-                                }
-                            }]
-                        }
-                    }]
-                }]
-            }
-        }]
-    };
-
-    assertEquals(JSON.stringify(result), JSON.stringify(expected));
-});
-  */
 });

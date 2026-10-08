@@ -323,7 +323,6 @@ Deno.test('tokenize', async (t) => {
 
   await t.step('loc on operators', async () => {
     const result = await tokenize('< <<', true);
-    // console.log(JSON.stringify(result, null, 4))
     utils.checkResults(
       result,
       [
@@ -448,7 +447,6 @@ Deno.test('tokenize', async (t) => {
       loc: { start: 1, end: 6 },
       expression: 'b',
     }];
-    // console.log(JSON.stringify(result, null, 4));
     utils.checkResults(
       result,
       [
@@ -514,7 +512,6 @@ Deno.test('tokenize', async (t) => {
       loc: { start: 2, end: 5 },
       command: 'b',
     }];
-    // console.log(JSON.stringify(result, null, 4))
     utils.checkResults(
       result,
       [
@@ -531,7 +528,6 @@ Deno.test('tokenize', async (t) => {
       loc: { start: 2, end: 4 },
       command: 'b',
     }];
-    // console.log(JSON.stringify(result, null, 4));
 
     utils.checkResults(
       result,

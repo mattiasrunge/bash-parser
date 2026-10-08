@@ -249,12 +249,8 @@ Deno.test('quote-removal', async (t) => {
 });
 
 /**
- * Quote removal works on one word at a time.
- *
- * It used to run `unquoteWord` — which parses a whole *command line* — over a
- * token the tokenizer had already delimited. That did two kinds of damage: the
- * word was split a second time and only the first field survived, and a `#` in
- * it was read as the start of a comment.
+ * Quote removal works on one word at a time: the tokenizer has already
+ * delimited it, so it is not split again, and a `#` in it starts no comment.
  */
 Deno.test('quote removal takes the word as one word', async (t) => {
   const wordsOf = async (source: string): Promise<string[]> => {
@@ -267,7 +263,7 @@ Deno.test('quote removal takes the word as one word', async (t) => {
   };
 
   await t.step('a # inside a word is data, not a comment', async () => {
-    // `echo red=#fff` printed nothing at all: the word became the empty string
+    // A `#` inside a word is part of it
     assertEquals(await wordsOf('echo a#b'), ['echo', 'a#b']);
     assertEquals(await wordsOf('echo red=#fff'), ['echo', 'red=#fff']);
     assertEquals(await wordsOf('echo "#tag"'), ['echo', '#tag']);

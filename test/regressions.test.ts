@@ -6,8 +6,7 @@ import utils from './_utils.ts';
 Deno.test('regressions', async (t) => {
   await t.step('A digits-only argument separated from a redirect is not an IO_NUMBER', async () => {
     // POSIX 2.10.1: an IO_NUMBER is delimited by < or > with *no intervening
-    // blank*. Without that check `seq 20 > file` lost its operand to a bogus
-    // fd 20 redirect and failed with "seq: missing operand".
+    // blank*, so `seq 20 > file` keeps its operand and redirects stdout
     const result = await bashParser('seq 20 > file.txt');
 
     utils.checkResults(result, {
@@ -154,8 +153,7 @@ Deno.test('regressions', async (t) => {
   });
 
   await t.step("A line's expansions stay on its words, not the next line's first word", async () => {
-    // The first word after a newline took the previous line's expansions as
-    // well, so `$(…)` there ran twice
+    // Each word carries its own expansions only, not those of the line before
     for (const line of ['echo $(date)', 'x=$((1 + 2))', 'echo "$x"']) {
       const result = await bashParser(`${line}\necho b`);
       const second = result.commands[1] as { name: { expansion?: unknown[] } };

@@ -207,8 +207,7 @@ Deno.test('pathname-expansion', async (t) => {
   });
 
   await t.step('preserves assignment value with multiple equals signs and glob', async () => {
-    // Regression test: assignment values containing '=' should not be truncated
-    // when the value also contains a glob pattern
+    // An assignment value with a '=' and a glob pattern in it is kept whole
     const result = await bashParser('VAR=prefix=*.txt', {
       async resolvePath() {
         return ['prefix=matched.txt'];

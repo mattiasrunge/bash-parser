@@ -22,7 +22,6 @@ Deno.test('quoting', async (t) => {
 
   await t.step('quotes within double quotes', async () => {
     const result = await bashParser('echo "TEST1 \'TEST2"');
-    // utils.logResults(result)
     utils.checkResults(result, {
       type: 'Script',
       commands: [{

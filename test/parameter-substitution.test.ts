@@ -33,7 +33,6 @@ Deno.test('parameter-substitution', async (t) => {
 
   await t.step('parameter substitution skip single quoted words', async () => {
     const result = await bashParser("echo '${echo } $ciao'");
-    // utils.logResults(result)
     utils.checkResults((result as any).commands[0].suffix, [{
       type: 'Word',
       text: '${echo } $ciao',
@@ -121,7 +120,6 @@ Deno.test('parameter-substitution', async (t) => {
 
   await t.step('command consisting of only parameter substitution', async () => {
     const result = await bashParser('$other');
-    // utils.logResults(result)
     utils.checkResults((result as any).commands[0].name, {
       type: 'Word',
       text: '$other',
@@ -142,7 +140,6 @@ Deno.test('parameter-substitution', async (t) => {
         return 'bar';
       },
     });
-    // utils.logResults(result.commands[0]);
     utils.checkResults(result.commands[0], {
       type: 'Command',
       name: {
@@ -208,7 +205,6 @@ Deno.test('parameter-substitution', async (t) => {
         return '\t ';
       },
     });
-    // utils.logResults(result)
     utils.checkResults(result.commands[0], {
       type: 'Command',
       name: {
@@ -277,7 +273,6 @@ Deno.test('parameter-substitution', async (t) => {
         return '\t ';
       },
     });
-    // utils.logResults(result)
     utils.checkResults(result.commands[0], {
       type: 'Command',
       name: {

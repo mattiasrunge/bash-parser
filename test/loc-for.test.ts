@@ -175,7 +175,6 @@ done
 done
 `;
     const result = await bashParser(cmd, { insertLOC: true });
-    // utils.logResults(result.commands[0])
     const expected = {
       type: 'For',
       name: {

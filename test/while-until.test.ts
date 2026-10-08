@@ -33,7 +33,6 @@ Deno.test('while-until', async (t) => {
 
   await t.step('parse until', async () => {
     const result = await bashParser('until true; do sleep 1; done');
-    // console.log(inspect(result, {depth:null}))
     utils.checkResults(
       result,
       {

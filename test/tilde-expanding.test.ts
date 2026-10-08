@@ -52,7 +52,6 @@ Deno.test('tilde-expanding', async (t) => {
         return '/home/current';
       },
     });
-    // utils.logResults(result.commands[0].prefix[0]);
     utils.checkResults((result as any).commands[0].prefix[0], {
       type: 'AssignmentWord',
       text: 'a=/home/current/subdir:/home/current/othersubdir/ciao',
@@ -82,8 +81,7 @@ Deno.test('tilde-expanding', async (t) => {
   });
 
   await t.step('preserves assignment value with multiple equals signs', async () => {
-    // Regression test: assignment values containing '=' should not be truncated
-    // e.g., VAR=$(CMD=1 other) should preserve the full command substitution
+    // An assignment value with more '=' in it is kept whole: VAR=$(CMD=1 other)
     const result = await bashParser('STAT_OUTPUT=$(JSON_OUTPUT=1 file-stat "$FILENAME")', {
       async resolveHomeUser() {
         return '/home/user';
@@ -97,7 +95,7 @@ Deno.test('tilde-expanding', async (t) => {
   });
 
   await t.step('preserves assignment value with multiple equals in command substitution', async () => {
-    // Another regression test with even more equals signs
+    // And with more of them
     const result = await bashParser('VAR=$(A=1 B=2 C=3 cmd)', {
       async resolveHomeUser() {
         return '/home/user';

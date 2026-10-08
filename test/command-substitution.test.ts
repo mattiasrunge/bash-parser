@@ -5,7 +5,6 @@ import utils from './_utils.ts';
 Deno.test('command substitution', async (t) => {
   await t.step('command substitution', async () => {
     const result = await bashParser('variable=$(echo ciao)');
-    // utils.logResults(result)
     delete (result as any).commands[0].prefix[0].expansion[0].commandAST;
     utils.checkResults((result as any).commands[0].prefix, [{
       type: 'AssignmentWord',
@@ -23,7 +22,6 @@ Deno.test('command substitution', async (t) => {
 
   await t.step('command substitution skip escaped dollar', async () => {
     const result = await bashParser('echo "\\$\\(echo ciao)"');
-    // utils.logResults(result)
     // In bash, \$ inside double quotes becomes $ (backslash removed)
     // \( stays as \( since ( is not a special char inside double quotes
     utils.checkResults((result as any).commands[0].suffix, [{
@@ -39,7 +37,6 @@ Deno.test('command substitution', async (t) => {
 
   await t.step('command substitution skip single quoted words', async () => {
     const result = await bashParser("echo '$(echo ciao)'");
-    // utils.logResults(result)
     utils.checkResults((result as any).commands[0].suffix, [{
       type: 'Word',
       text: '$(echo ciao)',
@@ -48,7 +45,6 @@ Deno.test('command substitution', async (t) => {
 
   await t.step('command substitution with backticks skip single quoted words', async () => {
     const result = await bashParser("echo '`echo ciao`'");
-    // utils.logResults(result)
     utils.checkResults((result as any).commands[0].suffix, [{ type: 'Word', text: '`echo ciao`' }]);
   });
 
@@ -159,11 +155,9 @@ Deno.test('command substitution', async (t) => {
         return 'bar';
       },
     });
-    // utils.logResults(result.commands[0]);
     delete (result as any).commands[0].name.expansion[0].commandAST;
     delete (result as any).commands[0].name.expansion[1].commandAST;
 
-    // utils.logResults(result.commands[0]);
     utils.checkResults(result.commands[0], {
       type: 'Command',
       name: {
@@ -194,7 +188,6 @@ Deno.test('command substitution', async (t) => {
     delete (result as any).commands[0].name.expansion[0].commandAST;
     delete (result as any).commands[0].name.expansion[1].commandAST;
 
-    // utils.logResults(result.commands[0]);
     utils.checkResults(result.commands[0], {
       type: 'Command',
       name: {
@@ -223,7 +216,6 @@ Deno.test('command substitution', async (t) => {
       },
     });
     delete (result as any).commands[0].name.expansion[0].commandAST;
-    // utils.logResults(result)
     utils.checkResults(result.commands[0], {
       type: 'Command',
       name: {
@@ -250,8 +242,6 @@ Deno.test('command substitution', async (t) => {
         return '\t ';
       },
     });
-
-    // utils.logResults(result)
 
     delete (result as any).commands[0].suffix[0].expansion[0].commandAST;
     delete (result as any).commands[0].suffix[1].expansion[0].commandAST;
@@ -308,7 +298,6 @@ Deno.test('command substitution', async (t) => {
 
   await t.step('nested command substitution', async () => {
     const result = await bashParser('echo $(echo $(echo deep))');
-    // utils.logResults(result)
     const expansion = (result as any).commands[0].suffix[0].expansion[0];
     utils.checkResults(expansion.command, 'echo $(echo deep)');
     utils.checkResults(expansion.type, 'CommandExpansion');
@@ -321,7 +310,6 @@ Deno.test('command substitution', async (t) => {
 
   await t.step('nested command substitution with multiple levels', async () => {
     const result = await bashParser('x=$(cat $(echo $(pwd)/file.txt))');
-    // utils.logResults(result)
     const expansion = (result as any).commands[0].prefix[0].expansion[0];
     utils.checkResults(expansion.command, 'cat $(echo $(pwd)/file.txt)');
     utils.checkResults(expansion.type, 'CommandExpansion');
@@ -392,7 +380,6 @@ Deno.test('command substitution', async (t) => {
   await t.step('command substitution with multiple assignments inside', async () => {
     // Tests multiple assignments in the command prefix inside $()
     const result = await bashParser('RESULT=$(FOO=1 BAR=2 my-command arg)');
-    // utils.logResults(result);
     delete (result as any).commands[0].prefix[0].expansion[0].commandAST;
     utils.checkResults((result as any).commands[0].prefix, [{
       type: 'AssignmentWord',
@@ -423,7 +410,6 @@ if [ $? -ne 0 ]; then
   exit 1
 fi`;
     const result = await bashParser(script);
-    // utils.logResults(result);
 
     // Find the assignment command (STAT_OUTPUT=...)
     // It should be the 3rd command (after the if-then-fi block)

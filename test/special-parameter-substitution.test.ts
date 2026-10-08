@@ -6,7 +6,6 @@ Deno.test('special parameter substitution', async (t) => {
   await t.step('parameter with use default value', async () => {
     const result = await bashParser('${other:-default_value}');
 
-    // utils.logResults((result as any).commands[0].name)
     utils.checkResults((result as any).commands[0].name, {
       type: 'Word',
       text: '${other:-default_value}',
@@ -110,7 +109,6 @@ Deno.test('special parameter substitution', async (t) => {
 
   await t.step('parameter with other parameter in word', async () => {
     const result = await bashParser('${other:=default$value}');
-    // utils.logResults(result)
     utils.checkResults(structuredClone((result as any).commands[0].name), {
       type: 'Word',
       text: '${other:=default$value}',
@@ -224,7 +222,6 @@ Deno.test('special parameter substitution', async (t) => {
 
   await t.step('parameter with Remove Smallest Suffix Pattern', async () => {
     const result = await bashParser('${other%default$value}');
-    // utils.logResults(result)
     utils.checkResults(structuredClone((result as any).commands[0].name), {
       type: 'Word',
       text: '${other%default$value}',
@@ -254,7 +251,6 @@ Deno.test('special parameter substitution', async (t) => {
 
   await t.step('parameter with Remove Smallest Prefix Pattern', async () => {
     const result = await bashParser('${other#default$value}');
-    // utils.logResults(result)
     utils.checkResults(structuredClone((result as any).commands[0].name), {
       type: 'Word',
       text: '${other#default$value}',
@@ -284,7 +280,6 @@ Deno.test('special parameter substitution', async (t) => {
 
   await t.step('parameter with Remove Largest Suffix Pattern', async () => {
     const result = await bashParser('${other%%default$value}');
-    // utils.logResults(result)
     utils.checkResults(structuredClone((result as any).commands[0].name), {
       type: 'Word',
       text: '${other%%default$value}',
@@ -314,7 +309,6 @@ Deno.test('special parameter substitution', async (t) => {
 
   await t.step('parameter with Remove Largest Prefix Pattern', async () => {
     const result = await bashParser('${other##default$value}');
-    // utils.logResults(result)
     utils.checkResults(structuredClone((result as any).commands[0].name), {
       type: 'Word',
       text: '${other##default$value}',
@@ -352,15 +346,13 @@ Deno.test('a word that is blank, empty or plain text', async (t) => {
   };
 
   await t.step('an empty word is absent rather than a parse error', async () => {
-    // `${x:-}` used to throw: an empty word parses to no command, and the name
-    // was read off it regardless
+    // An empty word, `${x:-}`, is no word at all
     assertEquals(await wordOf('${other:-}'), undefined);
     assertEquals(await wordOf('${other:?}'), undefined);
   });
 
   await t.step('a word with blanks in it keeps all of it', async () => {
-    // Parsing it as a command line kept only the first field, so `${x:?must be
-    // set}` came back as "must"
+    // The word is one word, blanks and all
     assertEquals(await wordOf('${other:?must be set}'), { type: 'Word', text: 'must be set' });
     assertEquals(await wordOf('${other:-a  b}'), { type: 'Word', text: 'a  b' });
   });

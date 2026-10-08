@@ -60,7 +60,6 @@ Deno.test('lexer', async (t) => {
 
   await t.step('parses unquoted parameter substitution', async () => {
     const result = await tokenize('echo word$test', true);
-    // utils.logResults(result)
     utils.checkResults(result, [{ token: 'WORD', value: { text: 'echo' } }, {
       token: 'WORD',
       value: {
@@ -148,8 +147,7 @@ Deno.test('lexer', async (t) => {
     );
   });
 
-  await t.step('support line continuations', async () => { // not yet implemented
-    // utils.logResults(tokenize('echo\\\n23'))
+  await t.step('support line continuations', async () => {
     utils.checkResults(
       await tokenize('echo\\\n23'),
       [{ token: 'WORD', value: 'echo23' }],
@@ -171,7 +169,6 @@ Deno.test('lexer', async (t) => {
   });
 
   await t.step('support &', async () => {
-    // utils.logResults(tokenize('run &'));
     utils.checkResults(
       await tokenize('run &'),
       [{ token: 'WORD', value: 'run' }, { token: 'SEPARATOR_OP', value: '&' }],
@@ -230,8 +227,6 @@ Deno.test('lexer', async (t) => {
   });
 
   await t.step('support multiple commands', async () => {
-    // utils.logResults(tokenize('echo; \nls;'));
-
     utils.checkResults(
       await tokenize('echo; \nls;'),
       [{ token: 'WORD', value: 'echo' }, { token: 'SEPARATOR_OP', value: ';\n' }, { token: 'WORD', value: 'ls' }, { token: 'SEPARATOR_OP', value: ';' }],
@@ -256,14 +251,4 @@ Deno.test('lexer', async (t) => {
       ],
     );
   });
-  /*
-await t.step('support function definition', async () => {
-  utils.checkResults(
-    tokenize('foo () {command}'),
-    [{token: 'WORD', value: 'foo'}, {token: 'OPEN_PAREN', value: '('},
-    {token: 'CLOSE_PAREN', value: ')'}, {token: 'Lbrace', value: '{'},
-    {token: 'WORD', value: 'command'}, {token: 'Rbrace', value: '}'}]
-  );
-});
-  */
 });

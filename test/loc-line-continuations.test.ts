@@ -1,5 +1,4 @@
 import utils from './_utils.ts';
-// const mkloc = require('./_utils').mkloc2;
 import bashParser from '../src/parse.ts';
 
 Deno.test('loc-line-continuations', async (t) => {

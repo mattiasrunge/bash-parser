@@ -63,7 +63,6 @@ esac
       ],
       loc: mkloc(1, 1, 4, 4, 0, 33),
     };
-    // utils.logResults(result.commands[0]);
 
     utils.checkResults(result.commands[0], expected);
   });

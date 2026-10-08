@@ -8,7 +8,6 @@ Deno.test('loc-function-def', async (t) => {
 }
 `;
     const result = await bashParser(cmd, { insertLOC: true });
-    // utils.logResults(result)
     const expected = {
       type: 'Function',
       name: {

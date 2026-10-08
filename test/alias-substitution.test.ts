@@ -71,7 +71,6 @@ Deno.test('alias-substitution', async (t) => {
         }
       },
     });
-    // utils.logResults(result)
 
     utils.checkResults(result, {
       type: 'Script',
@@ -101,7 +100,6 @@ Deno.test('alias-substitution', async (t) => {
         }
       },
     });
-    // utils.logResults(result)
 
     utils.checkResults(result, {
       type: 'Script',

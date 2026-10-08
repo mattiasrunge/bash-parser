@@ -13,8 +13,6 @@ fi
 `;
     const result = await bashParser(cmd, { insertLOC: true });
 
-    // utils.logResults(result)
-
     const expected = {
       type: 'If',
       clause: {
@@ -339,7 +337,6 @@ fi
         },
       },
     };
-    // console.log(diff(result.commands[0].left.commands[0], expected));
 
     utils.checkResults(result.commands[0], expected);
   });

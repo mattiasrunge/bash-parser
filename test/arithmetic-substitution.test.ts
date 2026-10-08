@@ -6,7 +6,6 @@ Deno.test('arithmetic substitution', async (t) => {
   await t.step('arithmetic substitution', async () => {
     const result = await bashParser('variable=$((42 + 43))');
     delete (result as any).commands[0].prefix[0].expansion[0].arithmeticAST;
-    // console.log(JSON.stringify(result.commands[0].prefix[0]))
     utils.checkResults((result as any).commands[0].prefix[0], {
       text: 'variable=$((42 + 43))',
       type: 'AssignmentWord',
@@ -23,7 +22,6 @@ Deno.test('arithmetic substitution', async (t) => {
 
   await t.step('arithmetic substitution skip single quoted words', async () => {
     const result = await bashParser("echo '$((42 * 42))'");
-    // utils.logResults(result)
     utils.checkResults((result as any).commands[0].suffix, [{
       type: 'Word',
       text: '$((42 * 42))',
@@ -32,7 +30,6 @@ Deno.test('arithmetic substitution', async (t) => {
 
   await t.step('arithmetic substitution skip escaped dollar', async () => {
     const result = await bashParser('echo "\\$(\\(42 * 42))"');
-    // utils.logResults(result)
     // In bash, \$ inside double quotes becomes $ (backslash removed)
     // \( stays as \( since ( is not a special char inside double quotes
     utils.checkResults((result as any).commands[0].suffix, [{
@@ -45,7 +42,6 @@ Deno.test('arithmetic substitution', async (t) => {
     const result = await bashParser('variable=$((42 + 43)) $ciao');
 
     delete (result as any).commands[0].prefix[0].expansion[0].arithmeticAST;
-    // utils.logResults(result.commands[0].name);
     utils.checkResults((result as any).commands[0].prefix[0], {
       text: 'variable=$((42 + 43))',
       type: 'AssignmentWord',
@@ -108,7 +104,6 @@ Deno.test('arithmetic substitution', async (t) => {
   await t.step('arithmetic ast is parsed', async () => {
     const result = await bashParser('variable=$((42 + 43))');
 
-    // utils.logResults(result)
     // Positions are absolute: token starts at 0, expansion at 9, expression content at 12
     utils.checkResults((result as any).commands[0].prefix[0].expansion[0].arithmeticAST, {
       type: 'BinaryExpression',
@@ -164,7 +159,6 @@ Deno.test('arithmetic substitution', async (t) => {
     });
     delete (result as any).commands[0].name.expansion[0].arithmeticAST;
 
-    // utils.logResults(result.commands[0]);
     utils.checkResults(result.commands[0], {
       type: 'Command',
       name: {
@@ -197,8 +191,6 @@ Deno.test('arithmetic substitution', async (t) => {
     delete (result as any).commands[0].suffix[0].expansion[0].arithmeticAST;
     delete (result as any).commands[0].suffix[1].expansion[0].arithmeticAST;
     delete (result as any).commands[0].suffix[2].expansion[0].arithmeticAST;
-
-    // utils.logResults(result)
 
     utils.checkResults(result.commands[0], {
       type: 'Command',
@@ -260,7 +252,6 @@ Deno.test('arithmetic substitution', async (t) => {
 
   await t.step('arithmetic command (( expr ))', async () => {
     const result = await bashParser('(( 2 + 3 == 5 ))');
-    // console.log(JSON.stringify(result.commands, null, 2));
 
     utils.checkResults(result.commands[0], {
       type: 'ArithmeticCommand',
@@ -290,7 +281,6 @@ Deno.test('arithmetic substitution', async (t) => {
 
   await t.step('command substitution inside arithmetic', async () => {
     const result = await bashParser('echo $(($(echo 5) + 3))');
-    // utils.logResults(result)
 
     const expansion = (result as any).commands[0].suffix[0].expansion[0];
     utils.checkResults(expansion.type, 'ArithmeticExpansion');

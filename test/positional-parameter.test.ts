@@ -47,7 +47,6 @@ Deno.test('positional-parameter', async (t) => {
 
   await t.step('positional parameter without braces', async () => {
     const result = await bashParser('echoword=$1');
-    // console.log(JSON.stringify(result, null, 5))
     utils.checkResults(result, {
       type: 'Script',
       commands: [{
@@ -71,7 +70,6 @@ Deno.test('positional-parameter', async (t) => {
 
   await t.step('positional parameter without braces allow one digit only', async () => {
     const result = await bashParser('echoword=$11');
-    // console.log(JSON.stringify(result, null, 5))
     utils.checkResults(result, {
       type: 'Script',
       commands: [{

@@ -39,7 +39,6 @@ Deno.test('loc-simple-command', async (t) => {
 
   await t.step('simple command with pipeline', async () => {
     const result = await bashParser('echo | grep', { insertLOC: true });
-    // console.log(JSON.stringify(result, null, 4));
     utils.checkResults(result.commands[0], {
       type: 'Pipeline',
       commands: [{
@@ -87,7 +86,6 @@ Deno.test('loc-simple-command', async (t) => {
 
   await t.step('simple command with IO redirection', async () => {
     const result = await bashParser('echo > 43', { insertLOC: true });
-    // utils.logResults(result)
 
     utils.checkResults(result.commands[0], {
       type: 'Command',
@@ -145,7 +143,6 @@ Deno.test('loc-simple-command', async (t) => {
         },
       }],
     };
-    // console.log(json.stringify(diff(result.commands[0].left.commands[0], expected), null, 4));
 
     utils.checkResults(result.commands[0], expected);
   });

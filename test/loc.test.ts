@@ -17,7 +17,6 @@ Deno.test('loc', async (t) => {
 
   await t.step('AST can include loc', async () => {
     const result = await bashParser('echo', { insertLOC: true });
-    // utils.logResults(result)
     utils.checkResults((result as any).commands[0].name, {
       type: 'Word',
       text: 'echo',
@@ -86,7 +85,6 @@ Deno.test('loc', async (t) => {
 
   await t.step('loc are composed by all tokens', async () => {
     const result = await bashParser('echo 42', { insertLOC: true });
-    // console.log(JSON.stringify(result, null, 4));
     utils.checkResults(result.commands[0], {
       type: 'Command',
       name: {
@@ -133,7 +131,6 @@ done
 `;
 
     const result = await bashParser(cmd, { insertLOC: true });
-    // utils.logResults(result)
     const expected = {
       type: 'For',
       name: {

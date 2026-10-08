@@ -4,7 +4,6 @@ import utils from './_utils.ts';
 Deno.test('if', async (t) => {
   await t.step('parse if', async () => {
     const result = await bashParser('if true; then echo 1; fi');
-    // console.log(inspect(result, {depth:null}))
     utils.checkResults(
       result,
       {
@@ -70,7 +69,6 @@ Deno.test('if', async (t) => {
 
   await t.step('parse if else multiline', async () => {
     const result = await bashParser('if true; then \n echo 1;\n else\n echo 2;\n fi');
-    // console.log(inspect(result, {depth:null}))
     utils.checkResults(
       result,
       {
@@ -156,7 +154,6 @@ Deno.test('if', async (t) => {
       }],
     };
 
-    // utils.logDiff(result, expected)
     utils.checkResults(result, expected);
   });
 });

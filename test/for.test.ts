@@ -4,7 +4,6 @@ import utils from './_utils.ts';
 Deno.test('for', async (t) => {
   await t.step('parse for', async () => {
     const result = await bashParser('for x in a b c; do echo $x; done');
-    // utils.logResults(result)
     utils.checkResults(
       result,
       {
@@ -39,7 +38,6 @@ Deno.test('for', async (t) => {
 
   await t.step('parse for with default sequence', async () => {
     const result = await bashParser('for x\n do echo $x\n done');
-    // utils.logResults(result)
     utils.checkResults(
       result,
       {
@@ -73,7 +71,6 @@ Deno.test('for', async (t) => {
 
   await t.step('parse for with default sequence - on one line', async () => {
     const result = await bashParser('for x in; do echo $x; done');
-    // utils.logResults(result)
     utils.checkResults(
       result,
       {
