@@ -1,4 +1,5 @@
 import type { AstArithmeticExpression, AstNodeScript } from '../ast/types.ts';
+import type { Source } from './source.ts';
 
 export type TokenContext = {
   maybeStartOfSimpleCommand?: boolean;
@@ -89,7 +90,7 @@ export interface ReducerStateIf {
   isOperator(): boolean;
 }
 
-export type Reducer = (state: ReducerStateIf, source: string[], reducers: Reducers) => ReducerNextState;
+export type Reducer = (state: ReducerStateIf, source: Source, reducers: Reducers) => ReducerNextState;
 
 export type ReducerNextState = {
   tokensToEmit?: TokenIf[];

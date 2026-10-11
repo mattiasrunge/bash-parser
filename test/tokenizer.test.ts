@@ -1,3 +1,4 @@
+import { assert } from '@std/assert';
 import operators from '../src/modes/bash/enums/operators.ts';
 import reducers from '../src/modes/bash/reducers/mod.ts';
 import { tokenize as delimiterTokanize } from '../src/tokenizer/mod.ts';
@@ -553,4 +554,18 @@ Deno.test('tokenize', async (t) => {
       ],
     );
   });
+});
+
+Deno.test('tokenizing takes time linear in the length of the input', async () => {
+  // 180 KB of operators, quotes and expansions: read in linear time it takes a fraction of a
+  // second, where time quadratic in its length would take tens of seconds
+  const block = (i: number) => `if [ -f /tmp/f${i} ]; then\n  echo "line ${i}" | grep -q l && n=$((n + 1))\nfi\n`;
+  const text = Array.from({ length: 2400 }, (_, i) => block(i)).join('');
+  const tokenizer = delimiterTokanize(reducers, operators);
+  const started = performance.now();
+
+  await toArray(tokenizer(text));
+
+  const elapsed = performance.now() - started;
+  assert(elapsed < 3000, `${text.length} characters took ${Math.round(elapsed)} ms to tokenize`);
 });

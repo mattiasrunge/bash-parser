@@ -55,12 +55,14 @@ const expansionStart: Reducer = (state, source, reducers) => {
   }
 
   if (isSpecialParameter(char!)) {
-    return reducers.expansionSpecialParameter(state, [char!].concat(source), reducers);
+    source.unshift(char!);
+    return reducers.expansionSpecialParameter(state, source, reducers);
   }
 
   // The `$` starts nothing — drop the expansion it opened, or the word would
   // look like it still had one to resolve and quote removal would skip it
-  return state.previousReducer(state.setExpansion(state.expansion.slice(0, -1)), [char!].concat(source), reducers);
+  source.unshift(char!);
+  return state.previousReducer(state.setExpansion(state.expansion.slice(0, -1)), source, reducers);
 };
 
 export default expansionStart;

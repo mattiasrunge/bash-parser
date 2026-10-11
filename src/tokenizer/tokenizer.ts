@@ -1,4 +1,5 @@
 import last from '../utils/last.ts';
+import { Source } from './source.ts';
 import { mkToken } from './token.ts';
 import type { Expansion, Reducer, ReducerLocation, ReducerNextState, Reducers, ReducerStateIf, TokenIf } from './types.ts';
 
@@ -227,7 +228,7 @@ export const tokenize = (
 
   let reduction: Reducer | null = r.start;
 
-  const source = Array.from(src);
+  const source = new Source(src);
 
   // After `<<` or `<<-`: the next word is a delimiter. Then its body waits for the end of the line.
   let delimiterNext: { strip: boolean } | null = null;
@@ -257,7 +258,7 @@ export const tokenize = (
   };
 
   while (reduction !== null) {
-    const char = source[0];
+    const char = source.at(0) ?? '';
     const reducerdState: ReducerNextState = reduction!(state, source, r);
     reduction = reducerdState.nextReduction;
 

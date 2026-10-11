@@ -1,4 +1,4 @@
-import { mkToken, type Reducer } from '../../../tokenizer/mod.ts';
+import { mkToken, type Reducer, type Source } from '../../../tokenizer/mod.ts';
 import { ARRAY_ELEMENT_SEPARATOR, isAssignmentPrefix } from '../../../utils/assignment.ts';
 
 /** `a=`, `a+=`, `a[0]=` — what has to precede a `(` for it to open an array literal */
@@ -11,12 +11,12 @@ const opensArrayLiteral = (current: string) => isAssignmentPrefix(current) && cu
  * the `]` is followed by `=` or `+=` on the same line — or the `[` starts an
  * element of an array literal, `h=([foo bar]=x)`, which bash reads the same way.
  */
-function blankSubscript(source: string[], element = false): string | undefined {
+function blankSubscript(source: Source, element = false): string | undefined {
   let depth = 1;
   let quote = '';
 
   for (let i = 0; i < source.length; i++) {
-    const c = source[i];
+    const c = source.at(i);
 
     if (c === '\n') return undefined;
 
@@ -30,8 +30,8 @@ function blankSubscript(source: string[], element = false): string | undefined {
     } else if (c === '[') {
       depth++;
     } else if (c === ']' && --depth === 0) {
-      const inner = source.slice(0, i).join('');
-      const assigns = element || source[i + 1] === '=' || (source[i + 1] === '+' && source[i + 2] === '=');
+      const inner = source.peek(i);
+      const assigns = element || source.at(i + 1) === '=' || (source.at(i + 1) === '+' && source.at(i + 2) === '=');
 
       return assigns && /\s/.test(inner) ? inner : undefined;
     }
@@ -87,7 +87,7 @@ const start: Reducer = (state, source, reducers) => {
     if (subscript !== undefined) {
       let next = state.appendChar(char);
 
-      for (const c of source.splice(0, subscript.length + 1)) next = next.appendChar(c).advanceLoc(c);
+      for (const c of source.take(subscript.length + 1)) next = next.appendChar(c).advanceLoc(c);
 
       return { nextReduction: reducers.start, nextState: next };
     }
@@ -119,7 +119,7 @@ const start: Reducer = (state, source, reducers) => {
       if (subscript !== undefined) {
         let next = state.appendChar(char);
 
-        for (const c of source.splice(0, subscript.length + 1)) next = next.appendChar(c).advanceLoc(c);
+        for (const c of source.take(subscript.length + 1)) next = next.appendChar(c).advanceLoc(c);
 
         return { nextReduction: reducers.start, nextState: next };
       }
@@ -171,7 +171,7 @@ const start: Reducer = (state, source, reducers) => {
 
   // Process substitution, `<(cmd)` / `>(cmd)`: a word, not a redirection, and
   // the body is reduced by the command substitution machinery
-  if (!state.escaping && (char === '<' || char === '>') && source[0] === '(') {
+  if (!state.escaping && (char === '<' || char === '>') && source.at(0) === '(') {
     source.shift();
 
     return {

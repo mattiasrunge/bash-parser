@@ -47,7 +47,7 @@ const start: Reducer = (state, source, reducers) => {
   }
 
   // `${u:-<(cmd)}`: a process substitution, as in any word
-  if (!state.escaping && (char === '<' || char === '>') && source[0] === '(') {
+  if (!state.escaping && (char === '<' || char === '>') && source.at(0) === '(') {
     source.shift();
 
     return {

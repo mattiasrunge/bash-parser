@@ -43,7 +43,7 @@ const expansionCommandTick: Reducer = (state, source, reducers) => {
   // "`echo \"a\"`" runs `echo "a"`
   const quoted = state.previousReducer === reducers.doubleQuoting;
 
-  if (!state.escaping && char === '\\' && ('$`\\\n'.includes(source[0] ?? '') || (quoted && source[0] === '"'))) {
+  if (!state.escaping && char === '\\' && ('$`\\\n'.includes(source.at(0) ?? '') || (quoted && source.at(0) === '"'))) {
     return {
       nextReduction: reducers.expansionCommandTick,
       nextState: state.appendChar(char).setEscaping(true),

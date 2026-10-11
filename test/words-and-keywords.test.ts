@@ -121,6 +121,15 @@ Deno.test('extended patterns are part of their word', async () => {
   assertEquals(await words('echo <(printf hi) >(cat)'), ['<(printf hi)', '>(cat)']);
 });
 
+Deno.test('a process substitution right after an operator is a word', async () => {
+  const [pipeline, command] = (await bashParser('cat|<(ls);>(cat)')).commands as any[];
+
+  assertEquals(pipeline.commands[1].name.text, '<(ls)');
+  assertEquals(pipeline.commands[1].name.expansion[0].type, 'ProcessSubstitution');
+  assertEquals(command.name.text, '>(cat)');
+  assertEquals(command.name.expansion[0].type, 'ProcessSubstitution');
+});
+
 Deno.test('comments in arrays, any for name, joined here-document lines, backslashes in backticks', async (t) => {
   const first = async (source: string) => (await bashParser(source)).commands[0] as any;
 

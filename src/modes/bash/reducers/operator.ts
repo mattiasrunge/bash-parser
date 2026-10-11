@@ -13,7 +13,7 @@ const operator: Reducer = (state, source, reducers) => {
         nextState: state.resetCurrent().saveCurrentLocAsStart(),
       };
     }
-    return reducers.start(state, char ? [char] : [], reducers);
+    return reducers.start(state, source, reducers);
   }
 
   if (state.isPartOfOperator(state.current + char)) {
@@ -23,9 +23,12 @@ const operator: Reducer = (state, source, reducers) => {
     };
   }
 
+  // The operator ends before this character, which is read again as what follows it
+  source.unshift(char);
+
   let tokens: TokenIf[] = [];
   if (state.isOperator()) {
-    const arithmetic = state.current === '((' && closesArithmetic([char].concat(source));
+    const arithmetic = state.current === '((' && closesArithmetic(source);
     tokens = state.operatorTokens();
 
     // `((` that does not close as arithmetic opens two subshells, `((cd a); ls)`
@@ -44,12 +47,12 @@ const operator: Reducer = (state, source, reducers) => {
     state = state.resetCurrent().saveCurrentLocAsStart();
     // `((` opens an arithmetic command: what follows up to `))` is one expression, not shell.
     if (arithmetic) {
-      const ret = reducers.arithmeticCommand(state, [char].concat(source), reducers);
+      const ret = reducers.arithmeticCommand(state, source, reducers);
       return { nextReduction: ret.nextReduction, tokensToEmit: tokens.concat(ret.tokensToEmit ?? []), nextState: ret.nextState };
     }
   }
 
-  const ret = reducers.start(state, [char].concat(source), reducers);
+  const ret = reducers.start(state, source, reducers);
   const nextReduction = ret.nextReduction;
   const tokensToEmit = ret.tokensToEmit;
   const nextState = ret.nextState;

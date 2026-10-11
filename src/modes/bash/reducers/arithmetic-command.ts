@@ -1,18 +1,18 @@
-import type { Reducer } from '../../../tokenizer/types.ts';
+import type { Reducer, Source } from '../../../tokenizer/mod.ts';
 
 /**
  * Whether the text after `((` closes as an arithmetic command: a `))` with every `(` between them
  * closed. A lone `)` first means the `((` opened two subshells, `((cd a); ls)`, and it is left to be
  * read that way.
  */
-export const closesArithmetic = (source: string[]): boolean => {
+export const closesArithmetic = (source: Source): boolean => {
   let depth = 0;
   for (let i = 0; i < source.length; i++) {
-    const char = source[i];
+    const char = source.at(i);
     if (char === '(') depth++;
     else if (char === ')') {
       if (depth > 0) depth--;
-      else return source[i + 1] === ')';
+      else return source.at(i + 1) === ')';
     }
   }
   return false;
@@ -23,14 +23,14 @@ export const closesArithmetic = (source: string[]): boolean => {
  * the first `(` before any `))`. Text that simply runs out does not — it may
  * still become arithmetic, and is reported as unclosed arithmetic.
  */
-export const opensSubshells = (source: string[]): boolean => {
+export const opensSubshells = (source: Source): boolean => {
   let depth = 0;
   for (let i = 0; i < source.length; i++) {
-    const char = source[i];
+    const char = source.at(i);
     if (char === '(') depth++;
     else if (char === ')') {
       if (depth > 0) depth--;
-      else return source[i + 1] !== ')';
+      else return source.at(i + 1) !== ')';
     }
   }
   return false;

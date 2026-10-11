@@ -24,9 +24,10 @@ const expansionParameter: Reducer = (state, source, reducers) => {
     };
   }
 
+  source.unshift(char);
   return state.previousReducer(
     state.replaceLastExpansion({ loc: Object.assign({}, xp!.loc, { end: state.loc.previous?.char }) }),
-    [char].concat(source),
+    source,
     reducers,
   );
 };
